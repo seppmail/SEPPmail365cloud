@@ -1,0 +1,27 @@
+{
+    "Name":                             "[SEPPmail.cloud] - Route incoming e-mails to SEPPmail",
+    "Comments":                         "Mails sent from outside the organization are sent to the SEPPmail appliance for signature validation and decryption.",
+    "RouteMessageOutboundConnector":    "[SEPPmail.cloud] ExchangeOnline -> Appliance",
+    "SMPriority":                       0,
+
+    "Version":
+    {
+        "Default" :
+        {
+            "FromScope":                            "NotInOrganization",
+            "SentToScope":                          "InOrganization",
+            "ExceptIfHeaderMatchesMessageHeader":   "X-SM-internal",
+            "ExceptIfHeaderMatchesPatterns":        "yes",
+            "ExceptIfHeaderContainsMessageHeader":  "X-SM-incoming",
+            "ExceptIfHeaderContainsWords":          "yes",
+            "Priority":                             0,
+            "SetAuditSeverity":                     "DoNotAudit",
+            "Mode":                                 "Enforce",
+            "SenderAddressLocation":                "Header"
+        }
+    },
+    "Option":
+        {
+            
+        }
+}

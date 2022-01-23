@@ -1,0 +1,29 @@
+{
+    "Name"                                : "[SEPPmail.cloud] - Route outgoing e-mails to SEPPmail",
+    "Comments"                            : "Mails sent from inside the organization to the Internet are sent to SEPPmail appliance for encryption and signing.",
+    "RouteMessageOutboundConnector"       : "[SEPPmail.cloud] ExchangeOnline -> Appliance",
+    "SMPriority"                          : 1,
+
+    "Version":
+    {
+        "Default":
+        {
+            "FromScope"                           : "InOrganization",
+            "SentToScope"                         : "NotInOrganization",
+            "ExceptIfHeaderMatchesMessageHeader"  : "X-SM-internal",
+            "ExceptIfHeaderMatchesPatterns"       : "yes",
+            "ExceptIfHeaderContainsMessageHeader" : "X-SM-outgoing",
+            "ExceptIfHeaderContainsWords"         : "yes",
+            "ExceptIfMessageTypeMatches"          : "OOF",
+            "Priority"                            : 0,
+            "SetAuditSeverity"                    : "DoNotAudit",
+            "Mode"                                : "Enforce",
+            "SenderAddressLocation"               : "Header"
+        }
+    },
+    "Option":
+        {
+            
+        }
+
+}

@@ -1,0 +1,30 @@
+{
+    "Name"                     : "[SEPPmail.cloud] ExchangeOnline -> Appliance",
+    "Comment"                  : "Based on rules, E-Mails that have not been processed by SEPPmail.cloude are routed there.",
+
+    "Version":
+    {
+        "Default":
+        {
+            "ConnectorSource"          : "Default",
+            "ConnectorType"            : "OnPremises",
+            "IsTransportRuleScoped"    : true,
+            "TlsSettings"              : "DomainValidation",
+            "UseMXRecord"              : false,
+            "CloudServicesMailEnabled" : true
+        },
+        "Partner":
+        {
+            "ConnectorSource"          : "Default",
+            "ConnectorType"            : "Partner",
+            "IsTransportRuleScoped"    : true,
+            "TlsSettings"              : "DomainValidation",
+            "UseMXRecord"              : false,
+            "CloudServicesMailEnabled" : false
+        }
+    },
+    "Option":
+        {
+            "NoAntiSpamWhiteListing": false
+        }
+}

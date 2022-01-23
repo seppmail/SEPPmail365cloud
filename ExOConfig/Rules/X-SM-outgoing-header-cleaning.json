@@ -1,0 +1,24 @@
+{
+    "Name"                  : "[SEPPmail.cloud] - Clean outbound SEPPmail header outgoing",
+    "Comments"              : "Removes outgoing SEPPmail x-headers from E-Mail.",
+    "SMPriority"            : 10,
+
+    "Version":
+    {
+        "Default":
+        {
+            "FromScope"             : "InOrganization",
+            "SentToScope"           : "NotInOrganization",
+            "RemoveHeader"          : "X-SM-outgoing",
+            "Priority"              : 0,
+            "SetAuditSeverity"      : "DoNotAudit",
+            "Mode"                  : "Enforce",
+            "SenderAddressLocation" : "Header"
+        }
+    },
+    "Option":
+        {
+            
+        }
+
+}
