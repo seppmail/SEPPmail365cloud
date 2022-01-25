@@ -67,6 +67,9 @@ function Test-SC365ConnectionStatus
     }
 }
 
+
+
+
 # Generic function to avoid code duplication
 function Set-SC365PropertiesFromConfigJson
 {
@@ -76,7 +79,8 @@ function Set-SC365PropertiesFromConfigJson
         [psobject] $InputObject,
         [psobject] $Json,
         [SC365.ConfigVersion] $Version = [SC365.ConfigVersion]::None,
-        [SC365.ConfigOption[]] $Option
+        [SC365.ConfigOption[]] $Option,
+        [SM365.GeoRegion] $Region
     )
 
     # use the latest if the requested version is not supplied (for overriding specific aspects only)
@@ -115,6 +119,14 @@ function Set-SC365PropertiesFromConfigJson
             $Json.Option.$_.psobject.properties | ForEach-Object{
                 $InputObject.$($_.Name) = $_.Value
             }
+        }
+    }
+
+
+    if($Region -and $json.Region)
+    {
+        $json.Region.$Region.psobject.properties | %Foreach-Object {
+            $InputObject.$($_.Name) = $_.Value
         }
     }
 }
@@ -238,6 +250,29 @@ function Get-SC365TransportRuleSettings
     # But via this sorting, an SMPriority 0 rule will actually be at the top (but at priority 3).
     $ret | Sort-Object -Property SMPriority -Descending
 }
+
+function Get-SC365PoliciesAntiSpamSettings
+{
+    [CmdletBinding()]
+    Param
+    (
+        [SM365.GeoRegion] $GeoRegion
+    )
+
+    if($Version -ne "None")
+    {Write-Verbose "Loading inbound connector settings for version $Version"}
+    else
+    {Write-Verbose "Loading mandatory inbound connector settings"}
+
+    $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\Policies\AntiSpam.json" -Raw)
+
+    $ret = [SC365.PoliciesAntiSpamSettings]::new($json.Name, $Version)
+
+    Set-SC365PropertiesFromConfigJson $ret -Json $json -Version $Version -Option $Option -Region $GeoRegion
+
+    return $ret
+}
+
 # SIG # Begin signature block
 # MIIL1wYJKoZIhvcNAQcCoIILyDCCC8QCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

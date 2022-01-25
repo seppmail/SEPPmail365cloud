@@ -115,20 +115,20 @@ PrivateData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
         Tags = @(
-                'SEPPmail',
+                'SEPPmail.cloud',
                 'ExchangeOnline',
                 'Microsoft365',
                 'PSEdition_Core',
                 'Office365')
 
         # A URL to the license for this module.
-        #LicenseUri = 'https://github.com/seppmail/SEPPmail365/blob/master/LICENSE'
+        LicenseUri = 'https://github.com/seppmail/SEPPmail365cloud/blob/master/LICENSE'
 
         # A URL to the main website for this project.
-        ProjectUri = 'https://gitlab.seppmail.ch/internal/seppcloud/seppmail365cloud'
+        ProjectUri = 'https://github.com/seppmail/seppmail365cloud'
 
         # A URL to an icon representing this module.
-        #IconUri = 'https://avatars1.githubusercontent.com/u/55975553?s=400&u=ab22c52a439397dca458e58dfcec9f0a9dd347db&v=4'
+        IconUri = 'https://avatars1.githubusercontent.com/u/55975553?s=400&u=ab22c52a439397dca458e58dfcec9f0a9dd347db&v=4'
 
         # ReleaseNotes of this module
         ReleaseNotes = 

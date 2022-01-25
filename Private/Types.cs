@@ -22,6 +22,14 @@ namespace SC365
         NoAntiSpamWhiteListing
     }
 
+    // Available cloud regions
+    public enum GeoRegion
+    {
+        None,
+        CH,
+        DE
+    }
+
     public enum ConfigBundle
     {
         None,
@@ -307,6 +315,29 @@ namespace SC365
             if(HeaderContainsWords != null)
                 ret["HeaderContainsWords"] = HeaderContainsWords;
 
+            return ret;
+        }
+    }
+
+    public class PoliciesAntiSpamSettings
+    {
+        public PoliciesAntiSpamSettings (string name, GeoRegion georegion)
+        {
+            Name = name;
+            Region = georegion;
+        }
+        public string Name {get; private set;}
+        public GeoRegion Region {get; private set;}
+        public bool Skip {get; set;}
+        public List<string> WhiteList {get; private set;}
+
+        // This is for splatting
+        public Hashtable ToHashtable(OperationType op = OperationType.Create)
+        {
+            Hashtable ret = new Hashtable();
+            ret[(op == OperationType.Create ? "Name" : "Identity")] = Name;
+            if(!string.IsNullOrEmpty(WhiteList))
+                ret["WhiteList"] = Whitelist;
             return ret;
         }
     }

@@ -21,8 +21,8 @@ function Get-SC365Connectors
     else {
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-        $inbound = Get-SC365InboundConnectorSettings -Version "None"
-        $outbound = Get-SC365OutboundConnectorSettings -Version "None"
+        $inbound = Get-SC365InboundConnectorSettings -Version "Default"
+        $outbound = Get-SC365OutboundConnectorSettings -Version "Default"
     
         if (Get-OutboundConnector | Where-Object Identity -eq $($outbound.Name))
         {
@@ -110,130 +110,51 @@ function New-SC365Connectors
 {
     [CmdletBinding(
          SupportsShouldProcess = $true,
-         ConfirmImpact = 'Medium',
-         DefaultParameterSetName = 'FqdnTls'
+         ConfirmImpact = 'Medium'
      )]
 
     param
     (
-        #region FqdnTls
         [Parameter(
-            Mandatory = $true,
-            HelpMessage = 'FQDN of the SEPPmail Appliance, i.e. securemail.contoso.com',
-            ParameterSetName = 'FqdnTls',
+            HelpMessage = 'Geographcal region of the seppmail.cloud service',
             Position = 0
         )]
+        [ValidateSet('ch','prv')]
+        [Alias('region')]
+        [String] $cloudRegion = 'ch',
+
         [Parameter(
             Mandatory = $true,
-            HelpMessage = 'FQDN of the SEPPmail Appliance, i.e. securemail.contoso.com',
-            ParameterSetName = 'FqdnNoTls',
-            Position = 0
+            Helpmessage = 'Default E-Mail domain of your M365 Exchange Online tenant.'
         )]
-        [ValidatePattern("^(?!:\/\/)(?=.{1,255}$)((.{1,63}\.){1,127}(?![0-9]*$)[a-z0-9-]+\.?)$")]
-        [Alias('FQDN','SMFQDN')]
-        [String] $SEPPmailFQDN,
-        #endregion fqdntls
+        [ValidatePattern('(?=^.{1,253}$)(^(((?!-)[a-zA-Z0-9-]{1,63}(?<!-))|((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63})$)')]
+        [Alias('domain')]
+        [String] $maildomain,
 
-        #region TLSSenderCertificateName
         [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Name of the certificate if different from the SEPPmail-FQDN. Read the cetificate name in your SEPPmail under SSL==>Issued to==>Name (CN)',
-            ParameterSetname = 'FqdnTls',
-            Position = 1
+            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"ExchangeOnline`": mx points to Microsoft'
         )]
-        [Alias('TLSCertName','CertName')]
-        [String] $TLSCertificateName,
-        #endregion
+        [ValidateSet('seppmailcloud','ExchangeOnline')]
+        [Alias(type)]
+        [String] $routingType = 'seppmailcloud',
 
-        #region selfsigned
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'OutBound Connector trusts also self signed certificates',
-            ParameterSetName = 'FqdnTls'
+            HelpMessage = 'Which configuration option to use'
         )]
-        [Alias('AllowSelfSigned','SelfSigned')]
-        [Switch] $AllowSelfSignedCertificates,
-        #endregion SelfSigned
+        [SC365.ConfigOption[]]$Option,
 
-        #region NoOutboundTls
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'OutBound Connector allows also non-TLS conenctions',
-            ParameterSetName = 'FqdnNoTls'
-        )]
-        [Alias('NoTls')]
-        [Switch] $NoOutBoundTlsCheck,
-        #endregion NoTls
-
-        #region IP
-        [Parameter(
-            Mandatory = $true,
-            HelpMessage = 'If SEPPmail has no FQDN and is represented as an IP Address',
-            ParameterSetName = 'Ip',
-            Position = 0
-        )]
-        [ValidatePattern("(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}")]
-        [Alias('SMIP','SMIPAddress')]
-        [string] $SEPPmailIP,
-        #endregion IP
-
-        #region Option
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Which configuration option to use',
-            ParameterSetName = 'FqdnTls'
-        )]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Which configuration option to use',
-            ParameterSetName = 'FqdnNoTls'
-        )]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Which configuration option to use',
-            ParameterSetName = 'Ip'
-        )]
-        [SC365.ConfigOption[]]$Option = 'Default',
-        #endregion Option
-
-        #region Version
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Which configuration version to use',
-            ParameterSetName = 'FqdnTls'
-        )]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Which configuration version to use',
-            ParameterSetName = 'FqdnNoTls'
-        )]
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Which configuration version to use',
-            ParameterSetName = 'Ip'
+            HelpMessage = 'Which configuration version to use'
         )]
         [SC365.ConfigVersion[]]$Version = 'Default',
-        #endregion Version
 
-
-        #region disabled
         [Parameter(
             Mandatory = $false,
-            HelpMessage = 'Disable the connectors on creation',
-            ParameterSetName = 'FqdnTls'
-         )]
-        [Parameter(
-           Mandatory = $false,
-           HelpMessage = 'Disable the connectors on creation',
-           ParameterSetName = 'FqdnNoTls'
-        )]
-        [Parameter(
-           Mandatory = $false,
-           HelpMessage = 'Disable the connectors on creation',
-           ParameterSetName = 'Ip'
+            HelpMessage = 'Disable the connectors on creation'
         )]
         [switch]$Disabled
-        #endregion disabled
 
     )
 
@@ -243,27 +164,10 @@ function New-SC365Connectors
         {throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"}
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-        #resolve IP
-        if ($PSCmdLet.ParameterSetName -like 'Fqdn*') {
-            try {
-                Write-Verbose "Transform $SEPPmailFQDN to IP Adress for IP based options"
-                $SEPPmailIP = ([System.Net.Dns]::GetHostAddresses($SEPPmailFQDN).IPAddressToString)
-                Write-Verbose "$SEPPmailFQDN equals the IP(s): $SEPPmailIP"
-            }
-            catch {
-                Write-Error "Could not resolve IP Address of $SEPPmailFQDN. Please check SEPPmailFQDN hostname and try again."
-                break
-            }
-        }
-
-        Write-Verbose "Prepare Values out of Parametersets"
-        If (($PsCmdLet.ParameterSetName -like 'FqdnTls') -or ($PsCmdLet.ParameterSetName -eq 'FqdnTls')) {
-                $InboundTlsDomain = $SEPPmailFQDN
-                $OutboundTlsDomain = $SEPPmailFQDN
-            }
-        else {
-            [string[]]$SenderIPAddresses = $SEPPmailIP
-        }
+        Write-Verbose "Prepare Smarthosts for e-Mail domain $maildomain"
+        $dashdomain = $maildomain.Replace('.','-')
+        $InboundTlsDomain = $dashDomain + '.gate.seppmail.cloud'
+        $OutboundTlsDomain = $dashDomain + 'relay.seppmail.cloud'
 
         #region collecting existing connectors
         Write-Verbose "Collecting existing connectors"
@@ -307,26 +211,12 @@ function New-SC365Connectors
     process
     {
         #region OutboundConnector
+        Write-Verbose "Building Outbound parameters based on smarthost $outboundtlsdomain"
         $outbound = Get-SC365OutboundConnectorSettings -Version $Version -Option $Option
         $param = $outbound.ToHashtable()
-        if ($PsCmdLet.ParameterSetname -like 'fqdn*') {
-            $param.SmartHosts = $SEPPmailFQDN            
-        } else {
-            $param.SmartHosts = $SenderIPAddresses                  
-        }
-        Write-Verbose "Set Tls outbound domain depending in ParameterSetName $PsCmdLet.ParameterSetName"
-        if ($PsCmdLet.ParameterSetName -eq 'FqdnTls') {
-            $param.TlsDomain = $OutboundTlsDomain
-            if ($AllowSelfSignedCertificates) {
-                $param.TlsSettings = 'EncryptionOnly'
-                $param.Remove('TlsDomain')
-            }
-        }
-
-        if ($PsCmdLet.ParameterSetName -ne 'FqdnTls') {
-            $param.TlsSettings = $null
-        }
-
+        $param.SmartHosts = $OutboundTlsDomain            
+        $param.TlsDomain = $OutboundTlsDomain
+        
         Write-verbose "if -disabled switch is used, the connector stays deactivated"
         if ($Disabled) {
             $param.Enabled = $false
@@ -339,7 +229,7 @@ function New-SC365Connectors
         [bool]$createOutBound = $true #Set Default Value
         if ($existingSMOutboundConn)
         {
-            Write-Warning "Found existing SEPPmail outbound connector with name: `"$($existingSMOutboundConn.Name)`" created on `"$($existingSMOutboundConn.WhenCreated)`" pointing to SEPPmail `"$($existingSMOutboundConn.TlsDomain)`" "
+            Write-Warning "Found existing SEPPmail.cloud outbound connector with name: `"$($existingSMOutboundConn.Name)`" created on `"$($existingSMOutboundConn.WhenCreated)`" pointing to SEPPmail `"$($existingSMOutboundConn.TlsDomain)`" "
 
             if($InteractiveSession)
             {
@@ -358,7 +248,7 @@ function New-SC365Connectors
                     $createOutbound = $true
 
                     Write-Verbose "Removing existing Outbound Connector $($existingSMOutboundConn.Name) !"
-                    if ($PSCmdLet.ShouldProcess($($existingSMOutboundConn.Name), 'Removing existing SEPPmail Outbound Connector')) {
+                    if ($PSCmdLet.ShouldProcess($($existingSMOutboundConn.Name), 'Removing existing SEPPmail.cloud Outbound Connector')) {
                         $existingSMOutboundConn | Remove-OutboundConnector -Confirm:$false # user already confirmed action
 
                         if (!$?)
@@ -380,7 +270,7 @@ function New-SC365Connectors
 
         if($createOutbound)
         {
-            Write-Verbose "Creating SEPPmail Outbound Connector $($param.Name)!"
+            Write-Verbose "Creating SEPPmail.cloud Outbound Connector $($param.Name)!"
             if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Outbound Connector'))
             {
                 Write-Debug "Outbound Connector settings:"
@@ -389,11 +279,7 @@ function New-SC365Connectors
                 }
 
                 $Now = Get-Date
-                $param.Comment += "`n#Created with SEPPmail365 PowerShell Module on $now"
-
-                if ($TLSCertificateName.Length -gt 0) {
-                    $param.TlsDomain = $TLSCertificateName
-                }
+                $param.Comment += "`n#Created with SEPPmail365cloud PowerShell Module on $now"
 
                 [void](New-OutboundConnector @param)
 
@@ -406,10 +292,9 @@ function New-SC365Connectors
         #region - Inbound Connector
         Write-Verbose "Read Inbound Connector Settings"
         $inbound = Get-SC365InboundConnectorSettings -Version $Version -Option $Option
-        
-        if ($PSCmdLet.ParametersetName -eq 'FqdnTls') {
-            $inbound.TlsSenderCertificateName = $InboundTlsDomain
-        }
+ 
+        $inboundTlsDOmain = $dashdomain
+        $inbound.TlsSenderCertificateName = $InboundTlsDomain
         
         Write-verbose "if -disabled switch is used, the connector stays deactivated"
         if ($disabled) {
@@ -427,7 +312,7 @@ function New-SC365Connectors
         [bool]$createInbound = $true
         if ($existingSMInboundConn)
         {
-            Write-Warning "Found existing SEPPmail inbound Connector with name: `"$($existingSMInboundConn.Name)`", created `"$($existingSMInboundConn.WhenCreated)`" incoming SEPPmail is `"$($existingSMInboundConn.TlsSenderCertificateName)`""
+            Write-Warning "Found existing SEPPmail.cloud inbound connector with name: `"$($existingSMInboundConn.Name)`", created `"$($existingSMInboundConn.WhenCreated)`" incoming SEPPmail is `"$($existingSMInboundConn.TlsSenderCertificateName)`""
 
             if($InteractiveSession)
             {
@@ -444,8 +329,8 @@ function New-SC365Connectors
                 if ($tmp -eq 'y') {
                     $createInbound = $true
 
-                    Write-Verbose "Removing existing SEPPmail Inbound Connector $($existingSMInboundConn.Name) !"
-                    if ($PSCmdLet.ShouldProcess($($existingSMInboundConn.Name), 'Removing existing SEPPmail inbound Connector')) {
+                    Write-Verbose "Removing existing SEPPmail.cloud Inbound Connector $($existingSMInboundConn.Name) !"
+                    if ($PSCmdLet.ShouldProcess($($existingSMInboundConn.Name), 'Removing existing SEPPmail.cloud inbound Connector')) {
                         $existingSMInboundConn | Remove-InboundConnector -Confirm:$false # user already confirmed action
 
                         if (!$?)
@@ -469,30 +354,7 @@ function New-SC365Connectors
         {
             # necessary assignment for splatting
             $param = $inbound.ToHashtable()
-
-            Write-Verbose "Modify params based on ParameterSet"
-            Write-verbose "IP based Config, using $SenderIPAdresses"
-            if ($PSCmdLet.ParameterSetName -eq 'Ip') {
-                $param.SenderIPAddresses = $SenderIPAddresses
-                $param.RequireTls = $false
-            } 
-            Write-Verbose "FQDN and Self Signed certificates, TLSCertificatename = $SEPPmailFQDN"
-            if (($PSCmdLet.ParameterSetName -eq 'FQDNTls') -and ($AllowSelfSignedCertificates)) {
-                $param.RestrictDomainsToCertificate = $false
-                $param.TlsSenderCertificateName = $SEPPmailFQDN
-            }
-            Write-Verbose "FQDN and certificatename equals FQDN, using $SEPpmailFQDN as TLSCertificateName"
-            if (($PSCmdLet.ParameterSetName -eq 'FQDNTls') -and ($TLSCertificateName.Length -eq 0)) {
-                $param.TlsSenderCertificateName = $SEPPmailFQDN
-            }
-            Write-Verbose "FQDN and certificatename specified, using $TlscertificateName as TLSCertificateName"
-            if (($PSCmdLet.ParameterSetName -eq 'FQDNTls') -and ($TLSCertificateName.Length -gt 0)) {
-                $param.TlsSenderCertificateName = $TLSCertificateName
-            }
-            Write-Verbose "NoTls, using $SEPPmailFQDN as TLSCertificateName"
-            if ($PSCmdLet.ParameterSetName -eq 'FqdnNoTls') {
-                $param.TlsSenderCertificateName = $SEPPmailFQDN
-            }
+            $param.TlsSenderCertificateName = $InboundTlsDomain
 
             Write-Verbose "Creating SEPPmail Inbound Connector $($param.Name)!"
             if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Inbound Connector'))
@@ -502,7 +364,7 @@ function New-SC365Connectors
                     Write-Debug "$($_.Key) = $($_.Value)"
                 }
                 $Now = Get-Date
-                $param.Comment += "`n#Created with SEPPmail365 PowerShell Module on $now"
+                $param.Comment += "`n#Created with SEPPmail365cloud PowerShell Module on $now"
                 [void](New-InboundConnector @param)
 
                 if(!$?) {
@@ -511,18 +373,19 @@ function New-SC365Connectors
                     #region - Add SMFQDN to hosted Connection Filter Policy Whitelist
                     if ($option[0] -ne 'NoAntiSpamWhiteListing')
                     {
-                        Write-Verbose "Adding SEPPmail Appliance to wWhitelist in 'Hosted Connection Filter Policy'"
+                        Write-Verbose "Adding SEPPmail.cloud to whitelist in 'Hosted Connection Filter Policy'"
                         Write-Verbose "Collecting existing WhiteList"
                         $hcfp = Get-HostedConnectionFilterPolicy
+                        $SEPPmailIpRanges = Get-SC365PoliciesAntiSpamSettings -GeoRegion $cloudRegion
                         [string[]]$existingAllowList = $hcfp.IPAllowList
-                        Write-verbose "Adding SEPPmail Appliance to Policy $($hcfp.Id)"
+                        Write-verbose "Adding SEPPmail.cloud Appliance to Policy $($hcfp.Id)"
                         if ($existingAllowList) {
-                            $FinalIPList = ($existingAllowList + $SEPPmailIP)|sort-object -Unique
+                            $FinalIPList = ($existingAllowList + $SEPPmailIPRanges)|sort-object -Unique
                         }
                         else {
-                            $FinalIPList = $SEPPmailIP
+                            $FinalIPList = $SEPPmailIPRanges
                         }
-                        Write-verbose "Adding IPaddress list with content $finalIPList to Policy $($hcfp.Id)"
+                        Write-verbose "Adding IPaddress list with content $finalIPList to hosted connection filter policy $($hcfp.Id)"
                         if ($FinalIPList) {
                             Set-HostedConnectionFilterPolicy -Identity $hcfp.Id -IPAllowList $finalIPList
                         }
