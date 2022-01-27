@@ -336,8 +336,8 @@ namespace SC365
         {
             Hashtable ret = new Hashtable();
             ret[(op == OperationType.Create ? "Name" : "Identity")] = Name;
-            if(!string.IsNullOrEmpty(WhiteList))
-                ret["WhiteList"] = Whitelist;
+            if(WhiteList != null)
+                ret["WhiteList"] = WhiteList;
             return ret;
         }
     }

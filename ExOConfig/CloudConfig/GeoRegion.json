@@ -1,0 +1,38 @@
+{
+    "Name"                         : "[SEPPmail.cloud] AntiSpam Whitelist",
+    "Comment"                      : "Values in HostedConnectionFilterPolicy",
+    "GeoRegion":
+    {
+        "CH":
+        {
+            "IPv4WhiteList": [
+                "86.119.35.219/32",
+                "86.119.25.98/32",
+                "86.119.9.0/29",
+                "86.119.57.0/29"
+            ],
+            "IPv6WhiteList": [
+            ]
+        },
+        "PRV":
+        {
+            "IPv4WhiteList": [
+                "49.12.21.237",
+                "168.119.153.228",
+                "78.47.79.19"
+            ],
+            "IPV6WhiteList": [
+                "2a01:4f8:c011:78a::1",
+                "2a01:4f8:1c17:f104::1",
+                "2a01:4f8:1c17:c547::1"
+            ]
+        },
+        "DE":
+        {
+            "IPv4WhiteList": [
+            ],
+            "IPv6WhiteList": [
+            ]
+        }
+    }
+}

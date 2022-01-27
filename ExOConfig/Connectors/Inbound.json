@@ -2,9 +2,9 @@
     "Name"                         : "[SEPPmail.cloud] Appliance -> ExchangeOnline",
     "Comment"                      : "Accept E-Mails from SEPPmail.cloud",
 
-    "Version":
+    "routing":
     {
-        "Default":
+        "seppmail":
         {
             "CloudServicesMailEnabled"     : true,
             "ConnectorSource"              : "Default",
@@ -13,7 +13,7 @@
             "RequireTls"                   : true,
             "SenderDomains"                : "*"
         },
-        "Partner":
+        "M365":
         {
             "CloudServicesMailEnabled"     : false,
             "ConnectorSource"              : "Default",

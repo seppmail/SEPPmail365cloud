@@ -2,9 +2,9 @@
     "Name"                     : "[SEPPmail.cloud] ExchangeOnline -> Appliance",
     "Comment"                  : "Based on rules, E-Mails that have not been processed by SEPPmail.cloude are routed there.",
 
-    "Version":
+    "routing":
     {
-        "Default":
+        "seppmail":
         {
             "ConnectorSource"          : "Default",
             "ConnectorType"            : "OnPremises",
@@ -13,7 +13,7 @@
             "UseMXRecord"              : false,
             "CloudServicesMailEnabled" : true
         },
-        "Partner":
+        "M365":
         {
             "ConnectorSource"          : "Default",
             "ConnectorType"            : "Partner",

@@ -121,7 +121,7 @@ function New-SC365Connectors
         )]
         [ValidateSet('ch','prv')]
         [Alias('region')]
-        [String] $cloudRegion = 'ch',
+        [String] $geoRegion = 'ch',
 
         [Parameter(
             Mandatory = $true,
@@ -135,7 +135,7 @@ function New-SC365Connectors
             Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"ExchangeOnline`": mx points to Microsoft'
         )]
         [ValidateSet('seppmailcloud','ExchangeOnline')]
-        [Alias(type)]
+        [Alias('routing')]
         [String] $routingType = 'seppmailcloud',
 
         [Parameter(
@@ -212,7 +212,7 @@ function New-SC365Connectors
     {
         #region OutboundConnector
         Write-Verbose "Building Outbound parameters based on smarthost $outboundtlsdomain"
-        $outbound = Get-SC365OutboundConnectorSettings -Version $Version -Option $Option
+        $outbound = Get-SC365OutboundConnectorSettings -routing $routing -region $region -Option $Option
         $param = $outbound.ToHashtable()
         $param.SmartHosts = $OutboundTlsDomain            
         $param.TlsDomain = $OutboundTlsDomain
@@ -376,7 +376,7 @@ function New-SC365Connectors
                         Write-Verbose "Adding SEPPmail.cloud to whitelist in 'Hosted Connection Filter Policy'"
                         Write-Verbose "Collecting existing WhiteList"
                         $hcfp = Get-HostedConnectionFilterPolicy
-                        $SEPPmailIpRanges = Get-SC365PoliciesAntiSpamSettings -GeoRegion $cloudRegion
+                        $SEPPmailIpRanges = Get-SC365PoliciesAntiSpamSettings -GeoRegion $geoRegion
                         [string[]]$existingAllowList = $hcfp.IPAllowList
                         Write-verbose "Adding SEPPmail.cloud Appliance to Policy $($hcfp.Id)"
                         if ($existingAllowList) {
