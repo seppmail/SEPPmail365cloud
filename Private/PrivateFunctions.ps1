@@ -78,21 +78,11 @@ function Set-SC365PropertiesFromConfigJson
     (
         [psobject] $InputObject,
         [psobject] $Json,
-        [SC365.ConfigVersion] $Version = [SC365.ConfigVersion]::None,
+        [Parameter(Mandatory=$true)]
+        [SC365.MailRouting] $Route,
         [SC365.ConfigOption[]] $Option,
-        [SM365.GeoRegion] $Region
+        [SC365.GeoRegion] $Region
     )
-
-    # use the latest if the requested version is not supplied (for overriding specific aspects only)
-    #if(!$json.Version.$Version)
-    #{
-    #    $Version = [SC365.ConfigVersion]::Latest
-    #}
-
-    # skip if the requested version isn't available
-    if(!$json.Version.$version) {
-        $InputObject.Skip = $true;
-    }
 
     # Set all properties that aren't version specific
     $json.psobject.properties | Foreach-Object {
@@ -100,18 +90,11 @@ function Set-SC365PropertiesFromConfigJson
         { $InputObject.$($_.Name) = $_.Value }
     }
 
-    # Default version actually acts as default properties now
-    if($json.Version["Default"]){
-        $json.Version["Default"].psobject.properties | Foreach-Object 
-            $InputObject.$($_.Name) = $_.Value
-    }
-
     # Set the version specific properties, except if none has been requested
-    if ($Version -ne [SC365.ConfigVersion]::None) {
-        $json.Version.$Version.psobject.properties | Foreach-Object {
-            $InputObject.$($_.Name) = $_.Value
-        }
+    $json.Routing.$Route.psobject.properties | Foreach-Object {
+        $InputObject.$($_.Name) = $_.Value
     }
+    
 
     if($Option -and $json.Option)
     {
@@ -139,7 +122,7 @@ function Get-SC365InboundConnectorSettings
     [CmdletBinding()]
     Param
     (
-        [SC365.ConfigVersion] $Version = [SC365.ConfigVersion]::Latest,
+        [SC365.MailRouting] $Route,
         [SC365.ConfigOption[]] $Option
     )
 
@@ -162,7 +145,8 @@ function Get-SC365OutboundConnectorSettings
     [CmdletBinding()]
     Param
     (
-        [SC365.ConfigVersion] $Version = [SC365.ConfigVersion]::Latest,
+        [Parameter(Mandatory=$true)]
+        [SC365.MailRouting] $Route,
         [SC365.ConfigOption[]] $Option
     )
 
@@ -185,7 +169,8 @@ function Get-SC365TransportRuleSettings
     [CmdLetBinding()]
     Param
     (
-        [SC365.ConfigVersion] $Version = [SC365.ConfigVersion]::Latest,
+        [Parameter(Mandatory=$true)]
+        [SC365.MailRouting] $Route,
         [SC365.ConfigOption[]] $Option,
         [SC365.AvailableTransportRuleSettings[]] $Settings =[SC365.AvailableTransportRuleSettings]::All,
         [switch] $IncludeSkipped
@@ -256,7 +241,7 @@ function Get-SC365PoliciesAntiSpamSettings
     [CmdletBinding()]
     Param
     (
-        [SM365.GeoRegion] $GeoRegion
+        [SC365.GeoRegion] $GeoRegion
     )
 
     if($Version -ne "None")

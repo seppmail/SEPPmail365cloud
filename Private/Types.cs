@@ -5,12 +5,10 @@ using System.Collections.Generic;
 namespace SC365
 {
     // Specifies the config version to use for cmdlets
-    public enum ConfigVersion
+    public enum MailRouting
     {
-        // None,
-        Default, // Initial config. Connectors are set OnPremises - Internal Headers are preserved
-        //Partner, // Connectors are set as Partner - Internal Headers are removed
-        Latest = Default
+        CH,
+        PRV
     }
 
     // Specifies options to be used by cmdlets
