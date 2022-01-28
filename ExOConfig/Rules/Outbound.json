@@ -4,9 +4,12 @@
     "RouteMessageOutboundConnector"       : "[SEPPmail.cloud] ExchangeOnline -> Appliance",
     "SMPriority"                          : 1,
 
-    "Version":
+    "routing":
     {
-        "Default":
+        "seppmail" :
+        {            
+        },
+        "M365":
         {
             "FromScope"                           : "InOrganization",
             "SentToScope"                         : "NotInOrganization",

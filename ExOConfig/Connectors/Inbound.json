@@ -1,6 +1,6 @@
 {
     "Name"                         : "[SEPPmail.cloud] Appliance -> ExchangeOnline",
-    "Comment"                      : "Accept E-Mails from SEPPmail.cloud",
+    "Comment"                      : "Accept E-Mails from SEPPmail.cloud host",
 
     "routing":
     {
@@ -8,7 +8,7 @@
         {
             "CloudServicesMailEnabled"     : true,
             "ConnectorSource"              : "Default",
-            "ConnectorType"                : "OnPremises",
+            "ConnectorType"                : "Partner",
             "Enabled"                      : true,
             "RequireTls"                   : true,
             "SenderDomains"                : "*"

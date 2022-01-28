@@ -1,6 +1,6 @@
 {
-    "Name"                         : "[SEPPmail.cloud] AntiSpam Whitelist",
-    "Comment"                      : "Values in HostedConnectionFilterPolicy",
+    "Name"                         : "[SEPPmail.cloud] Geographical Cloud Region Configuration",
+    "Comment"                      : "Configuration details for i.e Anti-SPam Whitelists",
     "GeoRegion":
     {
         "CH":

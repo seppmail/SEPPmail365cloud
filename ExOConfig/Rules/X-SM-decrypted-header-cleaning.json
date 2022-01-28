@@ -3,9 +3,13 @@
     "Comments"              : "Removes decrypted SEPPmail x-headers from E-Mail.",
     "SMPriority"            : 10,
 
-    "Version":
+    "routing":
     {
-        "Default":
+        "seppmail" :
+        {
+            
+        },
+        "M365":
         {
             "FromScope"             : "InOrganization",
             "SentToScope"           : "NotInOrganization",
