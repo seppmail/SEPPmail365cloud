@@ -80,6 +80,24 @@ Note: *If you dont remove existing \[SEPPmail\] rules and connectors, mailflow w
 ## Setup the integration
 
 
+### Routingtype: seppmail
+
+```powershell
+New-SC365Connectors -maildomain 'contoso.eu' -routing seppmail -region 'ch'
+```
+
+
+
+### Routingtype: M365
+
+```powershell
+New-SC365Connectors -maildomain 'contoso.eu' -routing sM365 -region 'ch'
+
+New-SC365Rules
+```
+
+
+
 ## Test the Mailflow
 
 Type SC365.GeoRegion => Parameter region
