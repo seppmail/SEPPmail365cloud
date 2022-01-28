@@ -225,6 +225,17 @@ function Get-SC365Setup {
     End{}
 }
 
+Function Get-SC365TenantID {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$maildomain
+    )
+
+    $uri = 'https://login.windows.net/' + $maildomain + '/.well-known/openid-configuration'
+    $TenantId = (Invoke-WebRequest $uri| ConvertFrom-Json).token_endpoint.Split('/')[3]
+    Return $tenantid
+}
+
 # SIG # Begin signature block
 # MIIL1wYJKoZIhvcNAQcCoIILyDCCC8QCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

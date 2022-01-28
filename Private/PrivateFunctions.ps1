@@ -81,6 +81,7 @@ function Set-SC365PropertiesFromConfigJson
         [Parameter(Mandatory=$true)]
         [SC365.MailRouting] $Route,
         [SC365.ConfigOption[]] $Option,
+        [Parameter(Mandatory=$true)]
         [SC365.GeoRegion] $Region
     )
 
@@ -122,6 +123,7 @@ function Get-SC365InboundConnectorSettings
     [CmdletBinding()]
     Param
     (
+        [Parameter(Mandatory=$true)]
         [SC365.MailRouting] $Route,
         [SC365.ConfigOption[]] $Option
     )
@@ -147,6 +149,7 @@ function Get-SC365OutboundConnectorSettings
     (
         [Parameter(Mandatory=$true)]
         [SC365.MailRouting] $Route,
+        [SC365.Region] $Region,
         [SC365.ConfigOption[]] $Option
     )
 
@@ -159,7 +162,7 @@ function Get-SC365OutboundConnectorSettings
 
     $ret = [SC365.OutboundConnectorSettings]::new($json.Name, $Version)
 
-    Set-SC365PropertiesFromConfigJson $ret -Json $json -Version $Version -Option $Option
+    Set-SC365PropertiesFromConfigJson $ret -Json $json -Region $georegion -Option $Option
 
     return $ret
 }
@@ -236,11 +239,12 @@ function Get-SC365TransportRuleSettings
     $ret | Sort-Object -Property SMPriority -Descending
 }
 
-function Get-SC365PoliciesAntiSpamSettings
+function Get-SC365CloudConfig
 {
     [CmdletBinding()]
     Param
     (
+        [Parameter(Mandatory=$true)]
         [SC365.GeoRegion] $GeoRegion
     )
 
@@ -249,14 +253,16 @@ function Get-SC365PoliciesAntiSpamSettings
     else
     {Write-Verbose "Loading mandatory inbound connector settings"}
 
-    $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\Policies\AntiSpam.json" -Raw)
+    $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -Raw)
 
     $ret = [SC365.PoliciesAntiSpamSettings]::new($json.Name, $Version)
 
-    Set-SC365PropertiesFromConfigJson $ret -Json $json -Version $Version -Option $Option -Region $GeoRegion
+    Set-SC365PropertiesFromConfigJson $ret -Json $json -Option $Option -Region $GeoRegion
 
     return $ret
 }
+
+
 
 # SIG # Begin signature block
 # MIIL1wYJKoZIhvcNAQcCoIILyDCCC8QCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

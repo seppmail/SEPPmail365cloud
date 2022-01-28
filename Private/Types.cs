@@ -7,8 +7,8 @@ namespace SC365
     // Specifies the config version to use for cmdlets
     public enum MailRouting
     {
-        CH,
-        PRV
+        M365,
+        seppmail
     }
 
     // Specifies options to be used by cmdlets
@@ -23,9 +23,9 @@ namespace SC365
     // Available cloud regions
     public enum GeoRegion
     {
-        None,
         CH,
-        DE
+        DE,
+        PRV
     }
 
     public enum ConfigBundle
@@ -74,7 +74,7 @@ namespace SC365
         {return (no>>pos) & 1;}
     }
 
-    public class ConfigBundleSettings
+     /* public class ConfigBundleSettings
     {
         public ConfigBundleSettings()
         {
@@ -89,9 +89,10 @@ namespace SC365
         }
 
         public ConfigBundle Id {get; set;}
-        public ConfigVersion Version {get; set;}
+        // public ConfigVersion Version {get; set;}
         public List<ConfigOption> Option {get; set;}
     }
+    */
 
     // We only provide these classes for static typing and to prevent misspells in configuration variables.
     // For convenience they all have a ToHashtable method, in order to use the object with parameter splatting
@@ -105,7 +106,7 @@ namespace SC365
             EFSkipIPs = new List<string>();
         }
 
-        public ConfigVersion Version {get; private set;}
+        public MailRouting routing {get; private set;}
         public string Name {get; private set;}
         public string Comment {get; set;}
         public string ConnectorSource {get; set;}
