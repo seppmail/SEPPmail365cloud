@@ -119,9 +119,7 @@ function New-SC365Connectors
             HelpMessage = 'Geographcal region of the seppmail.cloud service',
             Position = 0
         )]
-        [ValidateSet('ch','prv')]
-        [Alias('region')]
-        [String] $geoRegion = 'ch',
+        [SC365.GeoRegion] $Region = 'ch',
 
         [Parameter(
             Mandatory = $true,
@@ -134,21 +132,14 @@ function New-SC365Connectors
         [Parameter(
             Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"ExchangeOnline`": mx points to Microsoft'
         )]
-        [ValidateSet('seppmailcloud','ExchangeOnline')]
         [Alias('routing')]
-        [String] $routingType = 'seppmailcloud',
+        [SC365.Mailrouting] $routing = 'seppmail',
 
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Which configuration option to use'
         )]
         [SC365.ConfigOption[]]$Option,
-
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Which configuration version to use'
-        )]
-        [SC365.ConfigVersion[]]$Version = 'Default',
 
         [Parameter(
             Mandatory = $false,
@@ -165,9 +156,15 @@ function New-SC365Connectors
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
         Write-Verbose "Prepare Smarthosts for e-Mail domain $maildomain"
-        $dashdomain = $maildomain.Replace('.','-')
-        $InboundTlsDomain = $dashDomain + '.gate.seppmail.cloud'
-        $OutboundTlsDomain = $dashDomain + 'relay.seppmail.cloud'
+        if ($routing -eq 'seppmail') {
+            $InboundTlsDomain = ($maildomain.Replace('.','-')) + '.gate.seppmail.cloud'
+            $OutboundTlsDomain = ($maildomain.Replace('.','-')) + '.relay.seppmail.cloud'
+        }
+        if ($routing -eq 'M365') {
+            $InboundTlsDomain = ($maildomain.Replace('.','-')) + '.smtp.seppmail.cloud'
+            $OutboundTlsDomain = ($maildomain.Replace('.','-')) + '.smtp.seppmail.cloud'
+        }
+        
 
         #region collecting existing connectors
         Write-Verbose "Collecting existing connectors"
@@ -222,7 +219,7 @@ function New-SC365Connectors
             $param.Enabled = $false
         }
 
-        Write-Verbose "Read existing SEPPmail outbound connector"
+        Write-Verbose "Read existing SEPPmail.cloud outbound connector"
         $existingSMOutboundConn = $allOutboundConnectors | Where-Object Name -EQ $outbound.Name
         # only $false if the user says so interactively
         
@@ -291,9 +288,8 @@ function New-SC365Connectors
 
         #region - Inbound Connector
         Write-Verbose "Read Inbound Connector Settings"
-        $inbound = Get-SC365InboundConnectorSettings -Version $Version -Option $Option
+        $inbound = Get-SC365InboundConnectorSettings -Region $Version -routing $routing -Option $Option
  
-        $inboundTlsDOmain = $dashdomain
         $inbound.TlsSenderCertificateName = $InboundTlsDomain
         
         Write-verbose "if -disabled switch is used, the connector stays deactivated"
