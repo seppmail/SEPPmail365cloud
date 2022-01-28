@@ -87,15 +87,16 @@ function Set-SC365PropertiesFromConfigJson
 
     # Set all properties that aren't version specific
     $json.psobject.properties | Foreach-Object {
-        if ($_.Name -notin @("Version", "Name", "Option"))
+        if ($_.Name -notin @("Version", "Name", "Option", "Route", "Region"))
         { $InputObject.$($_.Name) = $_.Value }
     }
 
-    # Set the version specific properties, except if none has been requested
-    $json.Routing.$Route.psobject.properties | Foreach-Object {
-        $InputObject.$($_.Name) = $_.Value
+    if($Route -and $json.Routing)
+    {
+        $json.Routing.$Route.psobject.properties | Foreach-Object {
+            $InputObject.$($_.Name) = $_.Value
+        }
     }
-    
 
     if($Option -and $json.Option)
     {
@@ -125,19 +126,18 @@ function Get-SC365InboundConnectorSettings
     (
         [Parameter(Mandatory=$true)]
         [SC365.MailRouting] $Route,
+        [Parameter(Mandatory=$true)]
+        [SC365.Region] $Region,
         [SC365.ConfigOption[]] $Option
     )
 
-    if($Version -ne "None")
-    {Write-Verbose "Loading inbound connector settings for version $Version"}
-    else
-    {Write-Verbose "Loading mandatory inbound connector settings"}
-
+    Write-Verbose "Loading inbound connector settings for region $Region"
+    
     $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\Connectors\Inbound.json" -Raw)
 
-    $ret = [SC365.InboundConnectorSettings]::new($json.Name, $Version)
+    $ret = [SC365.InboundConnectorSettings]::new($json.Name, $Route)
 
-    Set-SC365PropertiesFromConfigJson $ret -Json $json -Version $Version -Option $Option
+    Set-SC365PropertiesFromConfigJson $ret -Json $json -Route $Route -Region $Region -Option $Option
 
     return $ret
 }
@@ -149,15 +149,13 @@ function Get-SC365OutboundConnectorSettings
     (
         [Parameter(Mandatory=$true)]
         [SC365.MailRouting] $Route,
+        [Parameter(Mandatory=$true)]
         [SC365.Region] $Region,
         [SC365.ConfigOption[]] $Option
     )
 
-    if($Version -ne "None")
-    {Write-Verbose "Loading outbound connector settings for version $Version"}
-    else
-    {Write-Verbose "Loading mandatory outbound connector settings"}
-
+    Write-Verbose "Loading outbound connector settings for region $Region"
+    
     $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\Connectors\Outbound.json" -Raw)
 
     $ret = [SC365.OutboundConnectorSettings]::new($json.Name, $Version)
@@ -174,15 +172,14 @@ function Get-SC365TransportRuleSettings
     (
         [Parameter(Mandatory=$true)]
         [SC365.MailRouting] $Route,
+        [Parameter(Mandatory=$true)]
+        [SC365.Region] $Region,
         [SC365.ConfigOption[]] $Option,
         [SC365.AvailableTransportRuleSettings[]] $Settings =[SC365.AvailableTransportRuleSettings]::All,
         [switch] $IncludeSkipped
     )
 
-    if($Version -ne "None")
-    {Write-Verbose "Loading transport rule settings for version $Version"}
-    else
-    {Write-Verbose "Loading mandatory transport rule settings"}
+    Write-Verbose "Loading transport rule settings for region $Region"
 
     $settingsToFetch = 0
     foreach($set in $Settings)
@@ -199,9 +196,9 @@ function Get-SC365TransportRuleSettings
         )
         $json = ConvertFrom-Json (Get-Content "$PSScriptRoot\..\ExOConfig\Rules\$FileName" -Raw)
 
-        $settings = [SC365.TransportRuleSettings]::new($json.Name, $Version, $Type)
+        $settings = [SC365.TransportRuleSettings]::new($json.Name, $Region, $Route, $Type)
 
-        Set-SC365PropertiesFromConfigJson $settings -Json $json -Version $Version -Option $Option
+        Set-SC365PropertiesFromConfigJson $settings -Json $json -Region $Region -Route $Route -Option $Option
 
         if(!$settings.Skip -or ($settings.Skip -and $IncludeSkipped))
         {$ret.Add($settings)}
@@ -245,19 +242,16 @@ function Get-SC365CloudConfig
     Param
     (
         [Parameter(Mandatory=$true)]
-        [SC365.GeoRegion] $GeoRegion
+        [SC365.GeoRegion] $Region
     )
 
-    if($Version -ne "None")
-    {Write-Verbose "Loading inbound connector settings for version $Version"}
-    else
-    {Write-Verbose "Loading mandatory inbound connector settings"}
+    Write-Verbose "Loading inbound connector settings for region $Region"
 
     $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -Raw)
 
-    $ret = [SC365.PoliciesAntiSpamSettings]::new($json.Name, $Version)
+    $ret = [SC365.PoliciesAntiSpamSettings]::new($json.Name, $Region)
 
-    Set-SC365PropertiesFromConfigJson $ret -Json $json -Option $Option -Region $GeoRegion
+    Set-SC365PropertiesFromConfigJson $ret -Json $json -Option $Option -Region $Region
 
     return $ret
 }

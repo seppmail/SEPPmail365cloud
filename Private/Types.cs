@@ -28,11 +28,11 @@ namespace SC365
         PRV
     }
 
-    public enum ConfigBundle
-    {
-        None,
-        NoTls //Noch nicht aktiv
-    }
+    // public enum ConfigBundle
+    // {
+    //     None,
+    //     NoTls //Noch nicht aktiv
+    // }
 
     // Where should new transport rules be placed, if there are already existing ones
     public enum PlacementPriority
@@ -98,15 +98,15 @@ namespace SC365
     // For convenience they all have a ToHashtable method, in order to use the object with parameter splatting
     public class InboundConnectorSettings
     {
-        public InboundConnectorSettings(string name, ConfigVersion version)
+        public InboundConnectorSettings(string name, MailRouting route)
         {
             Name = name;
-            Version = version;
+            Route = route;
             Enabled = true;
             EFSkipIPs = new List<string>();
         }
 
-        public MailRouting routing {get; private set;}
+        public MailRouting Route {get; private set;}
         public string Name {get; private set;}
         public string Comment {get; set;}
         public string ConnectorSource {get; set;}
@@ -132,6 +132,7 @@ namespace SC365
             Hashtable ret = new Hashtable();
             ret[(op == OperationType.Create ? "Name" : "Identity")] = Name;
             ret["Enabled"] = Enabled;
+            ret["Route"] = Route;
 
             if(!string.IsNullOrEmpty(Comment))
                 ret["Comment"] = Comment;
@@ -168,15 +169,15 @@ namespace SC365
 
     public class OutboundConnectorSettings
     {
-        public OutboundConnectorSettings(string name, ConfigVersion version)
+        public OutboundConnectorSettings(string name, MailRouting route)
         {
             Name = name;
-            Version = version;
+            Route = route;
             Enabled = true;
         }
 
         public string Name {get; private set;}
-        public ConfigVersion Version {get; private set;}
+        public MailRouting Route {get; private set;}
         public bool Skip {get; set;}
 
         public string Comment {get; set;}
@@ -198,6 +199,7 @@ namespace SC365
             Hashtable ret = new Hashtable();
             ret[(op == OperationType.Create ? "Name" : "Identity")] = Name;
             ret["Enabled"] = Enabled;
+            ret["Route"] = Route;
 
             if(!string.IsNullOrEmpty(Comment))
                 ret["Comment"] = Comment;
@@ -226,16 +228,18 @@ namespace SC365
 
     public class TransportRuleSettings
     {
-        public TransportRuleSettings(string name, ConfigVersion version, AvailableTransportRuleSettings type)
+        public TransportRuleSettings(string name, GeoRegion region, MailRouting route, AvailableTransportRuleSettings type)
         {
             Name = name;
-            Version = version;
+            Route = route;
+            Region = region;
             Enabled = true;
             Type = type;
         }
 
         public string Name {get; private set;}
-        public ConfigVersion Version {get; private set;}
+        public MailRouting Route {get; private set;}
+        public GeoRegion Region {get; private set;}
         public bool Enabled {get; set;}
         public bool Skip {get; set;}
         public AvailableTransportRuleSettings Type {get; private set;}
@@ -268,6 +272,7 @@ namespace SC365
         {
             Hashtable ret = new Hashtable();
             ret[(op == OperationType.Create ? "Name" : "Identity")] = Name;
+            ret["Route"] = Route;
 
             if(op == OperationType.Create)
             {
@@ -335,8 +340,11 @@ namespace SC365
         {
             Hashtable ret = new Hashtable();
             ret[(op == OperationType.Create ? "Name" : "Identity")] = Name;
+            ret["Region"] = Region;
+
             if(WhiteList != null)
                 ret["WhiteList"] = WhiteList;
+
             return ret;
         }
     }
