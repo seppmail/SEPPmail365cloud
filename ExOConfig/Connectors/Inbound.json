@@ -1,12 +1,11 @@
 {
-    "Name"                         : "[SEPPmail.cloud] Appliance -> ExchangeOnline",
-    "Comment"                      : "Accept E-Mails from SEPPmail.cloud host",
-
     "routing":
     {
         "seppmail":
         {
-            "CloudServicesMailEnabled"     : true,
+            "Name"                         : "[SEPPmail.cloud] SEPPmail.cloud -> ExO / MX:'SEPPmail'",
+            "Comment"                      : "Accept E-Mails from SEPPmail.cloud host. MX is set to SEPPmail.cloud",
+            "CloudServicesMailEnabled"     : false,
             "ConnectorSource"              : "Default",
             "ConnectorType"                : "Partner",
             "Enabled"                      : true,
@@ -15,6 +14,8 @@
         },
         "M365":
         {
+            "Name"                         : "[SEPPmail.cloud] SEPPmail.cloud -> ExO / MX:'M365'",
+            "Comment"                      : "Accept E-Mails from SEPPmail.cloud host. MX is set to Microsoft",
             "CloudServicesMailEnabled"     : false,
             "ConnectorSource"              : "Default",
             "ConnectorType"                : "Partner",

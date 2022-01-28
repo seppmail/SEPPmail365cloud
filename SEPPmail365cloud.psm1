@@ -10,7 +10,7 @@ $PSDefaultParameterValues['*:ErrorAction'] = [System.Management.Automation.Actio
 Write-Verbose 'Loading Module Files'
 . $ModulePath\Private\PrivateFunctions.ps1
 . $ModulePath\Private\ConfigBundle.ps1
-. $ModulePath\Private\SetupTypes.ps1
+#. $ModulePath\Private\SetupTypes.ps1
 . $ModulePath\Public\Common.ps1
 . $ModulePath\Public\Rules.ps1
 . $ModulePath\Public\Connectors.ps1

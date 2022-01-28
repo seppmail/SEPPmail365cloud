@@ -116,30 +116,34 @@ function New-SC365Connectors
     param
     (
         [Parameter(
-            HelpMessage = 'Geographcal region of the seppmail.cloud service',
-            Position = 0
-        )]
-        [SC365.GeoRegion] $Region = 'ch',
-
-        [Parameter(
             Mandatory = $true,
-            Helpmessage = 'Default E-Mail domain of your M365 Exchange Online tenant.'
-        )]
+            Helpmessage = 'Default E-Mail domain of your M365 Exchange Online tenant.',
+            Position = 0
+            )]
         [ValidatePattern('(?=^.{1,253}$)(^(((?!-)[a-zA-Z0-9-]{1,63}(?<!-))|((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63})$)')]
         [Alias('domain')]
         [String] $maildomain,
 
         [Parameter(
-            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"ExchangeOnline`": mx points to Microsoft'
+            HelpMessage = 'Geographcal region of the seppmail.cloud service',
+            Position = 1
         )]
-        [Alias('routing')]
-        [SC365.Mailrouting] $routing = 'seppmail',
+        [ValidateSet('ch','prv')]
+        [String]$Region,
+
+        [Parameter(
+            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"ExchangeOnline`": mx points to Microsoft',
+            Position = 3
+            )]
+        [ValidateSet('SEPPmail','m365')]
+        [String] $routing = 'SEPPmail',
 
         [Parameter(
             Mandatory = $false,
             HelpMessage = 'Which configuration option to use'
         )]
-        [SC365.ConfigOption[]]$Option,
+        [ValidateSet('NoAntiSpamWhiteListing')]
+        [String[]]$Option,
 
         [Parameter(
             Mandatory = $false,
@@ -159,10 +163,21 @@ function New-SC365Connectors
         if ($routing -eq 'seppmail') {
             $InboundTlsDomain = ($maildomain.Replace('.','-')) + '.gate.seppmail.cloud'
             $OutboundTlsDomain = ($maildomain.Replace('.','-')) + '.relay.seppmail.cloud'
+            $SEPPmailIP = ([System.Net.Dns]::GetHostAddresses($InboundTlsDomain).IPAddressToString)
         }
         if ($routing -eq 'M365') {
             $InboundTlsDomain = ($maildomain.Replace('.','-')) + '.smtp.seppmail.cloud'
             $OutboundTlsDomain = ($maildomain.Replace('.','-')) + '.smtp.seppmail.cloud'
+            try {
+                $SEPPmailIP = ([System.Net.Dns]::GetHostAddresses($InboundTlsDomain).IPAddressToString)
+            }
+            catch { ### TEST/DEMO
+                $SEPPmailIP = '88.88.88.88'
+            }
+<### PRODUCTION            catch {
+                Write-Error "Could not resolve $InboundTlsDomain to IP address. Maybe setup of your seppmail.cloud tenant for maildomain $maildomain is not finished."
+                break
+            }#>
         }
         
 
@@ -209,8 +224,9 @@ function New-SC365Connectors
     {
         #region OutboundConnector
         Write-Verbose "Building Outbound parameters based on smarthost $outboundtlsdomain"
-        $outbound = Get-SC365OutboundConnectorSettings -routing $routing -region $region -Option $Option
-        $param = $outbound.ToHashtable()
+        #$outbound = Get-SC365OutboundConnectorSettings -routing $routing -Option $Option
+        $outboundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Outbound.json" -Raw|Convertfrom-Json -AsHashtable)
+        $param = $outboundRaw.routing.($routing.Toupper())
         $param.SmartHosts = $OutboundTlsDomain            
         $param.TlsDomain = $OutboundTlsDomain
         
@@ -270,13 +286,13 @@ function New-SC365Connectors
             Write-Verbose "Creating SEPPmail.cloud Outbound Connector $($param.Name)!"
             if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Outbound Connector'))
             {
-                Write-Debug "Outbound Connector settings:"
+                <#Write-Debug "Outbound Connector settings:"
                 $param.GetEnumerator() | ForEach-Object{
                     Write-Debug "$($_.Key) = $($_.Value)"
-                }
+                }#>
 
                 $Now = Get-Date
-                $param.Comment += "`n#Created with SEPPmail365cloud PowerShell Module on $now"
+                $param.Comment += "`n Created with SEPPmail365cloud PowerShell Module on $now"
 
                 [void](New-OutboundConnector @param)
 
@@ -288,9 +304,9 @@ function New-SC365Connectors
 
         #region - Inbound Connector
         Write-Verbose "Read Inbound Connector Settings"
-        $inbound = Get-SC365InboundConnectorSettings -Region $Version -routing $routing -Option $Option
- 
-        $inbound.TlsSenderCertificateName = $InboundTlsDomain
+        $param = $null
+        $inboundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Inbound.json" -Raw|Convertfrom-Json -AsHashtable)
+        $param = $inboundRaw.routing.($routing.ToUpper())
         
         Write-verbose "if -disabled switch is used, the connector stays deactivated"
         if ($disabled) {
@@ -299,10 +315,10 @@ function New-SC365Connectors
 
         Write-Verbose "Setting SEPPmail IP Address(es) $SEPPmailIP for EFSkipIP´s and Anti-SPAM Whitelist"
         [string[]]$SEPPmailIprange = $SEPPmailIP
-        $inbound.EFSkipIPs.AddRange($SEPPmailIPRange)
+        $param.EFSkipIPs = $SEPPmailIPRange
 
         Write-Verbose "Read existing SEPPmail Inbound Connector from Exchange Online"
-        $existingSMInboundConn = $allInboundConnectors | Where-Object Name -EQ $inbound.Name
+        $existingSMInboundConn = $allInboundConnectors | Where-Object Name -EQ $param.Name
 
         # only $false if the user says so interactively
         [bool]$createInbound = $true
@@ -334,13 +350,13 @@ function New-SC365Connectors
                     }
                 }
                 else {
-                    Write-Warning "Leaving existing SEPPmail Inbound Connector `"$($existingSMInboundConn.Name)`" untouched."
+                    Write-Warning "Leaving existing SEPPmail.cloud Inbound Connector `"$($existingSMInboundConn.Name)`" untouched."
                     $createInbound = $false
                 }
             }
             else
             {
-                throw [System.Exception] "Inbound connector $($inbound.Name) already exists"
+                throw [System.Exception] "Inbound connector $($param.Name) already exists"
             }
         }
         else
@@ -349,37 +365,38 @@ function New-SC365Connectors
         if($createInbound)
         {
             # necessary assignment for splatting
-            $param = $inbound.ToHashtable()
             $param.TlsSenderCertificateName = $InboundTlsDomain
 
-            Write-Verbose "Creating SEPPmail Inbound Connector $($param.Name)!"
+            Write-Verbose "Creating SEPPmail.cloud Inbound Connector $($param.Name)!"
             if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Inbound Connector'))
             {
-                Write-Debug "Inbound Connector settings:"
+                <#Write-Debug "Inbound Connector settings:"
                 $param.GetEnumerator() | Foreach-Object {
                     Write-Debug "$($_.Key) = $($_.Value)"
-                }
+                }#>
                 $Now = Get-Date
-                $param.Comment += "`n#Created with SEPPmail365cloud PowerShell Module on $now"
+                $param.Comment += "`n Created with SEPPmail365cloud PowerShell Module on $now"
                 [void](New-InboundConnector @param)
 
                 if(!$?) {
                     throw $error[0]
                 } else {
                     #region - Add SMFQDN to hosted Connection Filter Policy Whitelist
-                    if ($option[0] -ne 'NoAntiSpamWhiteListing')
+                    if ($option -eq 'NoAntiSpamWhiteListing')
                     {
                         Write-Verbose "Adding SEPPmail.cloud to whitelist in 'Hosted Connection Filter Policy'"
                         Write-Verbose "Collecting existing WhiteList"
                         $hcfp = Get-HostedConnectionFilterPolicy
-                        $SEPPmailIpRanges = Get-SC365PoliciesAntiSpamSettings -GeoRegion $geoRegion
+                        $CloudConfig = Get-Content "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -raw|Convertfrom-Json -AsHashtable
+                        $regionConfig = $cloudConfig.GeoRegion.($region.ToUpper())
+                        $SEPPmailIPv4Ranges = $regionConfig.IPv4WhiteList
                         [string[]]$existingAllowList = $hcfp.IPAllowList
-                        Write-verbose "Adding SEPPmail.cloud Appliance to Policy $($hcfp.Id)"
+                        Write-verbose "Adding SEPPmail.cloud IP ranges to HostedConnectionFilterPolicy $($hcfp.Id)"
                         if ($existingAllowList) {
-                            $FinalIPList = ($existingAllowList + $SEPPmailIPRanges)|sort-object -Unique
+                            $FinalIPList = ($existingAllowList + $SEPPmailIPv4Ranges)|sort-object -Unique
                         }
                         else {
-                            $FinalIPList = $SEPPmailIPRanges
+                            $FinalIPList = $SEPPmailIPv4Ranges
                         }
                         Write-verbose "Adding IPaddress list with content $finalIPList to hosted connection filter policy $($hcfp.Id)"
                         if ($FinalIPList) {

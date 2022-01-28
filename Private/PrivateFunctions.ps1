@@ -78,22 +78,20 @@ function Set-SC365PropertiesFromConfigJson
     (
         [psobject] $InputObject,
         [psobject] $Json,
-        [Parameter(Mandatory=$true)]
-        [SC365.MailRouting] $Route,
+        [SC365.MailRouting] $Routing,
         [SC365.ConfigOption[]] $Option,
-        [Parameter(Mandatory=$true)]
         [SC365.GeoRegion] $Region
     )
 
     # Set all properties that aren't version specific
     $json.psobject.properties | Foreach-Object {
-        if ($_.Name -notin @("Version", "Name", "Option", "Route", "Region"))
+        if ($_.Name -notin @("Name", "Option", "Routing", "Region"))
         { $InputObject.$($_.Name) = $_.Value }
     }
 
-    if($Route -and $json.Routing)
+    if($routing -and $json.Routing)
     {
-        $json.Routing.$Route.psobject.properties | Foreach-Object {
+        $json.Routing.$Routing.psobject.properties | Foreach-Object {
             $InputObject.$($_.Name) = $_.Value
         }
     }
@@ -148,19 +146,17 @@ function Get-SC365OutboundConnectorSettings
     Param
     (
         [Parameter(Mandatory=$true)]
-        [SC365.MailRouting] $Route,
-        [Parameter(Mandatory=$true)]
-        [SC365.Region] $Region,
+        [SC365.MailRouting] $Routing,
         [SC365.ConfigOption[]] $Option
     )
 
-    Write-Verbose "Loading outbound connector settings for region $Region"
+    Write-Verbose "Loading outbound connector settings"
     
     $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\Connectors\Outbound.json" -Raw)
 
-    $ret = [SC365.OutboundConnectorSettings]::new($json.Name, $Version)
+    $ret = [SC365.OutboundConnectorSettings]::new($json.Name, $Routing)
 
-    Set-SC365PropertiesFromConfigJson $ret -Json $json -Region $georegion -Option $Option
+    Set-SC365PropertiesFromConfigJson $ret -Json $json -Routing $Routing -Option $Option
 
     return $ret
 }

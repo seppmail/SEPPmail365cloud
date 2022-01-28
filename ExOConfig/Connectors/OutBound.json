@@ -1,26 +1,27 @@
 {
-    "Name"                     : "[SEPPmail.cloud] ExchangeOnline -> Appliance",
-    "Comment"                  : "Based on rules, E-Mails that have not been processed by SEPPmail.cloude are routed there.",
-
     "routing":
     {
         "seppmail":
         {
+            "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail / MX:'SEPPmail'",
+            "Comment"                  : "E-Mails are send to SEPPmail.cloud. MX is set to SEPPmail.cloud",
+            "ConnectorSource"          : "Default",
+            "ConnectorType"            : "Partner",
+            "IsTransportRuleScoped"    : false,
+            "TlsSettings"              : "DomainValidation",
+            "UseMXRecord"              : false,
+            "CloudServicesMailEnabled" : false
+        },
+        "M365":
+        {
+            "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail / MX:'M365'",
+            "Comment"                  : "E-Mails are send to SEPPmail.cloud based on transport rules. MX is set to Microsoft",
             "ConnectorSource"          : "Default",
             "ConnectorType"            : "OnPremises",
             "IsTransportRuleScoped"    : true,
             "TlsSettings"              : "DomainValidation",
             "UseMXRecord"              : false,
             "CloudServicesMailEnabled" : true
-        },
-        "M365":
-        {
-            "ConnectorSource"          : "Default",
-            "ConnectorType"            : "Partner",
-            "IsTransportRuleScoped"    : true,
-            "TlsSettings"              : "DomainValidation",
-            "UseMXRecord"              : false,
-            "CloudServicesMailEnabled" : false
         }
     },
     "Option":
