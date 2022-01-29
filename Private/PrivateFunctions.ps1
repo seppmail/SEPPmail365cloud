@@ -122,20 +122,25 @@ function Get-SC365InboundConnectorSettings
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory=$true)]
+        <#[Parameter(Mandatory=$true)]
         [SC365.MailRouting] $Route,
         [Parameter(Mandatory=$true)]
         [SC365.Region] $Region,
-        [SC365.ConfigOption[]] $Option
+        [SC365.ConfigOption[]] $Option#>
+        $routing,
+        $option
     )
 
     Write-Verbose "Loading inbound connector settings for region $Region"
-    
+    <#
     $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\Connectors\Inbound.json" -Raw)
 
     $ret = [SC365.InboundConnectorSettings]::new($json.Name, $Route)
 
     Set-SC365PropertiesFromConfigJson $ret -Json $json -Route $Route -Region $Region -Option $Option
+    #>
+    $outBoundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Inbound.json" -Raw|Convertfrom-Json -AsHashtable)
+    $ret = $outboundRaw.routing.($routing.Tolower())
 
     return $ret
 }
@@ -145,19 +150,23 @@ function Get-SC365OutboundConnectorSettings
     [CmdletBinding()]
     Param
     (
-        [Parameter(Mandatory=$true)]
+        <#[Parameter(Mandatory=$true)]
         [SC365.MailRouting] $Routing,
-        [SC365.ConfigOption[]] $Option
+        [SC365.ConfigOption[]] $Option#>
+        $routig,
+        $option
     )
 
     Write-Verbose "Loading outbound connector settings"
-    
+    <#
     $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\Connectors\Outbound.json" -Raw)
 
     $ret = [SC365.OutboundConnectorSettings]::new($json.Name, $Routing)
 
     Set-SC365PropertiesFromConfigJson $ret -Json $json -Routing $Routing -Option $Option
-
+    #>
+    $inboundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Outbound.json" -Raw|Convertfrom-Json -AsHashtable)
+    $ret= $inboundRaw.routing.($routing.ToLower())
     return $ret
 }
 

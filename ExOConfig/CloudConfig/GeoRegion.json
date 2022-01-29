@@ -3,7 +3,7 @@
     "Comment"                      : "Configuration details for i.e Anti-SPam Whitelists",
     "GeoRegion":
     {
-        "CH":
+        "ch":
         {
             "IPv4WhiteList": [
                 "86.119.35.219/32",
@@ -14,7 +14,7 @@
             "IPv6WhiteList": [
             ]
         },
-        "PRV":
+        "prv":
         {
             "IPv4WhiteList": [
                 "49.12.21.237",
@@ -27,7 +27,7 @@
                 "2a01:4f8:1c17:c547::1"
             ]
         },
-        "DE":
+        "de":
         {
             "IPv4WhiteList": [
             ],

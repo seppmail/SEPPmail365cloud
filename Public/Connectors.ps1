@@ -158,28 +158,28 @@ function New-SC365Connectors
         if(!(Test-SC365ConnectionStatus))
         {throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"}
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
-
+ 
         Write-Verbose "Prepare Smarthosts for e-Mail domain $maildomain"
         if ($routing -eq 'seppmail') {
             $InboundTlsDomain = ($maildomain.Replace('.','-')) + '.gate.seppmail.cloud'
             $OutboundTlsDomain = ($maildomain.Replace('.','-')) + '.relay.seppmail.cloud'
-            $SEPPmailIP = ([System.Net.Dns]::GetHostAddresses($InboundTlsDomain).IPAddressToString)
         }
         if ($routing -eq 'M365') {
             $InboundTlsDomain = ($maildomain.Replace('.','-')) + '.smtp.seppmail.cloud'
             $OutboundTlsDomain = ($maildomain.Replace('.','-')) + '.smtp.seppmail.cloud'
-            try {
-                $SEPPmailIP = ([System.Net.Dns]::GetHostAddresses($InboundTlsDomain).IPAddressToString)
-            }
-            catch { ### TEST/DEMO
-                $SEPPmailIP = '88.88.88.88'
-            }
-<### PRODUCTION            catch {
-                Write-Error "Could not resolve $InboundTlsDomain to IP address. Maybe setup of your seppmail.cloud tenant for maildomain $maildomain is not finished."
-                break
-            }#>
         }
-        
+        Write-Verbose "Get IP Address of seppmail host"
+        try {
+            $SEPPmailIP = ([System.Net.Dns]::GetHostAddresses($InboundTlsDomain).IPAddressToString)
+        }
+        catch { ### TEST/DEMO
+            $SEPPmailIP = '88.88.88.88'
+        }
+        <### PRODUCTION            catch {
+            Write-Error "Could not resolve $InboundTlsDomain to IP address. Maybe setup of your seppmail.cloud tenant for maildomain $maildomain is not finished."
+            break
+        }#>
+               
 
         #region collecting existing connectors
         Write-Verbose "Collecting existing connectors"
@@ -225,8 +225,7 @@ function New-SC365Connectors
         #region OutboundConnector
         Write-Verbose "Building Outbound parameters based on smarthost $outboundtlsdomain"
         #$outbound = Get-SC365OutboundConnectorSettings -routing $routing -Option $Option
-        $outboundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Outbound.json" -Raw|Convertfrom-Json -AsHashtable)
-        $param = $outboundRaw.routing.($routing.Toupper())
+        $param = Get-SC365OutboundConnectorSettings -Routing $routing -Option $option
         $param.SmartHosts = $OutboundTlsDomain            
         $param.TlsDomain = $OutboundTlsDomain
         
@@ -305,8 +304,7 @@ function New-SC365Connectors
         #region - Inbound Connector
         Write-Verbose "Read Inbound Connector Settings"
         $param = $null
-        $inboundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Inbound.json" -Raw|Convertfrom-Json -AsHashtable)
-        $param = $inboundRaw.routing.($routing.ToUpper())
+        $param = Get-SC365Inboundconnectorsettings -routing $routig -option $option
         
         Write-verbose "if -disabled switch is used, the connector stays deactivated"
         if ($disabled) {
@@ -429,7 +427,24 @@ function Remove-SC365Connectors
                    ConfirmImpact='Medium')]
     Param
     (
-    [Switch]$leaveAntiSpamWhiteList
+        
+        [Parameter(
+            Mandatory = $true,
+            Helpmessage = 'The routing tyoe of the connector to you want to remove'
+        )]
+        [ValidateSet('ch','prv')]
+        [String]$region,
+        
+        [Parameter(
+            Mandatory = $true,
+            Helpmessage = 'The routing tyoe of the connector to you want to remove'
+        )]
+        [ValidateSet('seppmail','m365')]
+        [String]$routing,
+        
+    
+        [ValidateSet('NoAntiSpamWhiteListing')]
+        [String]$option
     )
 
     if (!(Test-SC365ConnectionStatus))
@@ -437,8 +452,8 @@ function Remove-SC365Connectors
 
     Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-    $inbound = Get-SC365InboundConnectorSettings -Version "None"
-    $outbound = Get-SC365OutboundConnectorSettings -Version "None"
+    $inbound = Get-SC365InboundConnectorSettings
+    $outbound = Get-SC365OutboundConnectorSettings
     $hcfp = Get-HostedConnectionFilterPolicy
 
     if($PSCmdlet.ShouldProcess($outbound.Name, "Remove SEPPmail outbound connector $($Outbound.Name)"))
@@ -460,16 +475,13 @@ function Remove-SC365Connectors
             Write-Verbose 'Collect Inbound Connector IP for later Whitelistremoval'
             
             [string]$InboundSEPPmailIP = $null
-            if ($inboundConnector.SenderIPAddresses.count -le 1) {
-                $InboundSEPPmailIP = $InboundConnector.SenderIPAddresses[0]
-            } 
             if ($inboundConnector.TlsSenderCertificateName) {
                 $InboundSEPPmailIP = ([System.Net.Dns]::GetHostAddresses($($inboundConnector.TlsSenderCertificateName)).IPAddressToString)
             }
             Remove-InboundConnector $inbound.Name
 
             Write-Verbose "If Inbound Connector has been removed, remove also Whitelisted IPs"
-            if ((!($leaveAntiSpamWhiteList)) -and (!(Get-InboundConnector | Where-Object Identity -eq $($inbound.Name))))
+            if ((!($Option -like 'NoAntiSpamWhiteListing')) -and (!(Get-InboundConnector | Where-Object Identity -eq $($inbound.Name))))
             {
                     Write-Verbose "Remove SEPPmail Appliance IP from Whitelist in 'Hosted Connection Filter Policy'"
                     

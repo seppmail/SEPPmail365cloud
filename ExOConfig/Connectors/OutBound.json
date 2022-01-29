@@ -12,7 +12,7 @@
             "UseMXRecord"              : false,
             "CloudServicesMailEnabled" : false
         },
-        "M365":
+        "m365":
         {
             "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail / MX:'M365'",
             "Comment"                  : "E-Mails are send to SEPPmail.cloud based on transport rules. MX is set to Microsoft",
