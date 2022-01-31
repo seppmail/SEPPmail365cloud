@@ -12,7 +12,13 @@ function Get-SC365Connectors
 {
     [CmdletBinding()]
     Param
-    ()
+    (
+        [Parameter(
+            Mandatory = $true
+        )]
+        [ValidateSet('seppmail','m365')]
+        $routing
+    )
 
     if (!(Test-SC365ConnectionStatus))
     { 
@@ -21,8 +27,8 @@ function Get-SC365Connectors
     else {
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-        $inbound = Get-SC365InboundConnectorSettings -Version "Default"
-        $outbound = Get-SC365OutboundConnectorSettings -Version "Default"
+        $inbound = Get-SC365InboundConnectorSettings -Routing $routing
+        $outbound = Get-SC365OutboundConnectorSettings -Routing $routing
     
         if (Get-OutboundConnector | Where-Object Identity -eq $($outbound.Name))
         {
@@ -132,11 +138,11 @@ function New-SC365Connectors
         [String]$Region,
 
         [Parameter(
-            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"ExchangeOnline`": mx points to Microsoft',
+            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"m365`": mx points to Microsoft',
             Position = 3
             )]
-        [ValidateSet('SEPPmail','m365')]
-        [String] $routing = 'SEPPmail',
+        [ValidateSet('seppmail','m365')]
+        [String] $routing = 'seppmail',
 
         [Parameter(
             Mandatory = $false,
@@ -170,7 +176,7 @@ function New-SC365Connectors
         }
         Write-Verbose "Get IP Address of seppmail host"
         try {
-            $SEPPmailIP = ([System.Net.Dns]::GetHostAddresses($InboundTlsDomain).IPAddressToString)
+            $SEPPmailIP = Resolve-IPV4Address -Fqdn $InboundTlsDomain
         }
         catch { ### TEST/DEMO
             $SEPPmailIP = '88.88.88.88'
@@ -228,17 +234,18 @@ function New-SC365Connectors
         $param = Get-SC365OutboundConnectorSettings -Routing $routing -Option $option
         $param.SmartHosts = $OutboundTlsDomain            
         $param.TlsDomain = $OutboundTlsDomain
-        
+ 
         Write-verbose "if -disabled switch is used, the connector stays deactivated"
         if ($Disabled) {
             $param.Enabled = $false
         }
 
         Write-Verbose "Read existing SEPPmail.cloud outbound connector"
-        $existingSMOutboundConn = $allOutboundConnectors | Where-Object Name -EQ $outbound.Name
+        $existingSMOutboundConn = $allOutboundConnectors | Where-Object Name -eq $param.Name
         # only $false if the user says so interactively
         
         [bool]$createOutBound = $true #Set Default Value
+        #wait-debugger
         if ($existingSMOutboundConn)
         {
             Write-Warning "Found existing SEPPmail.cloud outbound connector with name: `"$($existingSMOutboundConn.Name)`" created on `"$($existingSMOutboundConn.WhenCreated)`" pointing to SEPPmail `"$($existingSMOutboundConn.TlsDomain)`" "
@@ -304,8 +311,8 @@ function New-SC365Connectors
         #region - Inbound Connector
         Write-Verbose "Read Inbound Connector Settings"
         $param = $null
-        $param = Get-SC365Inboundconnectorsettings -routing $routig -option $option
-        
+        $param = Get-SC365InboundConnectorSettings -routing $routing -option $option
+       
         Write-verbose "if -disabled switch is used, the connector stays deactivated"
         if ($disabled) {
             $inbound.Enabled = $false
@@ -430,7 +437,7 @@ function Remove-SC365Connectors
         
         [Parameter(
             Mandatory = $true,
-            Helpmessage = 'The routing tyoe of the connector to you want to remove'
+            Helpmessage = 'The GeoRegion of the connector to you want to remove'
         )]
         [ValidateSet('ch','prv')]
         [String]$region,
@@ -442,7 +449,6 @@ function Remove-SC365Connectors
         [ValidateSet('seppmail','m365')]
         [String]$routing,
         
-    
         [ValidateSet('NoAntiSpamWhiteListing')]
         [String]$option
     )
@@ -452,8 +458,8 @@ function Remove-SC365Connectors
 
     Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-    $inbound = Get-SC365InboundConnectorSettings
-    $outbound = Get-SC365OutboundConnectorSettings
+    $inbound = Get-SC365InboundConnectorSettings -routing $routing 
+    $outbound = Get-SC365OutboundConnectorSettings -routing $routing
     $hcfp = Get-HostedConnectionFilterPolicy
 
     if($PSCmdlet.ShouldProcess($outbound.Name, "Remove SEPPmail outbound connector $($Outbound.Name)"))
@@ -476,7 +482,7 @@ function Remove-SC365Connectors
             
             [string]$InboundSEPPmailIP = $null
             if ($inboundConnector.TlsSenderCertificateName) {
-                $InboundSEPPmailIP = ([System.Net.Dns]::GetHostAddresses($($inboundConnector.TlsSenderCertificateName)).IPAddressToString)
+                $InboundSEPPmailIP = Resolve-IPv4Address -fqdn $($inboundConnector.TlsSenderCertificateName)
             }
             Remove-InboundConnector $inbound.Name
 

@@ -98,9 +98,13 @@ New-SC365Rules
 
 
 
-## Test the Mailflow
+## Offene Fragen
 
-Type SC365.GeoRegion => Parameter region
-Type SC365.Mailrouting ==> routing
-Type SC365.Option ==> Option
+- routingtype M365 oder microsoft oder Exo oder Exchangenline
+- New-SC365Connectors ==> Remove alle [SEPPmail.cloud] connectors ? oder nur den einen
+- Name der Connectors OK ? (Region einfügen ?)
+- Connector Settings
+
+- TransportRules: Bei parameter -routing 'seppmail' einfach Info ausgeben ?
+
 

@@ -3,18 +3,19 @@
     {
         "seppmail":
         {
-            "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail / MX:'SEPPmail'",
+            "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail / MX:SEPPmail",
             "Comment"                  : "E-Mails are send to SEPPmail.cloud. MX is set to SEPPmail.cloud",
             "ConnectorSource"          : "Default",
             "ConnectorType"            : "Partner",
+            "CloudServicesMailEnabled" : false,
             "IsTransportRuleScoped"    : false,
+            "RecipientDomains"         : "*",
             "TlsSettings"              : "DomainValidation",
-            "UseMXRecord"              : false,
-            "CloudServicesMailEnabled" : false
+            "UseMXRecord"              : false
         },
         "m365":
         {
-            "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail / MX:'M365'",
+            "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail / MX:M365",
             "Comment"                  : "E-Mails are send to SEPPmail.cloud based on transport rules. MX is set to Microsoft",
             "ConnectorSource"          : "Default",
             "ConnectorType"            : "OnPremises",

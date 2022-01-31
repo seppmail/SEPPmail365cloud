@@ -1,7 +1,11 @@
 ﻿function Get-SC365Rules {
     [CmdletBinding()]
     param
-    ()
+    (
+        [Parameter(Mandatory = $true)]
+        [ValidateSet('seppmail','m365')]
+        $routing
+    )
 
     if (!(Test-SC365ConnectionStatus))
     { 
@@ -11,30 +15,36 @@
     {
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-        $settings = Get-SC365TransportRuleSettings -Version 'Default'
-        foreach($setting in $settings)
-        {
-            $rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
-        
-            if($rule)
+        if ($routing -eq 'm365') {
+            #Wait-Debugger
+            $settings = Get-SC365TransportRuleSettings -Routing $routing
+            foreach($setting in $settings)
             {
-                $outputHt = [ordered]@{
-                    Name = $rule.Name
-                    State = $rule.State
-                    Priority = $rule.Priority
-                    ExceptIfSenderDomainIs = $rule.ExceptIfSenderDomainIs
-                    ExceptIfRecipientDomainIs = $rule.ExceptIfRecipientDomainIs
-                    RouteMessageOutboundConnector = $rule.RouteMessageOutboundConnector
-                    Comments = $rule.Comments    
+                $rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
+            
+                if($rule)
+                {
+                    $outputHt = [ordered]@{
+                        Name = $rule.Name
+                        State = $rule.State
+                        Priority = $rule.Priority
+                        ExceptIfSenderDomainIs = $rule.ExceptIfSenderDomainIs
+                        ExceptIfRecipientDomainIs = $rule.ExceptIfRecipientDomainIs
+                        RouteMessageOutboundConnector = $rule.RouteMessageOutboundConnector
+                        Comments = $rule.Comments    
+                    }
+                    $outputRule = New-Object -TypeName PSObject -Property $outputHt
+                    Write-Output $outputRule
                 }
-                $outputRule = New-Object -TypeName PSObject -Property $outputHt
-                Write-Output $outputRule
-            }
-            else
-            {
-                Write-Warning "Rule $($setting.Name) does not exist"
-            }
-        }    
+                else
+                {
+                    Write-Warning "Rule $($setting.Name) does not exist"
+                }
+            }    
+        }
+        else {
+            Write-Warning "No transport rules needed for routingtype $routing"
+        }
     }
 }
 

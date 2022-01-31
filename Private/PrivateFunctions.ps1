@@ -1,5 +1,3 @@
-. $PSScriptRoot\SetupTypes.ps1
-
 function Test-SC365ConnectionStatus
 {
     [CmdLetBinding()]
@@ -67,9 +65,6 @@ function Test-SC365ConnectionStatus
     }
 }
 
-
-
-
 # Generic function to avoid code duplication
 function Set-SC365PropertiesFromConfigJson
 {
@@ -127,11 +122,12 @@ function Get-SC365InboundConnectorSettings
         [Parameter(Mandatory=$true)]
         [SC365.Region] $Region,
         [SC365.ConfigOption[]] $Option#>
+        [Parameter(Mandatory=$true)]
         $routing,
         $option
     )
 
-    Write-Verbose "Loading inbound connector settings for region $Region"
+    Write-Verbose "Loading inbound connector settings for routingtype $Routing"
     <#
     $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\Connectors\Inbound.json" -Raw)
 
@@ -139,8 +135,8 @@ function Get-SC365InboundConnectorSettings
 
     Set-SC365PropertiesFromConfigJson $ret -Json $json -Route $Route -Region $Region -Option $Option
     #>
-    $outBoundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Inbound.json" -Raw|Convertfrom-Json -AsHashtable)
-    $ret = $outboundRaw.routing.($routing.Tolower())
+    $inBoundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Inbound.json" -Raw|Convertfrom-Json -AsHashtable)
+    $ret = $inBoundRaw.routing.($routing.Tolower())
 
     return $ret
 }
@@ -153,7 +149,8 @@ function Get-SC365OutboundConnectorSettings
         <#[Parameter(Mandatory=$true)]
         [SC365.MailRouting] $Routing,
         [SC365.ConfigOption[]] $Option#>
-        $routig,
+        [Parameter(Mandatory=$true)]
+        $routing,
         $option
     )
 
@@ -165,8 +162,8 @@ function Get-SC365OutboundConnectorSettings
 
     Set-SC365PropertiesFromConfigJson $ret -Json $json -Routing $Routing -Option $Option
     #>
-    $inboundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Outbound.json" -Raw|Convertfrom-Json -AsHashtable)
-    $ret= $inboundRaw.routing.($routing.ToLower())
+    $outBoundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Outbound.json" -Raw|Convertfrom-Json -AsHashtable)
+    $ret= $outBoundRaw.routing.($routing.ToLower())
     return $ret
 }
 
@@ -175,21 +172,33 @@ function Get-SC365TransportRuleSettings
     [CmdLetBinding()]
     Param
     (
-        [Parameter(Mandatory=$true)]
+        <#[Parameter(Mandatory=$true)]
         [SC365.MailRouting] $Route,
         [Parameter(Mandatory=$true)]
         [SC365.Region] $Region,
         [SC365.ConfigOption[]] $Option,
         [SC365.AvailableTransportRuleSettings[]] $Settings =[SC365.AvailableTransportRuleSettings]::All,
+        #>
+        [Parameter(Mandatory = $true)]
+        [string] $routing,
         [switch] $IncludeSkipped
     )
 
-    Write-Verbose "Loading transport rule settings for region $Region"
+        $transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
+        [string[]]$ret = $null
+    
+        foreach ($file in $transportRuleFiles) {
+            #$($file.FullName)
+            $ret += ConvertFrom-Json (Get-Content $($File.FullName) -Raw)
+        }
+    
+        return $ret    
+
+    <#Write-Verbose "Loading transport rule settings for routingtype $Region"
 
     $settingsToFetch = 0
     foreach($set in $Settings)
     {$settingsToFetch = $settingsToFetch -bor $set}
-
 
     $configs = array string
     $ret = array SC365.TransportRuleSettings -Capacity $configs.Count
@@ -239,6 +248,7 @@ function Get-SC365TransportRuleSettings
     # New-TransportRule @param -Priority 3
     # But via this sorting, an SMPriority 0 rule will actually be at the top (but at priority 3).
     $ret | Sort-Object -Property SMPriority -Descending
+    #>
 }
 
 function Get-SC365CloudConfig
@@ -261,7 +271,18 @@ function Get-SC365CloudConfig
     return $ret
 }
 
+function Resolve-IPv4Address {
+    param(
+        [Parameter(
+            Mandatory = $true,
+            HelpMessage = 'DNS Name'
+        )]
+        $fqdn
+    )
 
+    $ret = [System.Net.Dns]::GetHostAddresses($fqdn) |where-object AddressFamily -eq 'Internetwork'|select-object -expandproperty ipaddresstostring
+    return = $ret
+}
 
 # SIG # Begin signature block
 # MIIL1wYJKoZIhvcNAQcCoIILyDCCC8QCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
