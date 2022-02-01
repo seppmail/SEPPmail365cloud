@@ -10,7 +10,7 @@
         {
             
         },
-        "M365" :
+        "m365" :
         {
             "FromScope":                            "NotInOrganization",
             "SentToScope":                          "InOrganization",

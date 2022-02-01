@@ -178,21 +178,18 @@ function Get-SC365TransportRuleSettings
         [SC365.Region] $Region,
         [SC365.ConfigOption[]] $Option,
         [SC365.AvailableTransportRuleSettings[]] $Settings =[SC365.AvailableTransportRuleSettings]::All,
+        [switch] $IncludeSkipped
         #>
         [Parameter(Mandatory = $true)]
-        [string] $routing,
-        [switch] $IncludeSkipped
+        [string] $routing
     )
 
-        $transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
-        [string[]]$ret = $null
     
-        foreach ($file in $transportRuleFiles) {
-            #$($file.FullName)
-            $ret += ConvertFrom-Json (Get-Content $($File.FullName) -Raw)
+        $ruleRaw = (Get-Content $($File.FullName) -raw|convertfrom-Json -AsHashtable )
+        $ret = $ruleraw.routing.($routing.ToLower())
+        return $ret
         }
-    
-        return $ret    
+     
 
     <#Write-Verbose "Loading transport rule settings for routingtype $Region"
 

@@ -17,6 +17,16 @@
 
         if ($routing -eq 'm365') {
             #Wait-Debugger
+            $transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
+
+            foreach ($file in $transportRuleFiles) {
+                #$($file.FullName)
+                $ruleRaw = (Get-Content $($File.FullName) -raw|convertfrom-Json -AsHashtable )
+                $ret = $ruleraw.routing.($routing.ToLower())
+                return $ret
+            }
+
+
             $settings = Get-SC365TransportRuleSettings -Routing $routing
             foreach($setting in $settings)
             {

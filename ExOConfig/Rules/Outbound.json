@@ -9,7 +9,7 @@
         "seppmail" :
         {            
         },
-        "M365":
+        "m365":
         {
             "FromScope"                           : "InOrganization",
             "SentToScope"                         : "NotInOrganization",
