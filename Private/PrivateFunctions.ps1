@@ -188,8 +188,7 @@ function Get-SC365TransportRuleSettings
         $ruleRaw = (Get-Content $($File.FullName) -raw|convertfrom-Json -AsHashtable )
         $ret = $ruleraw.routing.($routing.ToLower())
         return $ret
-        }
-     
+           
 
     <#Write-Verbose "Loading transport rule settings for routingtype $Region"
 
