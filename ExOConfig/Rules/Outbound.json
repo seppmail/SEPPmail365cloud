@@ -1,16 +1,15 @@
 {
-    "Name"                                : "[SEPPmail.cloud] - Route outgoing e-mails to SEPPmail",
-    "Comments"                            : "Mails sent from inside the organization to the Internet are sent to SEPPmail appliance for encryption and signing.",
-    "RouteMessageOutboundConnector"       : "[SEPPmail.cloud] ExchangeOnline -> Appliance",
-    "SMPriority"                          : 1,
-
     "routing":
     {
         "seppmail" :
         {            
         },
-        "M365":
+        "m365":
         {
+            "Name"                                : "[SEPPmail.cloud] - Route outgoing e-mails to SEPPmail",
+            "Comments"                            : "E-mails sent from inside the organization to the Internet are sent to SEPPmail.cloud crypto-processing.",
+            "RouteMessageOutboundConnector"       : "[SEPPmail.cloud] ExO -> SEPPmail / MX:M365",
+            "SMPriority"                          : 1,
             "FromScope"                           : "InOrganization",
             "SentToScope"                         : "NotInOrganization",
             "ExceptIfHeaderMatchesMessageHeader"  : "X-SM-internal",

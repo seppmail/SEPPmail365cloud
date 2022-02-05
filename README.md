@@ -100,11 +100,12 @@ New-SC365Rules
 
 ## Offene Fragen
 
-- routingtype M365 oder microsoft oder Exo oder Exchangenline
-- New-SC365Connectors ==> Remove alle [SEPPmail.cloud] connectors ? oder nur den einen
+  - routingtype M365 oder microsoft oder Exo oder Exchangenline
+  - New-SC365Connectors ==> Remove alle [SEPPmail.cloud] connectors ? oder nur den einen
 - Name der Connectors OK ? (Region einfügen ?)
 - Connector Settings
 
 - TransportRules: Bei parameter -routing 'seppmail' einfach Info ausgeben ?
 
+- Automatisierung: Keine interaktiven Entscheidungen oder doch ?
 

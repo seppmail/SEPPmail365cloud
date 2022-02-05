@@ -1,16 +1,15 @@
 {
-    "Name"                  : "[SEPPmail.cloud] - Clean outbound SEPPmail header outgoing",
-    "Comments"              : "Removes outgoing SEPPmail x-headers from E-Mail.",
-    "SMPriority"            : 10,
-
     "routing":
     {
         "seppmail" :
         {
             
         },
-        "M365":
+        "m365":
         {
+            "Name"                  : "[SEPPmail.cloud] - Clean outbound SEPPmail header outgoing",
+            "Comments"              : "Removes outgoing SEPPmail.cloud x-headers from E-Mail.",
+            "SMPriority"            : 4,
             "FromScope"             : "InOrganization",
             "SentToScope"           : "NotInOrganization",
             "RemoveHeader"          : "X-SM-outgoing",

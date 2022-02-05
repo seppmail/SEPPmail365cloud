@@ -7,7 +7,7 @@ namespace SC365
     // Specifies the config version to use for cmdlets
     public enum MailRouting
     {
-        M365,
+        m365,
         seppmail
     }
 

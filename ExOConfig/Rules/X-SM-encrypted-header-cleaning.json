@@ -1,16 +1,15 @@
 {
-    "Name"                  : "[SEPPmail.cloud] - Clean outbound SEPPmail header encrypted",
-    "Comments"              : "Removes encrypted SEPPmail x-headers from E-Mail.",
-    "SMPriority"            : 10,
-
     "routing":
     {
         "seppmail" :
         {
             
         },
-        "M365":
+        "m365":
         {
+            "Name"                  : "[SEPPmail.cloud] - Clean outbound SEPPmail header encrypted",
+            "Comments"              : "Removes encrypted SEPPmail.cloud x-headers from E-Mail.",
+            "SMPriority"            : 3,
             "FromScope"             : "InOrganization",
             "SentToScope"           : "NotInOrganization",
             "RemoveHeader"          : "X-SM-encrypted",

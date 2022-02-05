@@ -181,19 +181,23 @@ function Get-SC365TransportRuleSettings
         #>
         [Parameter(Mandatory = $true)]
         [string] $routing,
+        [Parameter(Mandatory = $true)]
+        [string] $file,
         [switch] $IncludeSkipped
     )
 
-        $transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
-        [string[]]$ret = $null
-    
-        foreach ($file in $transportRuleFiles) {
-            #$($file.FullName)
-            $ret += ConvertFrom-Json (Get-Content $($File.FullName) -Raw)
-        }
-    
+    begin {
+        $ret = $null
+        $raw = $null
+    }
+    process {
+        $raw = (Get-Content $File -Raw|Convertfrom-Json -AsHashtable)
+        $ret = $raw.routing.($routing.ToLower())
+    }
+    end {
         return $ret    
-
+    }
+}
     <#Write-Verbose "Loading transport rule settings for routingtype $Region"
 
     $settingsToFetch = 0
@@ -249,7 +253,6 @@ function Get-SC365TransportRuleSettings
     # But via this sorting, an SMPriority 0 rule will actually be at the top (but at priority 3).
     $ret | Sort-Object -Property SMPriority -Descending
     #>
-}
 
 function Get-SC365CloudConfig
 {
