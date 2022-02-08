@@ -178,6 +178,7 @@ function Get-SC365TransportRuleSettings
         [SC365.Region] $Region,
         [SC365.ConfigOption[]] $Option,
         [SC365.AvailableTransportRuleSettings[]] $Settings =[SC365.AvailableTransportRuleSettings]::All,
+        [switch] $IncludeSkipped
         #>
         [Parameter(Mandatory = $true)]
         [string] $routing,
