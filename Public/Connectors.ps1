@@ -298,7 +298,7 @@ function New-SC365Connectors
                 }#>
 
                 $Now = Get-Date
-                $param.Comment += "`n Created with SEPPmail365cloud PowerShell Module on $now"
+                $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module on $now"
 
                 [void](New-OutboundConnector @param)
 
@@ -315,7 +315,7 @@ function New-SC365Connectors
        
         Write-verbose "if -disabled switch is used, the connector stays deactivated"
         if ($disabled) {
-            $inbound.Enabled = $false
+            $param.Enabled = $false
         }
 
         Write-Verbose "Setting SEPPmail IP Address(es) $SEPPmailIP for EFSkipIP´s and Anti-SPAM Whitelist"
@@ -380,7 +380,7 @@ function New-SC365Connectors
                     Write-Debug "$($_.Key) = $($_.Value)"
                 }#>
                 $Now = Get-Date
-                $param.Comment += "`n Created with SEPPmail365cloud PowerShell Module on $now"
+                $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module on $now"
                 [void](New-InboundConnector @param)
 
                 if(!$?) {
