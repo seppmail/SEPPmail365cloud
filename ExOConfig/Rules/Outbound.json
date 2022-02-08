@@ -4,7 +4,7 @@
         "seppmail" :
         {            
         },
-        "m365":
+        "microsoft":
         {
             "Name"                                : "[SEPPmail.cloud] - Route outgoing e-mails to SEPPmail",
             "Comments"                            : "E-mails sent from inside the organization to the Internet are sent to SEPPmail.cloud crypto-processing.",

@@ -42,21 +42,21 @@ Furthe information on connecting to Exchange Online and make the module work can
 
 ## Routing modes
 
-seppmail.cloud supports two e-Mail routing modes to M365. We either set the mx-record to *seppmail.cloud* or leave it at *Microsoft*. Customers routing e-Mails via seppmail.cloud benefit from our great e-Mail filter which prevents spam and unwanted software flowing in your network via e-mail.
+seppmail.cloud supports two e-Mail routing modes to microsoft. We either set the mx-record to *seppmail.cloud* or leave it at *Microsoft*. Customers routing e-Mails via seppmail.cloud benefit from our great E-Mail filter which prevents spam and unwanted software flowing in your network via e-mail.
 
 Now lets look into the 2 different modes
 
 ### Routing mode "seppmail*
 
-In this case, inbound e-Mails flow to the seppmail.cloud, are treated there and then flow to M365 via connectors. Same is outbound, the mails simply pass the seppmail.cloud before leaving to the internet.
+In this case, inbound e-Mails flow to the seppmail.cloud, are treated there and then flow to microsoft via connectors. Same is outbound, the mails simply pass the seppmail.cloud before leaving to the internet.
 
 ![seppmail](./Visuals/seppmail365cloud-visuals-seppmail.png)
 
-### Routing mode "M365"
+### Routing mode "microsoft"
 
 This routing mode is similar to the way you would integrate any SEPPmail Appliance (self hosted or MSP). E-mails flow to Microsoft, and are looped through SEPPmail based on the need for cryptographic treatment.
 
-![M365](./Visuals/seppmail365cloud-visuals-M365.png)
+![microsoft](./Visuals/seppmail365cloud-visuals-M365.png)
 
 
 # Using the seppmail365cloud module
@@ -73,7 +73,7 @@ The report will give you valued information about existig connectors, rules and 
 
 ## Cleaning up
 
-If your M365 environment was integrated with a SEPPmail already you need to backup and remove the SEPPmail365 connectors and rules before integratig into seppmail.cloud. Find info on [backup and removal SEPPmail connectors and rules here.](https://github.com/seppmail/SEPPmail365#cleanup-environment)
+If your Exchange Online environment was integrated with a SEPPmail already you need to backup, disable or remove the SEPPmail365 connectors and rules before integratig into seppmail.cloud. Find info on [backup and removal SEPPmail connectors and rules here.](https://github.com/seppmail/SEPPmail365#cleanup-environment)
 
 Note: *If you dont remove existing \[SEPPmail\] rules and connectors, mailflow will be a mess and the integration will not work.*
 
@@ -88,7 +88,7 @@ New-SC365Connectors -maildomain 'contoso.eu' -routing seppmail -region 'ch'
 
 
 
-### Routingtype: M365
+### Routingtype: microsoft
 
 ```powershell
 New-SC365Connectors -maildomain 'contoso.eu' -routing sM365 -region 'ch'
@@ -101,7 +101,7 @@ New-SC365Rules
 ## Offene Fragen
 
   - routingtype  (seppmail) M365 oder microsoft oder Exo oder ExchangeOnline
-  Ergebnis: "ExchangeOnline" alias "Exo"
+  Ergebnis: "ExchangeOnline" alias "Exo" ==> Umentschieden "microsoft" weil die ev. ihre Produktnamen ändern.
   - New-SC365Connectors ==> Remove alle [SEPPmail.cloud] connectors ? oder nur den einen
    [SEPPmail] ==> Disablen knan Kunde manuell machen ==> NUR [SEPPmail.cloud] entfernen.
    

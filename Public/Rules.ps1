@@ -7,14 +7,14 @@
     If you want to get all installed transport rules, usw New-SC365ExoReport-
 
 .EXAMPLE
-    Get-SC365Rules -Routing 'm365'
+    Get-SC365Rules -Routing 'microsoft'
 #>
 function Get-SC365Rules {
     [CmdletBinding()]
     param
     (
         [Parameter(Mandatory = $true)]
-        [ValidateSet('seppmail','m365')]
+        [ValidateSet('seppmail','microsoft')]
         $routing
     )
 
@@ -26,7 +26,7 @@ function Get-SC365Rules {
     {
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-        if ($routing -eq 'm365') {
+        if ($routing -eq 'microsoft') {
             #Wait-Debugger
 
             $transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
@@ -71,9 +71,9 @@ function New-SC365Rules
 
         [Parameter(
             Mandatory = $true,
-            HelpMessage = 'MX record->SEPPmail means routingtype seppmail, MX->Microsoft means routingtype m365'
+            HelpMessage = 'MX record->SEPPmail means routingtype seppmail, MX->Microsoft means routingtype microsoft'
         )]
-        [ValidateSet('m365','seppmail')]
+        [ValidateSet('microsoft','seppmail')]
         [String]$routing,
 
         [Parameter(Mandatory=$false,
@@ -244,7 +244,7 @@ function New-SC365Rules
 .DESCRIPTION
     Convenience function to remove the SEPPmail.cloud rules in one CmdLet.
 .EXAMPLE
-    Remove-SC365Rules -Routing 'm365'
+    Remove-SC365Rules -Routing 'microsoft'
 #>
 function Remove-SC365Rules {
     [CmdletBinding(SupportsShouldProcess = $true,
@@ -254,9 +254,9 @@ function Remove-SC365Rules {
     (
         [Parameter(
             Mandatory = $true,
-            HelpMessage = 'MX record->SEPPmail means routingtype seppmail, MX->Microsoft means routingtype m365'
+            HelpMessage = 'Use seppmail if the MX record points to SEPPmail and microsoft if the MX record points to the Microsoft Inrastructure'
         )]
-        [ValidateSet('m365','seppmail')]
+        [ValidateSet('microsoft','seppmail')]
         [String]$routing
     )
 

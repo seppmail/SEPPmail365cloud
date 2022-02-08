@@ -5,7 +5,7 @@
         {
             
         },
-        "m365":
+        "microsoft":
         {
             "Name"                  : "[SEPPmail.cloud] - Clean outbound SEPPmail header outgoing",
             "Comments"              : "Removes outgoing SEPPmail.cloud x-headers from E-Mail.",

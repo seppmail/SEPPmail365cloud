@@ -16,7 +16,7 @@ function Get-SC365Connectors
         [Parameter(
             Mandatory = $true
         )]
-        [ValidateSet('seppmail','m365')]
+        [ValidateSet('seppmail','microsoft')]
         $routing
     )
 
@@ -123,7 +123,7 @@ function New-SC365Connectors
     (
         [Parameter(
             Mandatory = $true,
-            Helpmessage = 'Default E-Mail domain of your M365 Exchange Online tenant.',
+            Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
             Position = 0
             )]
         [ValidatePattern('(?=^.{1,253}$)(^(((?!-)[a-zA-Z0-9-]{1,63}(?<!-))|((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63})$)')]
@@ -138,10 +138,10 @@ function New-SC365Connectors
         [String]$Region,
 
         [Parameter(
-            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"m365`": mx points to Microsoft',
+            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"microsoft`": mx points to Microsoft',
             Position = 3
             )]
-        [ValidateSet('seppmail','m365')]
+        [ValidateSet('seppmail','microsoft')]
         [String] $routing = 'seppmail',
 
         [Parameter(
@@ -170,7 +170,7 @@ function New-SC365Connectors
             $InboundTlsDomain = ($maildomain.Replace('.','-')) + '.gate.seppmail.cloud'
             $OutboundTlsDomain = ($maildomain.Replace('.','-')) + '.relay.seppmail.cloud'
         }
-        if ($routing -eq 'M365') {
+        if ($routing -eq 'microsoft') {
             $InboundTlsDomain = ($maildomain.Replace('.','-')) + '.smtp.seppmail.cloud'
             $OutboundTlsDomain = ($maildomain.Replace('.','-')) + '.smtp.seppmail.cloud'
         }
@@ -178,13 +178,13 @@ function New-SC365Connectors
         try {
             $SEPPmailIP = Resolve-IPV4Address -Fqdn $InboundTlsDomain
         }
-        catch { ### TEST/DEMO
-            $SEPPmailIP = '88.88.88.88'
-        }
-        <### PRODUCTION            catch {
-            Write-Error "Could not resolve $InboundTlsDomain to IP address. Maybe setup of your seppmail.cloud tenant for maildomain $maildomain is not finished."
+        #catch { ### TEST/DEMO
+        #    $SEPPmailIP = '88.88.88.88'
+        #}
+        catch {
+            Write-Error "Could not resolve $InboundTlsDomain to IP address. Maybe setup of your seppmail.cloud tenant for maildomain $maildomain is not completed. Contact your SEPPmail Partner for help."
             break
-        }#>
+        }
                
 
         #region collecting existing connectors
@@ -292,10 +292,6 @@ function New-SC365Connectors
             Write-Verbose "Creating SEPPmail.cloud Outbound Connector $($param.Name)!"
             if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Outbound Connector'))
             {
-                <#Write-Debug "Outbound Connector settings:"
-                $param.GetEnumerator() | ForEach-Object{
-                    Write-Debug "$($_.Key) = $($_.Value)"
-                }#>
 
                 $Now = Get-Date
                 $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module on $now"
@@ -446,7 +442,7 @@ function Remove-SC365Connectors
             Mandatory = $true,
             Helpmessage = 'The routing tyoe of the connector to you want to remove'
         )]
-        [ValidateSet('seppmail','m365')]
+        [ValidateSet('seppmail','microsoft')]
         [String]$routing,
         
         [ValidateSet('NoAntiSpamWhiteListing')]

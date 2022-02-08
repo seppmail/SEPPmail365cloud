@@ -13,7 +13,7 @@
             "RestrictDomainsToCertificate" : true,
             "SenderDomains"                : "*"
         },
-        "m365":
+        "microsoft":
         {
             "Name"                         : "[SEPPmail.cloud] SEPPmail -> ExO / MX:M365",
             "Comment"                      : "Accept E-Mails from SEPPmail.cloud host. MX is set to Microsoft",

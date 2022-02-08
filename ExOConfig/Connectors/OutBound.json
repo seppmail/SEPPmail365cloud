@@ -13,7 +13,7 @@
             "TlsSettings"              : "DomainValidation",
             "UseMXRecord"              : false
         },
-        "m365":
+        "microsoft":
         {
             "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail / MX:M365",
             "Comment"                  : "E-Mails are send to SEPPmail.cloud based on transport rules. MX is set to Microsoft",
