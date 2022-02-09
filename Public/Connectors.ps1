@@ -171,20 +171,21 @@ function New-SC365Connectors
             $OutboundTlsDomain = ($maildomain.Replace('.','-')) + '.relay.seppmail.cloud'
         }
         if ($routing -eq 'microsoft') {
-            $InboundTlsDomain = ($maildomain.Replace('.','-')) + '.smtp.seppmail.cloud'
-            $OutboundTlsDomain = ($maildomain.Replace('.','-')) + '.smtp.seppmail.cloud'
+            $InboundTlsDomain = ($maildomain.Replace('.','-')) + '.mail.seppmail.cloud'
+            $OutboundTlsDomain = ($maildomain.Replace('.','-')) + '.mail.seppmail.cloud'
         }
         Write-Verbose "Get IP Address of seppmail host"
         try {
             $SEPPmailIP = Resolve-IPV4Address -Fqdn $InboundTlsDomain
         }
-        #catch { ### TEST/DEMO
-        #    $SEPPmailIP = '88.88.88.88'
-        #}
-        catch {
-            Write-Error "Could not resolve $InboundTlsDomain to IP address. Maybe setup of your seppmail.cloud tenant for maildomain $maildomain is not completed. Contact your SEPPmail Partner for help."
-            break
+        catch { ### TEST/DEMO
+            $SEPPmailIP = '88.88.88.88'
+        # Fixe Liste eintragen
         }
+        #catch {
+         #   Write-Error "Could not resolve $InboundTlsDomain to IP address. Maybe setup of your seppmail.cloud tenant for maildomain $maildomain is not completed. Contact your SEPPmail Partner for help."
+          #  break
+        #}
                
 
         #region collecting existing connectors

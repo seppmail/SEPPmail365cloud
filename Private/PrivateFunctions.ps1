@@ -26,13 +26,13 @@ function Test-SC365ConnectionStatus
         Write-Verbose "Check availability of PSSession to Exo"
         if (!(Get-PSSession|where-object name -like 'ExchangeOnlineInternalSession_*'))
         {
-            Write-Error "ExchangeOnline Module loaded, but no PSSession found. Connect to Exchange Online !"
+            Write-Error "ExchangeOnline Module loaded, but no PSSession found. Connect to Exchange Online before proceeding!"
             throw [System.Exception] "Could not find Remote Connection to Exchange online"
         } 
         else 
         {
             Write-Verbose "Check expiry time of Auth-Token"
-            $activemodule = Get-Command Get-AcceptedDomain|select-Object -Expandproperty Module
+            $activemodule = Get-Command Get-AcceptedDomain|select-Object -Expandproperty Module|Select-Object -Expandproperty Name
             $activesession = Get-PSSession |Where-Object currentmodulename -eq $activemodule
             $ticks = New-Timespan -Start (Get-Date) -End $activesession.TokenExpiryTime.Datetime|Select-Object -ExpandProperty Ticks
             if ($ticks -like '-*') 
