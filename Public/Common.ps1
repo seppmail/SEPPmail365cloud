@@ -76,12 +76,14 @@
                 #"Whatis is $Whatif and `$pscmdlet.ShouldProcess is $($pscmdlet.ShouldProcess) "
                 #For later Use
             }
-            $mv = '1.2.0'
-            #$mv = (Get-Module SEPPmail365).Version.ToString()
+            #$mv = '1.2.2'
+            $mv = (Get-Module SEPPmail365cloud).Version.ToString()
             $Top = "<p><h1>Exchange Online Report</h1><p>"
             $now = Get-Date
             $RepCreationDateTime = "<p><body>Report created: $now</body><p>"
             $moduleVersion = "<p><body>SEPPmail365cloud Module Version: $mv</body><p>"
+            $reportTenantID = Get-SC365TenantID -maildomain (Get-AcceptedDomain|where-object InitialDomain -eq $true|select-object -expandproperty Domainname)
+            $TenantInfo = "<p><body>Microsoft O/M365 AzureAD Tenant ID: $reportTenantID</body><p>"
             Write-Verbose "Collecting Accepted Domains"
             $hSplitLine = '<p><h2>---------------------------------------------------------------------------------------------------------------------------</h2><p>'
             #region General infos
@@ -185,7 +187,7 @@
 
             $hEndOfReport = '<p><h2>--- End of Report ---</h2><p>'
             $style = Get-Content $modulepath\HTML\SEPPmailReport.css
-            Convertto-HTML -Body "$LogoHTML $Top $RepCreationDatetime $moduleVersion`
+            Convertto-HTML -Body "$LogoHTML $Top $RepCreationDatetime $moduleVersion $TenantInfo`
                    $hSplitLine $hGeneral $hSplitLine $hA $a $hB $b $hP $P $hO $o`
                   $hSplitLine $hSecurity $hSplitLine $hC $c $hd $d $hE $e $hK $k $hH $h $hJ $j $hJ1 $J1 `
                  $hSplitLine $hOtherConn $hSplitLine $hG $g $hI $i `
