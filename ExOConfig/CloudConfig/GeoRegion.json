@@ -12,7 +12,8 @@
                 "86.119.57.0/29"
             ],
             "IPv6WhiteList": [
-            ]
+            ],
+            "TlsCertificate": "*.ch.seppmail.cloud"
         },
         "prv":
         {
@@ -25,7 +26,8 @@
                 "2a01:4f8:c011:78a::1",
                 "2a01:4f8:1c17:f104::1",
                 "2a01:4f8:1c17:c547::1"
-            ]
+            ],
+            "TlsCertificate": "*.prv.seppmail.cloud"
         },
         "de":
         {

@@ -10,7 +10,6 @@
             "ConnectorType"                : "Partner",
             "Enabled"                      : true,
             "RequireTls"                   : true,
-            "RestrictDomainsToCertificate" : true,
             "SenderDomains"                : "*"
         },
         "microsoft":

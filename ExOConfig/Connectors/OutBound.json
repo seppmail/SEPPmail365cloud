@@ -4,13 +4,15 @@
         "seppmail":
         {
             "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail / MX:SEPPmail",
-            "Comment"                  : "E-Mails are send to SEPPmail.cloud. MX is set to SEPPmail.cloud",
+            "Comment"                  : "All outgoing E-Mails are routed via SEPPmail.cloud",
             "ConnectorSource"          : "Default",
             "ConnectorType"            : "Partner",
             "CloudServicesMailEnabled" : false,
             "IsTransportRuleScoped"    : false,
             "RecipientDomains"         : "*",
+            "SmartHosts"               : "---Parameter input---",
             "TlsSettings"              : "DomainValidation",
+            "TlsDomain"                : "---Parameter input---",
             "UseMXRecord"              : false
         },
         "microsoft":
