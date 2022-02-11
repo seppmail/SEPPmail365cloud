@@ -165,7 +165,8 @@ function New-SC365Connectors
         {throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"}
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
  
-        Write-Verbose "Preparing values fpr Cloud configuration"
+        #region Preparing common setup
+        Write-Verbose "Preparing values for Cloud configuration"
 
         Write-Verbose "Prepare Smarthosts for e-Mail domain $maildomain"
         if ($routing -eq 'seppmail') {
@@ -183,8 +184,12 @@ function New-SC365Connectors
         $SEPPmailIPv4Range = $regionConfig.IPv4WhiteList
         $TlsCertificateName = $regionConfig.TlsCertificate
 
+        Write-Verbose "Set timestamp and Moduleversion for Comments"
+        $Now = Get-Date
+        $moduleVersion = $MyInvocation.MyCommand.Version
+        #endregion commonsetup
 
-        #region collecting existing connectors
+        #region collecting existing connectors and test for hybrid Setup
         Write-Verbose "Collecting existing connectors"
         $allInboundConnectors = Get-InboundConnector
         $allOutboundConnectors = Get-OutboundConnector
@@ -192,16 +197,10 @@ function New-SC365Connectors
         Write-Verbose "Testing for hybrid Setup"
         $HybridInboundConn = $allInboundConnectors |Where-Object {(($_.Name -clike 'Inbound from *') -or ($_.ConnectorSource -clike 'HybridWizard'))}
         $HybridOutBoundConn = $allOutboundConnectors |Where-Object {(($_.Name -clike 'Outbound to *') -or ($_.ConnectorSource -clike 'HybridWizard'))}
-
-        Write-Verbose "Set timestamp and Moduleversion for Comments"
-        $Now = Get-Date
-        $moduleVersion = $MyInvocation.MyCommand.Version
-        #Write-Information "Module version is $moduleversion"
-
+        
         if ($HybridInboundConn -or $HybridOutBoundConn)
         {
             Write-Warning "!!! - Hybrid Configuration detected - we assume you know what you are doing. Be sure to backup your connector settings before making any change."
-
             if($InteractiveSession)
             {
                 Write-Verbose "Ask user to continue if Hybrid is found."
@@ -225,12 +224,11 @@ function New-SC365Connectors
             Write-Information "No Hybrid Connectors detected, seems to be a clean cloud-only environment" -InformationAction Continue
         }
         #endregion
-
     }
 
     process
     {
-        #region OutboundConnector
+        #region - OutboundConnector
         Write-Verbose "Building Outbound parameters based on smarthost $outboundtlsdomain"
         #$outbound = Get-SC365OutboundConnectorSettings -routing $routing -Option $Option
         $param = Get-SC365OutboundConnectorSettings -Routing $routing -Option $option
@@ -303,9 +301,9 @@ function New-SC365Connectors
                 {throw $error[0]}
             }
         }
-        #endregion OutboundConnector
+        #endregion - OutboundConnector
 
-        #region - Inbound Connector
+        #region - InboundConnector
         Write-Verbose "Read Inbound Connector Settings"
         $param = $null
         $param = Get-SC365InboundConnectorSettings -routing $routing -option $option
@@ -366,27 +364,24 @@ function New-SC365Connectors
             Write-Verbose "Setting $TlscertificateName as TLSSendercertificate"
             $param.TlsSenderCertificateName = $TlsCertificateName
             
-            Write-Verbose "Set routing 'seppmail'-specific parameters"
-            If ($routing -eq 'seppmail') {
+            #Write-Verbose "Set routing 'seppmail'-specific parameters"
+            #If ($routing -eq 'seppmail') {
                 $param.SenderIPAddresses = $SEPPmailIPv4Range
                 $param.RestrictDomainsToIPAddresses = $false
                 $param.RestrictDomainsToCertificate = $true
-            }
+            #}
 
             Write-Verbose "Creating SEPPmail.cloud Inbound Connector $($param.Name)!"
             if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Inbound Connector'))
             {
-                <#Write-Debug "Inbound Connector settings:"
-                $param.GetEnumerator() | Foreach-Object {
-                    Write-Debug "$($_.Key) = $($_.Value)"
-                }#>
+
                 $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
                 [void](New-InboundConnector @param)
 
                 if(!$?) {
                     throw $error[0]
                 } else {
-                    #region - Add SMFQDN to hosted Connection Filter Policy Whitelist
+                    #region - Add Region-based IP-range to hosted Connection Filter Policy Whitelist
                     if (!($option -eq 'NoAntiSpamWhiteListing'))
                     {
                         Write-Verbose "Adding SEPPmail.cloud to whitelist in 'Hosted Connection Filter Policy'"
@@ -409,7 +404,7 @@ function New-SC365Connectors
                 }
             }
         }
-        #endRegion InboundConnector
+        #endRegion - InboundConnector
     }
 
     end
