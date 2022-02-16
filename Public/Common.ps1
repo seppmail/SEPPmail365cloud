@@ -159,7 +159,7 @@
             
             Write-Verbose "InboundConnectors"
             $hL = '<p><h3>Inbound Connectors</h3><p>'
-            $L = Get-ExoHTMLData -ExoCmd 'Get-InboundConnector |Select-Object Identity,Enabled,SenderDomains,OrganizationalUnitRootInternal,TlsSenderCertificateName,IsValid'
+            $L = Get-ExoHTMLData -ExoCmd 'Get-InboundConnector |Select-Object Identity,Enabled,SenderDomains,SenderIPAddresses,OrganizationalUnitRootInternal,TlsSenderCertificateName,OriginatingServer,IsValid'
             
             Write-Verbose "OutboundConnectors"
             $hM = '<p><h3>Outbound Connectors</h3><p>'
@@ -242,7 +242,9 @@ function Test-SC365ConnectionStatus
 {
     [CmdLetBinding()]
     Param
-    ()
+    (
+        [bool]$showDefaultDomain = $false
+    )
 
     [bool] $isConnected = $false
 
@@ -264,17 +266,23 @@ function Test-SC365ConnectionStatus
     else
     {
         Write-Verbose "Check availability of PSSession to Exo"
-        if (!(Get-PSSession|where-object name -like 'ExchangeOnlineInternalSession_*'))
+        $exoPssession = (Get-PSSession|where-object name -like 'ExchangeOnlineInternalSession_*')
+        if (!$exoPssession)
         {
             Write-Error "ExchangeOnline Module loaded, but no PSSession found. Connect to Exchange Online before proceeding!"
             throw [System.Exception] "Could not find Remote Connection to Exchange online"
         } 
         else 
         {
-            Write-Verbose "Check expiry time of Auth-Token"
-            $activemodule = Get-Command Get-AcceptedDomain|select-Object -Expandproperty Module|Select-Object -Expandproperty Name
+            Write-Verbose "PS-Session $exoPSSession is available"
+            #$activemodule = Get-Command Get-AcceptedDomain|select-Object -Expandproperty Module|Select-Object -Expandproperty Name
+            $activemodule = $($exoPssession.CurrentModuleName)
+            Write-Verbose "Active implicit remoting PS-Module name is $activeModule"
             $activesession = Get-PSSession |Where-Object currentmodulename -eq $activemodule
-            $ticks = New-Timespan -Start (Get-Date) -End $activesession.TokenExpiryTime.Datetime|Select-Object -ExpandProperty Ticks
+            Write-Verbose "PS-Session for the active module is $activesession"
+            Write-Verbose "Check expiry time of Auth-Token"
+            $delta = New-TimeSpan -Start (Get-Date) -End $activesession.TokenExpiryTime.Datetime
+            $ticks = $delta|Select-Object -ExpandProperty Ticks
             if ($ticks -like '-*') 
             {
                 $isconnected = $false
@@ -284,21 +292,25 @@ function Test-SC365ConnectionStatus
                     try
                     {
                         # throws an exception if authentication fails
-                        Write-Verbose "Connecting to Exchange Online"
+                        Write-Verbose "Reconnecting to Exchange Online"
                         Connect-ExchangeOnline
                         $isConnected = $true
                     }
                     catch
                     {}
                 }
-                    } 
+            } 
             else 
             {
                 $isconnected = $true
+                $tokenLifeTime = [math]::Round($delta.TotalHours)
+                Write-verbose "Active session token exipry time is $($activesession.TokenExpiryTime.Datetime) (roughly $tokenLifeTime hours)"
                 if($isConnected -and !$Script:ExODefaultDomain)
                 {
                     [string] $Script:ExODefaultDomain = Get-AcceptedDomain | Where-Object{$_.Default} | Select-Object -ExpandProperty DomainName -First 1
+
                 }
+                if ($ShowDefaultdomain -eq $true) {"$exoDefaultdomain"}
                 return $isConnected
             }
         }

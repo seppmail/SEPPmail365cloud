@@ -83,7 +83,7 @@ FunctionsToExport = @(
     #'Backup-SC365Rules'
     #   'Get-SC365Rules'
        'New-SC365Rules'
-    #'Remove-SC365Rules'
+    'Remove-SC365Rules'
        'New-SC365ExOReport'
       'Test-SC365ConnectionStatus'
     #   'Get-SC365Setup'

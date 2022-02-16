@@ -272,17 +272,23 @@ function Remove-SC365Rules {
     process {
         Write-Verbose "Removing current version module rules"
         
-        foreach ($file in $transportRuleFiles) {
-            $setting = Get-SC365TransportRuleSettings -routing $routing -file $file
-            
-            if($PSCmdlet.ShouldProcess($setting.Name, "Remove transport rule")) {
-                $rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
-                if($rule)
-                    {$rule | Remove-TransportRule -Confirm:$false}
-                else
-                    {Write-Verbose "Rule $($setting.Name) does not exist"}
-            }
+        if ($routing -eq 'microsoft') {
+            foreach ($file in $transportRuleFiles) {
+                $setting = Get-SC365TransportRuleSettings -routing $routing -file $file
+                
+                if($PSCmdlet.ShouldProcess($setting.Name, "Remove transport rule")) {
+                    $rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
+                    if($rule -ne $null)
+                        {$rule | Remove-TransportRule -Confirm:$false}
+                    else
+                        {Write-Warning "Rule $($setting.Name) does not exist"}
+                }
+            }    
         }
+        else {
+            Write-Warning "Routingtype 'seppmail' doesnt require any Mail Transport Rules. Use '-routing 'microsoft'' to remove existing rules."
+        }
+
     }
     end {
 
