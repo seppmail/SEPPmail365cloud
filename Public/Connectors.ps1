@@ -170,11 +170,9 @@ function New-SC365Connectors
 
         Write-Verbose "Prepare Smarthosts for e-Mail domain $maildomain"
         if ($routing -eq 'seppmail') {
-            #$InboundSmartHost = ($maildomain.Replace('.','-')) + '.gate.seppmail.cloud'
             $OutboundSmartHost = ($maildomain.Replace('.','-')) + '.relay.seppmail.cloud'
         }
         if ($routing -eq 'microsoft') {
-            #$InboundSmartHost = ($maildomain.Replace('.','-')) + '.mail.seppmail.cloud'
             $OutboundSmartHost = ($maildomain.Replace('.','-')) + '.mail.seppmail.cloud'
         }
         
@@ -360,16 +358,11 @@ function New-SC365Connectors
 
         if($createInbound)
         {
-            # necessary assignment for splatting
-            Write-Verbose "Setting $TlscertificateName as TLSSendercertificate"
+            Write-Verbose "Setting $TlscertificateName as TLSSendercertificate and IP addresses to region $region"
+            $param.RestrictDomainsToIPAddresses = $false
+            $param.RestrictDomainsToCertificate = $true
+            $param.SenderIPAddresses = $SEPPmailIPv4Range
             $param.TlsSenderCertificateName = $TlsCertificateName
-            
-            #Write-Verbose "Set routing 'seppmail'-specific parameters"
-            #If ($routing -eq 'seppmail') {
-                $param.SenderIPAddresses = $SEPPmailIPv4Range
-                $param.RestrictDomainsToIPAddresses = $false
-                $param.RestrictDomainsToCertificate = $true
-            #}
 
             Write-Verbose "Creating SEPPmail.cloud Inbound Connector $($param.Name)!"
             if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Inbound Connector'))

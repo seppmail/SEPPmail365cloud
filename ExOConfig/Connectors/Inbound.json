@@ -10,7 +10,12 @@
             "ConnectorType"                : "Partner",
             "Enabled"                      : true,
             "RequireTls"                   : true,
-            "SenderDomains"                : "*"
+            "RestrictDomainsToIPAddresses" : "---Parameter input---",
+            "RestrictDomainsToCertificate" : "---Parameter input---",
+            "SenderDomains"                : "*",
+            "SenderIPAddresses"            : "---Parameter input---",
+            "TlsSenderCertificateName"     : "---Parameter input---"
+
         },
         "microsoft":
         {
@@ -21,7 +26,11 @@
             "ConnectorType"                : "OnPremises",
             "Enabled"                      : true,
             "RequireTls"                   : true,
-            "SenderDomains"                : "*"
+            "RestrictDomainsToIPAddresses" : "---Parameter input---",
+            "RestrictDomainsToCertificate" : "---Parameter input---",
+            "SenderDomains"                : "*",
+            "SenderIPAddresses"            : "---Parameter input---",
+            "TlsSenderCertificateName"     : "---Parameter input---"
         }
     },
     "Option":
