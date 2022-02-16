@@ -238,6 +238,74 @@ Function Get-SC365TenantID {
     Return $tenantid
 }
 
+function Test-SC365ConnectionStatus
+{
+    [CmdLetBinding()]
+    Param
+    ()
+
+    [bool] $isConnected = $false
+
+    # Modul geladen ==> Fehler
+    # Modul geladen aber keine Verbindung aufgebaut
+    # Modul gelaen aber kein Befehl möglich
+    # 
+    Write-Verbose "Check if module ExchangeOnlinemanagement is imported"
+    if(!(Get-Module ExchangeOnlineManagement -ErrorAction SilentlyContinue))
+    {
+        Write-Warning "ExchangeOnlineManagement module not yet imported"
+        Write-Warning "Importing ExchangeOnlineManagement module"
+        Write-Verbose "Import-Module ExchangeOnlineManagement"
+        $m = Import-Module ExchangeOnlineManagement -PassThru -ErrorAction SilentlyContinue
+
+        if(!$m)
+        {throw [System.Exception] "ExchangeOnlineManagement module does not seem to be installed"}
+    }
+    else
+    {
+        Write-Verbose "Check availability of PSSession to Exo"
+        if (!(Get-PSSession|where-object name -like 'ExchangeOnlineInternalSession_*'))
+        {
+            Write-Error "ExchangeOnline Module loaded, but no PSSession found. Connect to Exchange Online before proceeding!"
+            throw [System.Exception] "Could not find Remote Connection to Exchange online"
+        } 
+        else 
+        {
+            Write-Verbose "Check expiry time of Auth-Token"
+            $activemodule = Get-Command Get-AcceptedDomain|select-Object -Expandproperty Module|Select-Object -Expandproperty Name
+            $activesession = Get-PSSession |Where-Object currentmodulename -eq $activemodule
+            $ticks = New-Timespan -Start (Get-Date) -End $activesession.TokenExpiryTime.Datetime|Select-Object -ExpandProperty Ticks
+            if ($ticks -like '-*') 
+            {
+                $isconnected = $false
+                Write-Warning "You're not actively connected to your Exchange Online organization."
+                if($InteractiveSession) # defined in public/Functions.ps1
+                {
+                    try
+                    {
+                        # throws an exception if authentication fails
+                        Write-Verbose "Connecting to Exchange Online"
+                        Connect-ExchangeOnline
+                        $isConnected = $true
+                    }
+                    catch
+                    {}
+                }
+                    } 
+            else 
+            {
+                $isconnected = $true
+                if($isConnected -and !$Script:ExODefaultDomain)
+                {
+                    [string] $Script:ExODefaultDomain = Get-AcceptedDomain | Where-Object{$_.Default} | Select-Object -ExpandProperty DomainName -First 1
+                }
+                return $isConnected
+            }
+        }
+    }
+}
+
+
 # SIG # Begin signature block
 # MIIL1wYJKoZIhvcNAQcCoIILyDCCC8QCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
