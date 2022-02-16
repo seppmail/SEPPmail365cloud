@@ -76,18 +76,18 @@ RequiredModules = @(
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(    
-    'Backup-SC365Connectors'
-       'Get-SC365Connectors'
+    #'Backup-SC365Connectors'
+    #   'Get-SC365Connectors'
        'New-SC365Connectors'
     'Remove-SC365Connectors'
-    'Backup-SC365Rules'
-       'Get-SC365Rules'
+    #'Backup-SC365Rules'
+    #   'Get-SC365Rules'
        'New-SC365Rules'
-    'Remove-SC365Rules'
+    #'Remove-SC365Rules'
        'New-SC365ExOReport'
       'Test-SC365ConnectionStatus'
-       'Get-SC365Setup'
-    'Remove-SC365Setup'
+    #   'Get-SC365Setup'
+    #'Remove-SC365Setup'
        'Get-SC365TenantId'
     )
 
@@ -134,7 +134,7 @@ PrivateData = @{
         # ReleaseNotes of this module
         ReleaseNotes = 
 @'
-nn.nn.2    1.3.0 First release with basic functionality
+18.02.22    1.3.0 First release with basic functionality
 '@
 
         # Prerelease string of this module

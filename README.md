@@ -50,20 +50,20 @@ Now lets look into the 2 different modes
 
 In this case, inbound e-Mails flow to the seppmail.cloud, are treated there and then flow to microsoft via connectors. Same is outbound, the mails simply pass the seppmail.cloud before leaving to the internet.
 
-![seppmail](./Visuals/seppmail365cloud-visuals-seppmail.png)
+![seppmail](./Visuals/seppmail365cloud-mxseppmail.png)
 
 ### Routing mode "microsoft"
 
 This routing mode is similar to the way you would integrate any SEPPmail Appliance (self hosted or MSP). E-mails flow to Microsoft, and are looped through SEPPmail based on the need for cryptographic treatment.
 
-![microsoft](./Visuals/seppmail365cloud-visuals-M365.png)
+![microsoft](./Visuals/seppmail365cloud-mxmicrosoft.png)
 
 
-# Using the seppmail365cloud module
+# Using the seppmail365cloud PowerShell module
 
 ## Get to know your environment
 
-After module setup is completed and you have connected to your Exchange Online environment create an environmen report.
+After module setup is completed and you have connected to your Exchange Online environment, create an environment report.
 
 ```powershell
 New-SM365ExOReport -FilePath /Users/you/Desktop/Exoreport.html
@@ -91,27 +91,8 @@ New-SC365Connectors -maildomain 'contoso.eu' -routing seppmail -region 'ch'
 ### Routingtype: microsoft
 
 ```powershell
-New-SC365Connectors -maildomain 'contoso.eu' -routing sM365 -region 'ch'
+New-SC365Connectors -maildomain 'contoso.eu' -routing microft -region 'ch'
 
-New-SC365Rules
+New-SC365Rules -routing microsoft
 ```
-
-
-
-## Offene Fragen
-
-  - routingtype  (seppmail) M365 oder microsoft oder Exo oder ExchangeOnline
-  Ergebnis: "ExchangeOnline" alias "Exo" ==> Umentschieden "microsoft" weil die ev. ihre Produktnamen ändern.
-  - New-SC365Connectors ==> Remove alle [SEPPmail.cloud] connectors ? oder nur den einen
-   [SEPPmail] ==> Disablen knan Kunde manuell machen ==> NUR [SEPPmail.cloud] entfernen.
-   
-- Name der Connectors OK ? (Region einfügen ?)
-Nein, aber in die Kommentare einfügen.
-
-- Connector Settings
-
-- TransportRules: Bei parameter -routing 'seppmail' einfach Info ausgeben ?
-
-- Automatisierung: Keine interaktiven Entscheidungen oder doch ?
-Interaktive Entscheidungen sollen überschrieben werden können (z.B. -force)
 
