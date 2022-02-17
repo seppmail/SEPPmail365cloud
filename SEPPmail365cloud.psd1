@@ -134,11 +134,11 @@ PrivateData = @{
         # ReleaseNotes of this module
         ReleaseNotes = 
 @'
-18.02.22    1.3.0 First release with basic functionality
+18.02.22    0.8.0 First release with basic functionality
 '@
 
         # Prerelease string of this module
-        Prerelease = 'beta1'
+        # Prerelease = 'beta1'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
