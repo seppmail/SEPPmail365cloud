@@ -32,9 +32,13 @@
         "de":
         {
             "IPv4WhiteList": [
+                "162.55.72.192/27",
+                "78.46.199.158"
             ],
             "IPv6WhiteList": [
-            ]
+                "2a01:4f8:a0:900b::/64"
+            ],
+            "TlsCertificate": "*.de.seppmail.cloud"
         }
     }
 }
