@@ -12,7 +12,7 @@
 RootModule = 'SEPPmail365cloud.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.3.0'
+ModuleVersion = '0.8.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Core')
@@ -33,7 +33,7 @@ Copyright = '(c) SEPPmail AG. All rights reserved.'
 Description = 'Integrate and maintain Exchange Online into the seppmaol.cloud'
 
 # Minimum version of the PowerShell engine required by this module
-PowerShellVersion = '7.2.1'
+PowerShellVersion = '7.2.0'
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
@@ -123,10 +123,10 @@ PrivateData = @{
                 'Office365')
 
         # A URL to the license for this module.
-        LicenseUri = 'https://github.com/seppmail/SEPPmail365cloud/blob/master/LICENSE'
+        LicenseUri = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/LICENSE'
 
         # A URL to the main website for this project.
-        ProjectUri = 'https://github.com/seppmail/seppmail365cloud'
+        ProjectUri = 'https://github.com/SEPPmail/SEPPmail365cloud'
 
         # A URL to an icon representing this module.
         IconUri = 'https://avatars1.githubusercontent.com/u/55975553?s=400&u=ab22c52a439397dca458e58dfcec9f0a9dd347db&v=4'
