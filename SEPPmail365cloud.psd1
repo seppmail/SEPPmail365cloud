@@ -134,7 +134,7 @@ PrivateData = @{
         # ReleaseNotes of this module
         ReleaseNotes = 
 @'
-18.02.22    0.8.0 First release with basic functionality
+18.02.22    0.8.0 First release with basic functionality #
 '@
 
         # Prerelease string of this module
