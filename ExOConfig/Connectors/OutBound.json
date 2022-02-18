@@ -20,7 +20,7 @@
             "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail / MX:M365",
             "Comment"                  : "Route outgoing E-Mails based on transport rules to SEPPmail.cloud",
             "ConnectorSource"          : "Default",
-            "ConnectorType"            : "Partner",
+            "ConnectorType"            : "OnPremises",
             "CloudServicesMailEnabled" : true,
             "IsTransportRuleScoped"    : true,
             "SmartHosts"               : "---Parameter input---",

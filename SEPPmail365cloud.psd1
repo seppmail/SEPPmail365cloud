@@ -12,7 +12,7 @@
 RootModule = 'SEPPmail365cloud.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.8.0'
+ModuleVersion = '0.8.1'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Core')
@@ -134,11 +134,14 @@ PrivateData = @{
         # ReleaseNotes of this module
         ReleaseNotes = 
 @'
-18.02.22    0.8.0 First release with basic functionality #
+18.02.22    0.8.0 - First release with basic functionality
+
+18.02.22    0.8.1 - Fix mistake in Connector config, updated visuals and README.md
+
 '@
 
         # Prerelease string of this module
-        # Prerelease = 'beta1'
+        # Prerelease = ''
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
@@ -151,7 +154,7 @@ PrivateData = @{
 } # End of PrivateData hashtable
 
 # HelpInfo URI of this module
-# HelpInfoURI = 'https://github.com/seppmail/SEPPmail365/blob/master/documentation_seppmail365_1.1.0.html'
+HelpInfoURI = 'https://github.com/seppmail/SEPPmail365cloud#readme'
 
 # Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
 # DefaultCommandPrefix = ''
