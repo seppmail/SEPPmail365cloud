@@ -310,7 +310,7 @@ function Test-SC365ConnectionStatus
                     [string] $Script:ExODefaultDomain = Get-AcceptedDomain | Where-Object{$_.Default} | Select-Object -ExpandProperty DomainName -First 1
 
                 }
-                if ($ShowDefaultdomain -eq $true) {"$exoDefaultdomain"}
+                if ($ShowDefaultdomain -eq $true) {"$Script:ExoDefaultdomain"}
                 return $isConnected
             }
         }

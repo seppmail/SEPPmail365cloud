@@ -81,36 +81,9 @@ function Get-SC365Connectors
     This commandlet will create the connectors for you.
 
 .EXAMPLE
-    Takes the Exchange Online environment settings and creates Inbound and Outbound connectors to a SEPPmail.cloud Appliance with a wildcard TLS certificate
+    Create Exchange COnnectors for routngtype seppmail
 
-    New-SC365Connectors -SEPPmailFQDN 'securemail.contoso.com' -TLSCertName '*.contoso.com'
-.EXAMPLE
-    Takes the Exchange Online environment settings and creates Inbound and Outbound connectors to a SEPPmail.cloud Appliance.
-    Assumes that the TLS certificate is identical with the SEPPmail.cloud FQDN
-
-    New-SC365Connectors -SEPPmailFQDN 'securemail.contoso.com'
-.EXAMPLE
-    Same as above, just no officially trusted certificate needed
-    
-    New-SC365Connectors -SEPPmailFQDN 'securemail.contoso.com' -AllowSelfSignedCertificates
-.EXAMPLE
-    Same as the default config, just with no TLS encryption at all.
-
-    New-SC365Connectors -SEPPmailFQDN securemail.contoso.com -NoOutBoundTlsCheck
-.EXAMPLE
-    If you want to create the connectors, but just disable them on creation, use the -Disabled switch.
-
-    New-SC365Connectors -SEPPmailFQDN securemail.contoso.com -Disabled
-
-.EXAMPLE
-    If your SEPPmail.cloud is just accessible via an IP Address, use the -SEPPmailIP parameter.
-
-    New-SC365Connectors -SEPPmailIp '51.144.46.62'
-
-.EXAMPLE 
-    To avoid, adding the SEPPmail to the ANTI-SPAM WHiteList of Microsoft Defender use the example below
-     
-    New-SC365Connectors -SEPPmailFQDN securemail.contoso.com -Option NoAntiSpamWhiteListing
+    New-SC365Connectors -maildomain 'contoso.eu' -region 'ch' -routing 'seppmail'
 #>
 function New-SC365Connectors
 {
@@ -127,6 +100,13 @@ function New-SC365Connectors
             Position = 0
             )]
         [ValidatePattern('(?=^.{1,253}$)(^(((?!-)[a-zA-Z0-9-]{1,63}(?<!-))|((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63})$)')]
+        <#[Validatescript(
+                {
+                # Diese Abfrage gibt entweder ein Objekt zurück oder nichts ==> $true oder $false als Ausgabe
+                (Get-AcceptedDomain -Identity`'$_`')
+                }
+            )
+        ]#>
         [Alias('domain')]
         [String] $maildomain,
 
