@@ -4,9 +4,10 @@
 .DESCRIPTION
     SEPPmail.cloud uses 2 Connectors to transfer messages between SEPPmail.cloud and Exchange Online
     This commandlet will show existing connectors.
-
 .EXAMPLE
     Get-SC365Connectors
+.NOTES
+    See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
 function Get-SC365Connectors
 {
@@ -78,12 +79,19 @@ function Get-SC365Connectors
     Adds SEPPmail.cloud Exchange Online connectors
 .DESCRIPTION
     SEPPmail.cloud uses 2 Connectors to transfer messages between SEPPmail.cloud and Exchange Online
-    This commandlet will create the connectors for you.
-
+    This commandlet will create the connectors for you, depending on the routing mode.
 .EXAMPLE
-    Create Exchange COnnectors for routngtype seppmail
-
-    New-SC365Connectors -maildomain 'contoso.eu' -region 'ch' -routing 'seppmail'
+    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -region 'ch' -routing 'seppmail'
+    Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud
+.EXAMPLE
+    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -routing 'microsoft' -region 'de'
+    Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
+.INPUTS
+    
+.OUTPUTS
+    Inbound and OutboundConnectors
+.NOTES
+    See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
 function New-SC365Connectors
 {
@@ -391,7 +399,10 @@ function New-SC365Connectors
 .DESCRIPTION
     Convenience function to remove the SEPPmail connectors
 .EXAMPLE
-    Remove-SC365Connectors
+    PS C:\> Remove-SC365Connectors
+    Removes all SEPPmail Connectors from the exchange online environment.
+.NOTES
+    See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
 function Remove-SC365Connectors
 {
@@ -480,6 +491,8 @@ function Remove-SC365Connectors
     Convenience function to perform a backup of all existing connectors
 .EXAMPLE
     Backup-SC365Connectors -OutFolder "C:\temp"
+.NOTES
+    See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
 function Backup-SC365Connectors
 {

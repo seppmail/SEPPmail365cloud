@@ -11,7 +11,7 @@
 .OUTPUTS
     HTML Report
 .NOTES
-    
+    See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
 function New-SC365ExOReport {
     [CmdletBinding(SupportsShouldProcess=$true,
@@ -255,7 +255,7 @@ function Get-SC365Setup {
 .OUTPUTS
     TenantID (GUID) as string
 .NOTES
-    General notes
+    See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
 Function Get-SC365TenantID {
     param (
@@ -295,7 +295,7 @@ Function Get-SC365TenantID {
 .OUTPUTS
     true/false
 .NOTES
-    
+    See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
 function Test-SC365ConnectionStatus
 {

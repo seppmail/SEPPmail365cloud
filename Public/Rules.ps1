@@ -50,6 +50,30 @@ function Get-SC365Rules {
     }
 }
 
+<#
+.SYNOPSIS
+    Create transport rules for routingmode "microsoft"
+.DESCRIPTION
+    Creates all necessary transport rules in Exchange Online to send E-Mails through seppmail.cloud for cryptographic processing.
+.EXAMPLE
+    PS C:\> New-SC365Rules -routing 'microsoft'
+    Thats the one-show-solves-all-problem CmdLet with interactive questioning on rule generation. It will search for existing rules, create new rules and ask if rules are placed on top (before all other) or bottom (after all other).
+.EXAMPLE
+    PS C:\> New-SC365Rules -routing 'microsoft' -PlacementPriority Bottom
+    Places the transport rules AFTER all other rules. If you want to place them before, use "TOP" as parameter value.
+.EXAMPLE
+    PS C:\> New-SC365Rules -routing 'microsoft' -disabled
+    Sets the transport rules up, but keeps them inactive. For a smoother integration.
+.EXAMPLE
+    PS C:\> New-SC365Rules -routing 'seppmail'
+    Does literally nothing, except a message to the user that there are no rules needed.
+.INPUTS
+    none
+.OUTPUTS
+    transport rules
+.NOTES
+    
+#>
 function New-SC365Rules
 {
     [CmdletBinding(SupportsShouldProcess = $true,
@@ -244,7 +268,7 @@ function New-SC365Rules
 .DESCRIPTION
     Convenience function to remove the SEPPmail.cloud rules in one CmdLet.
 .EXAMPLE
-    Remove-SC365Rules -Routing 'microsoft'
+    Remove-SC365Rules -routing 'microsoft'
 #>
 function Remove-SC365Rules {
     [CmdletBinding(SupportsShouldProcess = $true,
