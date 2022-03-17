@@ -15,7 +15,7 @@ function Get-SC365Connectors
     Param
     (
         [Parameter(
-            Mandatory = $true
+            Mandatory = $false
         )]
         [ValidateSet('seppmail','microsoft')]
         $routing
@@ -410,14 +410,6 @@ function Remove-SC365Connectors
                    ConfirmImpact='Medium')]
     Param
     (
-        
-        [Parameter(
-            Mandatory = $true,
-            Helpmessage = 'The GeoRegion of the connector to you want to remove'
-        )]
-        [ValidateSet('ch','prv')]
-        [String]$region,
-        
         [Parameter(
             Mandatory = $true,
             Helpmessage = 'The routing tyoe of the connector to you want to remove'

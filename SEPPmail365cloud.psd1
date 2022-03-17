@@ -77,11 +77,11 @@ RequiredModules = @(
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(    
     #'Backup-SC365Connectors'
-    #   'Get-SC365Connectors'
+       'Get-SC365Connectors'
        'New-SC365Connectors'
     'Remove-SC365Connectors'
     #'Backup-SC365Rules'
-    #   'Get-SC365Rules'
+       'Get-SC365Rules'
        'New-SC365Rules'
     'Remove-SC365Rules'
        'New-SC365ExOReport'

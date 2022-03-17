@@ -13,9 +13,8 @@ function Get-SC365Rules {
     [CmdletBinding()]
     param
     (
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('seppmail','microsoft')]
-        $routing
+        [Parameter(Mandatory = $false)]
+        $routing = 'microsoft'
     )
 
     if (!(Test-SC365ConnectionStatus))
@@ -277,11 +276,10 @@ function Remove-SC365Rules {
     param
     (
         [Parameter(
-            Mandatory = $true,
+            Mandatory = $false,
             HelpMessage = 'Use seppmail if the MX record points to SEPPmail and microsoft if the MX record points to the Microsoft Inrastructure'
         )]
-        [ValidateSet('microsoft','seppmail')]
-        [String]$routing
+        [String]$routing = 'microsoft'
     )
 
     begin {
