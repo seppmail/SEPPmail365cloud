@@ -1,4 +1,19 @@
-﻿function New-SC365ExOReport {
+﻿<#
+.SYNOPSIS
+    Generates a report of the current Status of the Exchange Online environment
+.DESCRIPTION
+    The report will write all needed information of Exchange Online into an HTML file. This is useful for documentation and decisions for the integration. It also makes sense as some sort of snapshot documentation before and after an integration into seppmail.cloud
+.EXAMPLE
+    PS C:\> New-SC365ExoReport -FilePath '~/Desktop'
+    This reads relevant information of Exchange Online and writes a summary report in an HTML file on the desktop
+.INPUTS
+    FilePath
+.OUTPUTS
+    HTML Report
+.NOTES
+    
+#>
+function New-SC365ExOReport {
     [CmdletBinding(SupportsShouldProcess=$true,
                    ConfirmImpact='Medium')]
     Param (
@@ -227,9 +242,32 @@ function Get-SC365Setup {
     End{}
 }
 
+<#
+.SYNOPSIS
+    Read Office/Microsoft365 Azure TenantID
+.DESCRIPTION
+    Every Exchange Online is part of some sort of Microsoft Subscription and each subscription has an Azure Active Directory included. We need the TenantId to identify managed domains in seppmail.cloud
+.EXAMPLE
+    PS C:\> Get-SC365TenantID -maildomain 'contoso.de'
+    Explanation of what the example does
+.INPUTS
+    Maildomain as string (mandatory)
+.OUTPUTS
+    TenantID (GUID) as string
+.NOTES
+    General notes
+#>
 Function Get-SC365TenantID {
     param (
         [Parameter(Mandatory=$true)]
+        [ValidateScript(
+            {   if (Get-AcceptedDomain -Identity $_ -Erroraction silentlycontinue) {
+                    $true
+                } else {
+                    Write-Error "Domain $_ could not get validated, please check accepted domains with 'Get-AcceptedDomains'"
+                }
+            }
+            )]           
         [string]$maildomain
     )
 
@@ -238,20 +276,41 @@ Function Get-SC365TenantID {
     Return $tenantid
 }
 
+<#
+.SYNOPSIS
+    Test Exchange Online connectivity
+.DESCRIPTION
+    When staying in a Powershell Session with Exchange Online many things can occur to disturb the session. The Test-SC365connectivity CmdLet figures out if the session is still valid
+.EXAMPLE
+    PS C:\> Test-SC365ConnectionStatus
+    Whithout any parameter the CmdLet emits just true or false
+.EXAMPLE
+    PS C:\> Test-SC365ConnectionStatus -showDefaultDomain
+    ShowDeaultdomain will also emit the current default e-mail domain 
+.EXAMPLE
+    PS C:\> Test-SC365ConnectionStatus -verbose
+    For deeper analisys of connectivity issues the verbose switch provides a lot of relevant information.
+.INPUTS
+    Inputs (if any)
+.OUTPUTS
+    true/false
+.NOTES
+    
+#>
 function Test-SC365ConnectionStatus
 {
     [CmdLetBinding()]
     Param
     (
-        [bool]$showDefaultDomain = $false
+        [Parameter(
+            Mandatory=$false,
+            HelpMessage = 'If turned on, the CmdLet will emit the current default domain'
+        )]
+        [switch]$showDefaultDomain
     )
 
     [bool] $isConnected = $false
 
-    # Modul geladen ==> Fehler
-    # Modul geladen aber keine Verbindung aufgebaut
-    # Modul gelaen aber kein Befehl möglich
-    # 
     Write-Verbose "Check if module ExchangeOnlinemanagement is imported"
     if(!(Get-Module ExchangeOnlineManagement -ErrorAction SilentlyContinue))
     {
@@ -310,7 +369,7 @@ function Test-SC365ConnectionStatus
                     [string] $Script:ExODefaultDomain = Get-AcceptedDomain | Where-Object{$_.Default} | Select-Object -ExpandProperty DomainName -First 1
 
                 }
-                if ($ShowDefaultdomain -eq $true) {"$Script:ExoDefaultdomain"}
+                if ($showDefaultDomain) {"$Script:ExoDefaultdomain"}
                 return $isConnected
             }
         }
