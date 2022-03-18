@@ -12,7 +12,7 @@
 RootModule = 'SEPPmail365cloud.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.8.2'
+ModuleVersion = '0.9.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Core')
@@ -132,13 +132,7 @@ PrivateData = @{
         IconUri = 'https://avatars1.githubusercontent.com/u/55975553?s=400&u=ab22c52a439397dca458e58dfcec9f0a9dd347db&v=4'
 
         # ReleaseNotes of this module
-        ReleaseNotes = 
-@'
-18.02.22    0.8.0 - First release with basic functionality
-
-18.02.22    0.8.1 - Fix mistake in Connector config, updated visuals and README.md
-
-'@
+        ReleaseNotes = 'See https://github.com/seppmail/SEPPmail365cloud/blob/main/CHANGELOG.md'
 
         # Prerelease string of this module
         # Prerelease = ''
