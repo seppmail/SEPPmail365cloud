@@ -15,7 +15,7 @@ function Get-SC365Connectors
     Param
     (
         [Parameter(
-            Mandatory = $false
+            Mandatory = $true
         )]
         [ValidateSet('seppmail','microsoft')]
         $routing
@@ -48,7 +48,6 @@ function Get-SC365Connectors
         else {
             Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found"
         }
-    
     
         if (Get-InboundConnector | Where-Object Identity -eq $($inbound.Name))
         {
@@ -97,7 +96,8 @@ function New-SC365Connectors
 {
     [CmdletBinding(
          SupportsShouldProcess = $true,
-         ConfirmImpact = 'Medium'
+         ConfirmImpact = 'Medium',
+         HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
      )]
 
     param
@@ -122,7 +122,7 @@ function New-SC365Connectors
             HelpMessage = 'Geographcal region of the seppmail.cloud service',
             Position = 1
         )]
-        [ValidateSet('ch','prv')]
+        [ValidateSet('ch','prv','de')]
         [String]$Region = 'ch',
 
         [Parameter(
@@ -143,7 +143,13 @@ function New-SC365Connectors
             Mandatory = $false,
             HelpMessage = 'Disable the connectors on creation'
         )]
-        [switch]$Disabled
+        [switch]$Disabled,
+
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Force overwrite of existing connectors and ignore hybrid setup'
+        )]
+        [switch]$force
 
     )
 
@@ -172,7 +178,7 @@ function New-SC365Connectors
 
         Write-Verbose "Set timestamp and Moduleversion for Comments"
         $Now = Get-Date
-        $moduleVersion = $MyInvocation.MyCommand.Version
+        $moduleVersion = $myInvocation.MyCommand.Version
         #endregion commonsetup
 
         #region collecting existing connectors and test for hybrid Setup
@@ -184,7 +190,7 @@ function New-SC365Connectors
         $HybridInboundConn = $allInboundConnectors |Where-Object {(($_.Name -clike 'Inbound from *') -or ($_.ConnectorSource -clike 'HybridWizard'))}
         $HybridOutBoundConn = $allOutboundConnectors |Where-Object {(($_.Name -clike 'Outbound to *') -or ($_.ConnectorSource -clike 'HybridWizard'))}
         
-        if ($HybridInboundConn -or $HybridOutBoundConn)
+        if (($HybridInboundConn -or $HybridOutBoundConn) -and (!($force)))
         {
             Write-Warning "!!! - Hybrid Configuration detected - we assume you know what you are doing. Be sure to backup your connector settings before making any change."
             if($InteractiveSession)
@@ -207,7 +213,7 @@ function New-SC365Connectors
                 # should we error out here, since connector creation might be dangerous?
             }
         } else {
-            Write-Information "No Hybrid Connectors detected, seems to be a clean cloud-only environment" -InformationAction Continue
+            Write-Verbose "No Hybrid Connectors detected, seems to be a clean cloud-only environment" -InformationAction Continue
         }
         #endregion
     }
@@ -235,8 +241,7 @@ function New-SC365Connectors
         if ($existingSMOutboundConn)
         {
             Write-Warning "Found existing SEPPmail.cloud outbound connector with name: `"$($existingSMOutboundConn.Name)`" created on `"$($existingSMOutboundConn.WhenCreated)`" pointing to SEPPmail `"$($existingSMOutboundConn.TlsDomain)`" "
-
-            if($InteractiveSession)
+            if (($InteractiveSession) -and (!($force)))
             {
                 [string] $tmp = $null
 
@@ -254,7 +259,7 @@ function New-SC365Connectors
 
                     Write-Verbose "Removing existing Outbound Connector $($existingSMOutboundConn.Name) !"
                     if ($PSCmdLet.ShouldProcess($($existingSMOutboundConn.Name), 'Removing existing SEPPmail.cloud Outbound Connector')) {
-                        $existingSMOutboundConn | Remove-OutboundConnector -Confirm:$false # user already confirmed action
+                        $existingSMOutboundConn | Remove-OutboundConnector -Confirm:$false # user confirmation action
 
                         if (!$?)
                         { throw $error[0] }
@@ -267,11 +272,17 @@ function New-SC365Connectors
             }
             else
             {
-                throw [System.Exception] "Outbound connector $($outbound.Name) already exists"
+                if (!($force)) {
+                    throw [System.Exception] "Outbound connector $($outbound.Name) already exists"
+                }
+                else {
+                    Write-Verbose "Removing existing OutBound Connector $existingSMOutboundConn.Identity dur to -force parameter"
+                    $existingSMOutboundConn | Remove-OutboundConnector -Confirm:$false # due to -force 
+                }
             }
         }
         else
-        {Write-Verbose "No existing Outbound Connector found"}
+        { Write-Verbose "No existing Outbound Connector found" }
 
         if($createOutbound)
         {
@@ -280,8 +291,8 @@ function New-SC365Connectors
             {
 
                 $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-
-                [void](New-OutboundConnector @param)
+                #[void]New-OutboundConnector @param
+                New-OutboundConnector @param
 
                 if(!$?)
                 {throw $error[0]}
@@ -308,7 +319,7 @@ function New-SC365Connectors
         {
             Write-Warning "Found existing SEPPmail.cloud inbound connector with name: `"$($existingSMInboundConn.Name)`", created `"$($existingSMInboundConn.WhenCreated)`" incoming SEPPmail is `"$($existingSMInboundConn.TlsSenderCertificateName)`""
 
-            if($InteractiveSession)
+            if (($InteractiveSession) -and (!($force)))
             {
                 [string] $tmp = $null
                 Do {
@@ -338,7 +349,13 @@ function New-SC365Connectors
             }
             else
             {
-                throw [System.Exception] "Inbound connector $($param.Name) already exists"
+                if (!($force)) {
+                    throw [System.Exception] "Inbound connector $($param.Name) already exists"
+                }
+                else {
+                    $existingSMInboundConn | Remove-InboundConnector -Confirm:$false # due to -force
+                }
+ 
             }
         }
         else
@@ -357,7 +374,8 @@ function New-SC365Connectors
             {
 
                 $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-                [void](New-InboundConnector @param)
+                #[void](New-InboundConnector @param)
+                New-InboundConnector @param
 
                 if(!$?) {
                     throw $error[0]
@@ -378,7 +396,7 @@ function New-SC365Connectors
                         }
                         Write-verbose "Adding IPaddress list with content $finalIPList to hosted connection filter policy $($hcfp.Id)"
                         if ($FinalIPList) {
-                            Set-HostedConnectionFilterPolicy -Identity $hcfp.Id -IPAllowList $finalIPList
+                            [void](Set-HostedConnectionFilterPolicy -Identity $hcfp.Id -IPAllowList $finalIPList)
                         }
                     }
                     #endRegion - Hosted Connection Filter Policy WhiteList
@@ -434,7 +452,7 @@ function Remove-SC365Connectors
     {
         if (Get-OutboundConnector | Where-Object Identity -eq $($outbound.Name))
         {
-            Remove-OutboundConnector $outbound.Name
+            Remove-OutboundConnector $outbound.Name -confirm:$false
         }
         else {
             Write-Warning 'No SEPPmail Outbound Connector found'
@@ -450,9 +468,9 @@ function Remove-SC365Connectors
             
             [string]$InboundSEPPmailIP = $null
             if ($inboundConnector.TlsSenderCertificateName) {
-                $InboundSEPPmailIP = Resolve-IPv4Address -fqdn $($inboundConnector.TlsSenderCertificateName)
+                $InboundSEPPmailIP = $($inboundConnector.SenderIPAddresses)
             }
-            Remove-InboundConnector $inbound.Name
+            Remove-InboundConnector $inbound.Name -confirm:$false
 
             Write-Verbose "If Inbound Connector has been removed, remove also Whitelisted IPs"
             if ((!($Option -like 'NoAntiSpamWhiteListing')) -and (!(Get-InboundConnector | Where-Object Identity -eq $($inbound.Name))))
