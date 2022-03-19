@@ -468,7 +468,7 @@ function Remove-SC365Connectors
             
             [string]$InboundSEPPmailIP = $null
             if ($inboundConnector.TlsSenderCertificateName) {
-                $InboundSEPPmailIP = $($inboundConnector.SenderIPAddresses)
+                [array]$InboundSEPPmailIP = $inboundConnector.SenderIPAddresses -split ' '
             }
             Remove-InboundConnector $inbound.Name -confirm:$false
 
