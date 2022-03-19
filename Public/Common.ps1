@@ -91,8 +91,7 @@ function New-SC365ExOReport {
                 #"Whatis is $Whatif and `$pscmdlet.ShouldProcess is $($pscmdlet.ShouldProcess) "
                 #For later Use
             }
-            #$mv = '1.2.2'
-            $mv = (Get-Module SEPPmail365cloud).Version.ToString()
+            $mv = $myInvocation.MyCommand.Version
             $Top = "<p><h1>Exchange Online Report</h1><p>"
             $now = Get-Date
             $RepCreationDateTime = "<p><body>Report created: $now</body><p>"
