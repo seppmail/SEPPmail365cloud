@@ -279,6 +279,7 @@ function Remove-SC365Rules {
             Mandatory = $false,
             HelpMessage = 'Use seppmail if the MX record points to SEPPmail and microsoft if the MX record points to the Microsoft Inrastructure'
         )]
+        [ValidateSet('seppmail','microsoft')]
         [String]$routing = 'microsoft'
     )
 
