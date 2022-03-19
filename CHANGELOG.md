@@ -2,12 +2,15 @@
 
 0.9.0   "German-Cloud" Release
 
+Enhancements
 - Update CmdLet-based help for all CmdLets (Get-Help New-SC365ExoReport)
 - Updated IP4 and IP6 adresses for german seppmail.cloud based on status 17.03.22
 - Get-SC365TenantID is validating the maildomain against the current subscription
 - Test-SC365ConnectionStatus -showDefaultDomain parameter changed from bool to switch. No $true/$false neded anymore.
 - Added (and tested) -Whatif Support for all "New" and "Remove" CmdLets.
 - Added -force switch to New-SC365Connectors. with Force this CmdLet works without any interation
+
+Fixes
 - Fixed Module Version issue in Test-SC365Connectors
 
 
