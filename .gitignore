@@ -2,3 +2,4 @@ experiments/*
 test/*
 signing/*
 ceo.ps1
+launch.json
