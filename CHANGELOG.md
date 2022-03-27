@@ -7,11 +7,13 @@ Enhancements
 - Updated IP4 and IP6 adresses for german seppmail.cloud based on status 17.03.22
 - Get-SC365TenantID is validating the maildomain against the current subscription
 - Test-SC365ConnectionStatus -showDefaultDomain parameter changed from bool to switch. No $true/$false neded anymore.
-- Added (and tested) -Whatif Support for all "New" and "Remove" CmdLets.
-- Added -force switch to New-SC365Connectors. with Force this CmdLet works without any interation
+- Added (and tested) -WhatIf Support for all "New" and "Remove" CmdLets.
+- Added -force switch to New-SC365Connectors. With Force, this CmdLet works without any interation.
+- Added -InbounOnly switch to New-SC365Connectors. Now you can create only Inbound COnnectors in -routing 'seppmail' mode.
 
 Fixes
-- Fixed Module Version issue in Test-SC365Connectors
+
+- Fixed module version issue in Test-SC365Connectors
 
 
 0.8.2   Add correct Code signature
