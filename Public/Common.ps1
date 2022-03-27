@@ -15,7 +15,9 @@
 #>
 function New-SC365ExOReport {
     [CmdletBinding(SupportsShouldProcess=$true,
-                   ConfirmImpact='Medium')]
+                   ConfirmImpact='Medium',
+                   HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
+                   )]
     Param (
         # Define output Filapath
         [Parameter(   
@@ -257,6 +259,9 @@ function Get-SC365Setup {
     See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
 Function Get-SC365TenantID {
+    [CmdLetBinding(
+        HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
+    )]
     param (
         [Parameter(Mandatory=$true)]
         [ValidateScript(
@@ -298,7 +303,9 @@ Function Get-SC365TenantID {
 #>
 function Test-SC365ConnectionStatus
 {
-    [CmdLetBinding()]
+    [CmdLetBinding(
+        HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
+    )]
     Param
     (
         [Parameter(

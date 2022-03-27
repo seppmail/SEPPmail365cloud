@@ -11,7 +11,9 @@
 #>
 function Get-SC365Connectors
 {
-    [CmdletBinding()]
+    [CmdletBinding(
+        HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
+    )]
     Param
     (
         [Parameter(
@@ -425,7 +427,9 @@ function New-SC365Connectors
 function Remove-SC365Connectors
 {
     [CmdletBinding(SupportsShouldProcess=$true,
-                   ConfirmImpact='Medium')]
+                   ConfirmImpact='Medium',
+                   HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
+                   )]
     Param
     (
         [Parameter(

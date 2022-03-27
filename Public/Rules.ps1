@@ -10,7 +10,9 @@
     Get-SC365Rules -Routing 'microsoft'
 #>
 function Get-SC365Rules {
-    [CmdletBinding()]
+    [CmdletBinding(
+        HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
+    )]
     param
     (
         [Parameter(Mandatory = $false)]
@@ -76,7 +78,8 @@ function Get-SC365Rules {
 function New-SC365Rules
 {
     [CmdletBinding(SupportsShouldProcess = $true,
-                   ConfirmImpact = 'Medium'
+                   ConfirmImpact = 'Medium',
+                   HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
                   )]
     param
     (
@@ -271,7 +274,8 @@ function New-SC365Rules
 #>
 function Remove-SC365Rules {
     [CmdletBinding(SupportsShouldProcess = $true,
-                   ConfirmImpact = 'Medium'
+                   ConfirmImpact = 'Medium',
+                   HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
                   )]
     param
     (
