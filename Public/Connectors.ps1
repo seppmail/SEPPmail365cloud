@@ -534,7 +534,9 @@ function Remove-SC365Connectors
                     [System.Collections.ArrayList]$existingAllowList = $hcfp.IPAllowList
                     Write-verbose "Removing SEPPmail Appliance IP $InboundSEPPmailIP from Policy $($hcfp.Id)"
                     if ($existingAllowList) {
-                        $existingAllowList.Remove($InboundSEPPmailIP)
+                        foreach ($IP in $InboundSEPPmailIP) {
+                            $existingAllowList.Remove($IP)
+                        }
                         Set-HostedConnectionFilterPolicy -Identity $hcfp.Id -IPAllowList $existingAllowList
                         Write-Information "IP: $InboundSEPPmailIP removed from Hosted Connection Filter Policy $hcfp.Id"
                 }
