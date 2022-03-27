@@ -109,14 +109,15 @@ function New-SC365Connectors
             Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
             Position = 0
             )]
-        [ValidatePattern('(?=^.{1,253}$)(^(((?!-)[a-zA-Z0-9-]{1,63}(?<!-))|((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63})$)')]
-        <#[Validatescript(
-                {
-                # Diese Abfrage gibt entweder ein Objekt zurück oder nichts ==> $true oder $false als Ausgabe
-                (Get-AcceptedDomain -Identity`'$_`')
+        # [ValidatePattern('(?=^.{1,253}$)(^(((?!-)[a-zA-Z0-9-]{1,63}(?<!-))|((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63})$)')]
+        [ValidateScript(
+            {   if (Get-AcceptedDomain -Identity $_ -Erroraction silentlycontinue) {
+                    $true
+                } else {
+                    Write-Error "Domain $_ could not get validated, please check accepted domains with 'Get-AcceptedDomains'"
                 }
-            )
-        ]#>
+            }
+            )]   
         [Alias('domain')]
         [String] $maildomain,
 
