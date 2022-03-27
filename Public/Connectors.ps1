@@ -99,6 +99,7 @@ function New-SC365Connectors
     [CmdletBinding(
          SupportsShouldProcess = $true,
          ConfirmImpact = 'Medium',
+         DefaultparameterSetname = 'BothDirections',
          HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
      )]
 
@@ -106,6 +107,13 @@ function New-SC365Connectors
     (
         [Parameter(
             Mandatory = $true,
+            ParameterSetname = 'Bothdirections',
+            Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
+            Position = 0
+            )]
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetname = 'InBoundOnly',
             Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
             Position = 0
             )]
@@ -122,6 +130,14 @@ function New-SC365Connectors
         [String] $maildomain,
 
         [Parameter(
+            Mandatory = $false,
+            ParameterSetName = 'BothDirections',
+            HelpMessage = 'Geographcal region of the seppmail.cloud service',
+            Position = 1
+        )]
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetName = 'InBoundOnly',
             HelpMessage = 'Geographcal region of the seppmail.cloud service',
             Position = 1
         )]
@@ -129,7 +145,15 @@ function New-SC365Connectors
         [String]$Region = 'ch',
 
         [Parameter(
+            Mandatory = $false,
+            ParameterSetname = 'BothDirections',
             Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"microsoft`": mx points to Microsoft',
+            Position = 2
+            )]
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetname = 'InBoundOnly',
+            Helpmessage = '`"seppmail`": mx points to SEPPmail.cloud, `"microsoft`": mx points to Microsoft',
             Position = 2
             )]
         [ValidateSet('seppmail','microsoft')]
@@ -137,6 +161,19 @@ function New-SC365Connectors
 
         [Parameter(
             Mandatory = $false,
+            ParameterSetName = 'InBoundOnly',
+            HelpMessage = 'For routingtype `"seppmail`", if only inbound service is used.'
+        )]
+        [switch]$inBoundOnly = $false,
+
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetName = 'BothDirections',
+            HelpMessage = 'Which configuration option to use'
+        )]
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetName = 'InBoundOnly',
             HelpMessage = 'Which configuration option to use'
         )]
         [ValidateSet('NoAntiSpamWhiteListing')]
@@ -144,16 +181,27 @@ function New-SC365Connectors
 
         [Parameter(
             Mandatory = $false,
+            ParameterSetName = 'BothDirections',
+            HelpMessage = 'Disable the connectors on creation'
+        )]
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetName = 'InBoundOnly',
             HelpMessage = 'Disable the connectors on creation'
         )]
         [switch]$Disabled,
 
         [Parameter(
             Mandatory = $false,
+            ParameterSetname = 'BothDirections',
+            HelpMessage = 'Force overwrite of existing connectors and ignore hybrid setup'
+        )]
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetname = 'InBoundOnly',
             HelpMessage = 'Force overwrite of existing connectors and ignore hybrid setup'
         )]
         [switch]$force
-
     )
 
     begin
@@ -287,7 +335,7 @@ function New-SC365Connectors
         else
         { Write-Verbose "No existing Outbound Connector found" }
 
-        if($createOutbound)
+        if($createOutbound -and (!($inboundonly)))
         {
             Write-Verbose "Creating SEPPmail.cloud Outbound Connector $($param.Name)!"
             if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Outbound Connector'))
