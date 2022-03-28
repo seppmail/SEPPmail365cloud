@@ -32,46 +32,25 @@ function Get-SC365Connectors
 
         $inbound = Get-SC365InboundConnectorSettings -Routing $routing
         $outbound = Get-SC365OutboundConnectorSettings -Routing $routing
-    
-        if (Get-OutboundConnector | Where-Object Identity -eq $($outbound.Name))
-        {
-            $obc = Get-OutboundConnector $outbound.Name
-            $obOutputHT = [ordered]@{
-                   OutBoundConnectorName = $obc.Name
-             OutBoundConnectorSmartHosts = $obc.SmartHosts
-              OutBoundConnectorTlsDomain = $obc.TlsDomain
-            OutBoundConnectorTlsSettings = $obc.TlsSettings
-                OutBoundConnectorEnabled = $obc.Enabled
-            }
-            $obOutputConnector = New-Object -TypeName PSObject -Property $obOutputHt
-            Write-Output $obOutputConnector
+        $obc = Get-OutboundConnector $outbound.Name
+        $ibc = Get-InboundConnector $inbound.Name
 
+        if ($obc | Where-Object Identity -eq $($outbound.Name))
+        {
+            $obc
         }
         else {
             Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found"
         }
-    
-        if (Get-InboundConnector | Where-Object Identity -eq $($inbound.Name))
+        if ($ibc | Where-Object Identity -eq $($inbound.Name))
         {
-            $ibc = Get-InboundConnector $inbound.Name
-
-            $ibOutputHT = [ordered]@{
-                                InboundConnectorName = $ibc.Name
-                   InboundConnectorSenderIPAddresses = $ibc.SenderIPAddresses
-            InboundConnectorTlsSenderCertificateName = $ibc.TlsSenderCertificateName
-                          InboundConnectorRequireTLS = $ibc.RequireTLS
-                             InboundConnectorEnabled = $ibc.Enabled
-            }
-            $ibOutputConnector = New-Object -TypeName PSObject -Property $ibOutputHt
-            Write-Output $ibOutputConnector
+            $ibc
 
         }
         else 
         {
             Write-Warning "No SEPPmail.cloud Inbound Connector with Name `"$($inbound.Name)`" found"
         }
-    
-    
     }
 }
 
@@ -538,7 +517,7 @@ function Remove-SC365Connectors
                             $existingAllowList.Remove($IP)
                         }
                         Set-HostedConnectionFilterPolicy -Identity $hcfp.Id -IPAllowList $existingAllowList
-                        Write-Information "IP: $InboundSEPPmailIP removed from Hosted Connection Filter Policy $hcfp.Id"
+                        Write-Verbose "IP: $InboundSEPPmailIP removed from Hosted Connection Filter Policy $hcfp.Id"
                 }
             }
         }
