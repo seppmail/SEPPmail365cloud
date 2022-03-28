@@ -3,20 +3,19 @@
 0.9.1   "Bugfix Release of "German-Cloud" Release
 
 - Change "WhiteList" to "AllowList"
-- 
 
 0.9.0   "German-Cloud" Release
 
 Enhancements
 
 - Update CmdLet-based help for all CmdLets (Get-Help New-SC365ExoReport)
-- Updated IP4 and IP6 adresses for german seppmail.cloud based on status 17.03.22
+- Updated IP4 and IP6 addresses for german SEPPmail.cloud based on status 17.03.22
 - Remove-SC365rules has -routing 'microsoft' as default.
-- Get-SC365TenantID is validating the maildomain against the current subscription
-- Test-SC365ConnectionStatus -showDefaultDomain parameter changed from bool to switch. No $true/$false neded anymore.
+- Get-SC365TenantID is validating the E-mail domain against the current subscription
+- Test-SC365ConnectionStatus -showDefaultDomain parameter changed from bool to switch. No $true/$false needed anymore.
 - Added (and tested) -WhatIf Support for all "New" and "Remove" CmdLets.
-- Added -force switch to New-SC365Connectors. With Force, this CmdLet works without any interation.
-- Added -InbounOnly switch to New-SC365Connectors. Now you can create only Inbound COnnectors in -routing 'seppmail' mode.
+- Added -force switch to New-SC365Connectors. With Force, this CmdLet works without any interaction.
+- Added -InboundOnly switch to New-SC365Connectors. Now you can create only Inbound COnnectors in -routing 'seppmail' mode.
 
 Fixes
 
