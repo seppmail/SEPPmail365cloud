@@ -3,8 +3,10 @@
 0.9.0   "German-Cloud" Release
 
 Enhancements
+
 - Update CmdLet-based help for all CmdLets (Get-Help New-SC365ExoReport)
 - Updated IP4 and IP6 adresses for german seppmail.cloud based on status 17.03.22
+- Remove-SC365rules has -routing 'microsoft' as default.
 - Get-SC365TenantID is validating the maildomain against the current subscription
 - Test-SC365ConnectionStatus -showDefaultDomain parameter changed from bool to switch. No $true/$false neded anymore.
 - Added (and tested) -WhatIf Support for all "New" and "Remove" CmdLets.
@@ -14,7 +16,6 @@ Enhancements
 Fixes
 
 - Fixed module version issue in Test-SC365Connectors
-
 
 0.8.2   Add correct Code signature
 
