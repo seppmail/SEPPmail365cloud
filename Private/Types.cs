@@ -17,7 +17,7 @@ namespace SC365
         Default,
         // DisabledSPFIncoming,
         // DisabledSPFInternal,
-        NoAntiSpamWhiteListing
+        NoAntiSpamAllowListing
     }
 
     // Available cloud regions
@@ -333,7 +333,7 @@ namespace SC365
         public string Name {get; private set;}
         public GeoRegion Region {get; private set;}
         public bool Skip {get; set;}
-        public List<string> WhiteList {get; private set;}
+        public List<string> AllowList {get; private set;}
 
         // This is for splatting
         public Hashtable ToHashtable(OperationType op = OperationType.Create)
@@ -342,8 +342,8 @@ namespace SC365
             ret[(op == OperationType.Create ? "Name" : "Identity")] = Name;
             ret["Region"] = Region;
 
-            if(WhiteList != null)
-                ret["WhiteList"] = WhiteList;
+            if(AllowList != null)
+                ret["AllowList"] = AllowList;
 
             return ret;
         }

@@ -1,4 +1,9 @@
-# CHanges in the PowerShell Module SEPPmail365cloud
+# Changes in the PowerShell Module SEPPmail365cloud
+
+0.9.1   "Bugfix Release of "German-Cloud" Release
+
+- Change "WhiteList" to "AllowList"
+- 
 
 0.9.0   "German-Cloud" Release
 

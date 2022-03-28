@@ -1,28 +1,28 @@
 {
     "Name"                         : "[SEPPmail.cloud] Geographical Cloud Region Configuration",
-    "Comment"                      : "Configuration details for i.e Anti-SPam Whitelists",
+    "Comment"                      : "Configuration details for i.e Anti-SPam AllowLists",
     "GeoRegion":
     {
         "ch":
         {
-            "IPv4WhiteList": [
+            "IPv4AllowList": [
                 "86.119.35.219/32",
                 "86.119.25.98/32",
                 "86.119.9.0/29",
                 "86.119.57.0/29"
             ],
-            "IPv6WhiteList": [
+            "IPv6AllowList": [
             ],
             "TlsCertificate": "*.ch.seppmail.cloud"
         },
         "prv":
         {
-            "IPv4WhiteList": [
+            "IPv4AllowList": [
                 "49.12.21.237",
                 "168.119.153.228",
                 "78.47.79.19"
             ],
-            "IPV6WhiteList": [
+            "IPV6AllowList": [
                 "2a01:4f8:c011:78a::1",
                 "2a01:4f8:1c17:f104::1",
                 "2a01:4f8:1c17:c547::1"
@@ -31,10 +31,10 @@
         },
         "de":
         {
-            "IPv4WhiteList": [
+            "IPv4AllowList": [
                 "162.55.72.192/27"
             ],
-            "IPv6WhiteList": [
+            "IPv6AllowList": [
                 "2a01:4f8:a0:900b::/64",
                 "2a01:4f8:272:5fe6::/64"
             ],

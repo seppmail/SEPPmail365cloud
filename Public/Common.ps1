@@ -321,7 +321,6 @@ function Test-SC365ConnectionStatus
     if(!(Get-Module ExchangeOnlineManagement -ErrorAction SilentlyContinue))
     {
         Write-Warning "ExchangeOnlineManagement module not yet imported"
-        Write-Warning "Importing ExchangeOnlineManagement module"
         Write-Verbose "Import-Module ExchangeOnlineManagement"
         $m = Import-Module ExchangeOnlineManagement -PassThru -ErrorAction SilentlyContinue
 
@@ -362,7 +361,9 @@ function Test-SC365ConnectionStatus
                         $isConnected = $true
                     }
                     catch
-                    {}
+                    {
+                        
+                    }
                 }
             } 
             else 

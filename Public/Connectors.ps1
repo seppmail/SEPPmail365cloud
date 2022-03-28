@@ -155,7 +155,7 @@ function New-SC365Connectors
             ParameterSetName = 'InBoundOnly',
             HelpMessage = 'Which configuration option to use'
         )]
-        [ValidateSet('NoAntiSpamWhiteListing')]
+        [ValidateSet('NoAntiSpamAllowListing')]
         [String[]]$Option,
 
         [Parameter(
@@ -203,7 +203,7 @@ function New-SC365Connectors
         Write-Verbose "Prepare GeoRegion configuration for region: $region"
         $CloudConfig = Get-Content "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -raw|Convertfrom-Json -AsHashtable
         $regionConfig = $cloudConfig.GeoRegion.($region.Tolower())
-        $SEPPmailIPv4Range = $regionConfig.IPv4WhiteList
+        $SEPPmailIPv4Range = $regionConfig.IPv4AllowList
         $TlsCertificateName = $regionConfig.TlsCertificate
 
         Write-Verbose "Set timestamp and Moduleversion for Comments"
@@ -410,11 +410,11 @@ function New-SC365Connectors
                 if(!$?) {
                     throw $error[0]
                 } else {
-                    #region - Add Region-based IP-range to hosted Connection Filter Policy Whitelist
-                    if (!($option -eq 'NoAntiSpamWhiteListing'))
+                    #region - Add Region-based IP-range to hosted Connection Filter Policy AllowList
+                    if (!($option -eq 'NoAntiSpamAllowListing'))
                     {
-                        Write-Verbose "Adding SEPPmail.cloud to whitelist in 'Hosted Connection Filter Policy'"
-                        Write-Verbose "Collecting existing WhiteList"
+                        Write-Verbose "Adding SEPPmail.cloud to AllowList in 'Hosted Connection Filter Policy'"
+                        Write-Verbose "Collecting existing AllowList"
                         $hcfp = Get-HostedConnectionFilterPolicy
                         [string[]]$existingAllowList = $hcfp.IPAllowList
                         Write-verbose "Adding SEPPmail.cloud IP ranges to HostedConnectionFilterPolicy $($hcfp.Id)"
@@ -429,7 +429,7 @@ function New-SC365Connectors
                             [void](Set-HostedConnectionFilterPolicy -Identity $hcfp.Id -IPAllowList $finalIPList)
                         }
                     }
-                    #endRegion - Hosted Connection Filter Policy WhiteList
+                    #endRegion - Hosted Connection Filter Policy AllowList
                 }
             }
         }
@@ -467,7 +467,7 @@ function Remove-SC365Connectors
         [ValidateSet('seppmail','microsoft')]
         [String]$routing,
         
-        [ValidateSet('NoAntiSpamWhiteListing')]
+        [ValidateSet('NoAntiSpamAllowListing')]
         [String]$option
     )
 
@@ -496,7 +496,7 @@ function Remove-SC365Connectors
         $InboundConnector = Get-InboundConnector | Where-Object Identity -eq $($inbound.Name)
         if ($inboundConnector)
             {
-            Write-Verbose 'Collect Inbound Connector IP for later Whitelistremoval'
+            Write-Verbose 'Collect Inbound Connector IP for later AllowListremoval'
             
             [string]$InboundSEPPmailIP = $null
             if ($inboundConnector.TlsSenderCertificateName) {
@@ -504,12 +504,12 @@ function Remove-SC365Connectors
             }
             Remove-InboundConnector $inbound.Name -confirm:$false
 
-            Write-Verbose "If Inbound Connector has been removed, remove also Whitelisted IPs"
-            if ((!($Option -like 'NoAntiSpamWhiteListing')) -and (!(Get-InboundConnector | Where-Object Identity -eq $($inbound.Name))))
+            Write-Verbose "If Inbound Connector has been removed, remove also AllowListed IPs"
+            if ((!($Option -like 'NoAntiSpamAllowListing')) -and (!(Get-InboundConnector | Where-Object Identity -eq $($inbound.Name))))
             {
-                    Write-Verbose "Remove SEPPmail Appliance IP from Whitelist in 'Hosted Connection Filter Policy'"
+                    Write-Verbose "Remove SEPPmail Appliance IP from AllowList in 'Hosted Connection Filter Policy'"
                     
-                    Write-Verbose "Collecting existing WhiteList"
+                    Write-Verbose "Collecting existing AllowList"
                     [System.Collections.ArrayList]$existingAllowList = $hcfp.IPAllowList
                     Write-verbose "Removing SEPPmail Appliance IP $InboundSEPPmailIP from Policy $($hcfp.Id)"
                     if ($existingAllowList) {
