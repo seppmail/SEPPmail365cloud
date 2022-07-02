@@ -12,6 +12,8 @@
                 "86.119.57.0/29"
             ],
             "IPv6AllowList": [
+                "2001:620:5ca1:200b::/64",
+                "2001:620:5ca1:4018::/64 "
             ],
             "TlsCertificate": "*.ch.seppmail.cloud"
         },
