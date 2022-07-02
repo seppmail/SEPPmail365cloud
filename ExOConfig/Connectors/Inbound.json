@@ -15,7 +15,6 @@
             "SenderDomains"                : "*",
             "SenderIPAddresses"            : "---Parameter input---",
             "TlsSenderCertificateName"     : "---Parameter input---"
-
         },
         "microsoft":
         {
