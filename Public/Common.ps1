@@ -179,7 +179,7 @@ function New-SC365ExOReport {
             
             Write-Verbose "OutboundConnectors"
             $hM = '<p><h3>Outbound Connectors</h3><p>'
-            $M = Get-ExoHTMLData -ExoCmd 'Get-OutboundConnector|Select-Object Identity,Enabled,SmartHosts,TlsDomain,TlsSettings,RecipientDomains,OriginatingServer,IsValid'
+            $M = Get-ExoHTMLData -ExoCmd 'Get-OutboundConnector -IncludeTestModeConnectors:$true|Select-Object Identity,Enabled,SmartHosts,TlsDomain,TlsSettings,RecipientDomains,OriginatingServer,IsValid'
             #endregion connectors
             
             #region mailflow rules
