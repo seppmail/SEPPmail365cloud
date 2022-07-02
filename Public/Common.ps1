@@ -19,13 +19,14 @@ function New-SC365ExOReport {
                    HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
                    )]
     Param (
-        # Define output Filapath
+        # Define output relative Filepath
         [Parameter(   
            Mandatory   = $true,
            HelpMessage = 'Relative path of the HTML report on disk',
-           ParameterSetName = 'Filepath'
+           ParameterSetName = 'Filepath',
+           Alias = 'Filepath'
         )]
-        $FilePath
+        $Path
     )
 
     begin

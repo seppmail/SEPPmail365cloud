@@ -1,0 +1,30 @@
+{
+    "routing":
+    {
+        "seppmail" :
+        {
+            
+        },
+        "microsoft" :
+        {
+            "Name":                                 "[SEPPmail.cloud] - Internal Mail Signature Loop Prevention",
+            "Comments":                             "Avoid mail loops if internal mail signature is enabled",
+            "RouteMessageOutboundConnector":        "[SEPPmail.cloud] ExO -> SEPPmail / MX:M365",
+            "SMPriority":                           0,
+            "FromScope":                            "InOrganization",
+            "SentToScope":                          "InOrganization",
+            "ExceptIfHeaderMatchesMessageHeader":   "X-SM-internal",
+            "ExceptIfHeaderMatchesPattern":         "yes",
+            "ExceptIfHeaderContainsMessageHeader":  "X-SM-incoming",
+            "ExceptIfHeaderContainsWords"           :"yes",
+            "Priority":                             3,
+            "SetAuditSeverity":                     "DoNotAudit",
+            "Mode":                                 "Enforce",
+            "SenderAddressLocation":                "Header"
+        }
+    },
+    "Option":
+        {
+            
+        }
+}

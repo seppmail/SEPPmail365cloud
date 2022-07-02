@@ -1,5 +1,17 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+0.9.5   "Maintenance release"
+
+Enhancements
+
+- New-SC365ExoReport now also includes hidden outbound "Testmode" Connectors
+- New-SC365Rules now supports -InternalSignature Parameter. This setting adds the two required rules to support this service.
+- 
+
+Fixes
+
+- Corrections, typo fixes and better graphics in Readme.MD
+
 0.9.1   "Bugfix Release of "German-Cloud" Release
 
 - Change "WhiteList" to "AllowList"
@@ -15,7 +27,7 @@ Enhancements
 - Test-SC365ConnectionStatus -showDefaultDomain parameter changed from bool to switch. No $true/$false needed anymore.
 - Added (and tested) -WhatIf Support for all "New" and "Remove" CmdLets.
 - Added -force switch to New-SC365Connectors. With Force, this CmdLet works without any interaction.
-- Added -InboundOnly switch to New-SC365Connectors. Now you can create only Inbound COnnectors in -routing 'seppmail' mode.
+- Added -InboundOnly switch to New-SC365Connectors. Now you can create only Inbound Connectors in -routing 'seppmail' mode.
 
 Fixes
 

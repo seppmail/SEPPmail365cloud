@@ -118,6 +118,14 @@ function New-SC365Rules
             Mandatory = $false,
             HelpMessage = 'Should the rules be created active or inactive'
         )]
+
+        [switch[]]$InternalSignature,
+
+        [Parameter(
+            Mandatory = $false,
+            HelpMessage = 'Add rules if you provisioned internal e-mail signature in the SEPPmail.cloud Service'
+        )]
+        
         [switch]$Disabled
     )
 
@@ -215,7 +223,7 @@ function New-SC365Rules
 
             if($createRules){
                
-                $transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
+                $transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\" -Exclude 'IntSig*'
 
                 foreach($file in $transportRuleFiles) {
                 
@@ -250,6 +258,45 @@ function New-SC365Rules
                         New-TransportRule @setting
                     }
     
+                }
+
+                # Add Code to create internal signature rules
+                if($InternalSignature -eq $true) {
+                    $IntSigRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\" -Filter 'IntSig*'
+
+                    foreach($file in $IntSigRuleFiles) {
+                
+                        $setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
+                        # $setting = $_
+    
+                        $setting.Priority = $placementPrio + $setting.SMPriority
+                        $setting.Remove('SMPriority')
+                        if ($Disabled -eq $true) {$setting.Enabled = $false}
+    
+                        if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPmail.cloud] - Route incoming e-mails to SEPmail.cloud')) {
+                            Write-Verbose "Excluding Inbound E-Mails domains $ExcludeEmailDomain"
+                            $Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
+                        }
+    
+                        if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPmail.cloud] - Route outgoing e-mails to SEPmail.cloud')) {
+                            Write-Verbose "Excluding Outbound E-Mail domains $ExcludeEmailDomain"
+                            $Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
+                        }
+    
+                        if ($PSCmdlet.ShouldProcess($setting.Name, "Create transport rule"))
+                        {
+                            #$param = $setting.ToHashtable()
+    
+                            <#Write-Debug "Transport rule settings:"
+                            $param.GetEnumerator() | Foreach-Object {
+                                Write-Debug "$($_.Key) = $($_.Value)"
+                            }#>
+                            Write-Verbose "Adding Timestamp to Comment"
+                            $Now = Get-Date
+                            $setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module on $now"
+                            New-TransportRule @setting
+                        }
+                    }
                 }
             }
         }
