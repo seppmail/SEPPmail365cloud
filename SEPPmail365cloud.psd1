@@ -30,7 +30,7 @@ CompanyName = 'SEPPmail AG'
 Copyright = '(c) SEPPmail AG. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'Integrate and maintain Exchange Online into the seppmaol.cloud'
+Description = 'Integrate and maintain Exchange Online with SEPPmail.Cloud'
 
 # Minimum version of the PowerShell engine required by this module
 PowerShellVersion = '7.2.0'
