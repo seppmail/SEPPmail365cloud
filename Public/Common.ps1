@@ -14,10 +14,12 @@
     See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
 function New-SC365ExOReport {
-    [CmdletBinding(SupportsShouldProcess=$true,
-                   ConfirmImpact='Medium',
-                   HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
-                   )]
+    [CmdletBinding(
+        SupportsShouldProcess = $true,
+                ConfirmImpact = 'Medium',
+      DefaultparameterSetname = 'FilePath',
+                      HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
+        )]
     Param (
         # Define output relative Filepath
         [Parameter(   
@@ -26,46 +28,64 @@ function New-SC365ExOReport {
            ParameterSetName = 'Filepath',
            Alias = 'Filepath'
         )]
-        $Path
+        $Path,
+
+        [Parameter(   
+           Mandatory   = $true,
+           HelpMessage = 'Literal path of the HTML report on disk',
+           ParameterSetName = 'LiteralPath'
+        )]
+        $Literalpath
     )
 
     begin
     {
-        if (!(Test-SC365ConnectionStatus))
-        { throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
+        if (!(Test-SC365ConnectionStatus)){
+            throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
         else {
             Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
             Write-verbose 'Defining Function fo read Exo Data and return an info Message in HTML even if nothing is retrieved'
         }
 
-        #region Filetest
-        If (!($FilePath.Contains('.'))) {
+        #region Filetest only if not $Literalpath is selected
+        if ($PsCmdlet.ParameterSetName -eq "FilePath") {
+            If (!($Path.Contains('.'))) {
 
-            Write-Verbose "Test if $Filepath exists"
-            If (!(Test-Path $FilePath)) {
-                throw [System.Exception] "$Filepath does not exist. Enter a valid filepath including filename like ~\exoreport.html"
+                Write-Verbose "Test if $Path exists"
+                If (!(Test-Path $Path)) {
+                    throw [System.Exception] "$Path does not exist. Enter a valid filepath including filename like ~\exoreport.html or c:\temp\expreport.html"
+                }
+                else {
+                    Write-Verbose "Creating and adding a filename as only a path was entered."
+                    $reporttimestamp = "{0:dd-MMMM-yyy_HH-mm-ss}" -f (Get-Date)
+                    $reportdomainname = Get-AcceptedDomain|where-object InitialDomain -eq $true|select-object -expandproperty Domainname
+                    $ReportFileName = $reportTimeStamp + $reportdomainname + '.html'
+
+                    $FinalPath = Join-path -Path $Path -ChildPath $ReportFileName
+                    Write-Verbose "File will be stored to $FinalPath"
+                }
+            
             }
             else {
-                $reporttimestamp = "{0:dd-MMMM-yyy_HH-mm-ss}" -f (Get-Date)
-                $reportdomainname = Get-AcceptedDomain|where-object InitialDomain -eq $true|select-object -expandproperty Domainname
-                $ReportFileName = $reportTimeStamp + $reportdomainname + '.html'
-                
-                Write-Verbose "$Filepath is a path (only), adding $ReportFilename"
-                $FilePath = Join-path -Path $FilePath -ChildPath $ReportFileName
+                $ParentFilePath = Split-Path $Path -Parent
+                If (!(Test-Path $ParentFilePath)) {
+                    throw [System.Exception] "The Path $ParentFilePath does not exist. Enter a valid filepath including filename like ~\exoreport.html"
+                }
+                else {
+                    Write-Verbose "Test if $Path is a valid Filename"
+                    
+                    If (!(($Path.Contains('.html')) -or ($Path.Contains('.html')))) {
+                        Write-Warning "$Path does not contain a usual html-report filename. We recommend using 'html' or 'htm' as file-extension."
+                    }
+                }
             }
-        
         }
         else {
-            $ParentFilePath = Split-Path $FilePath -Parent
-            If (!(Test-Path $ParentFilePath)) {
-                throw [System.Exception] "The Path $ParentFilePath does not exist. Enter a valid filepath including filename like ~\exoreport.html"
-            }
-            else {
-                Write-Verbose "Test if $Filepath is a valid Filename"
-                
-                If (!(($Filepath.Contains('.html')) -or ($Filepath.Contains('.html')))) {
-                    Write-Warning "$Filepath does not contain a usual html-report filename. We recommend using 'html' or 'htm' as file-extension."
-                }
+            $SplitLiteralPath = Split-Path -Path $LiteralPath -Parent
+            If (Test-Path -Path $SplitLiteralPath) {
+                $finalPath = $LiteralPath
+            } else {
+                throw [System.Exception] "$LiteralPath does not exist. Enter a valid literalüath like ~\exoreport.html or c:\temp\expreport.html"
             }
         }
         #endregion
@@ -97,7 +117,9 @@ function New-SC365ExOReport {
             $mv = $myInvocation.MyCommand.Version
             $Top = "<p><h1>Exchange Online Report</h1><p>"
             $now = Get-Date
-            $RepCreationDateTime = "<p><body>Report created: $now</body><p>"
+            $repUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+            $RepCreationDateTime = "<p><body>Report created on: $now</body><p>"
+            $RepCreatedBy = "<p><body>Report created by: $repUser</body><p>"
             $moduleVersion = "<p><body>SEPPmail365cloud Module Version: $mv</body><p>"
             $reportTenantID = Get-SC365TenantID -maildomain (Get-AcceptedDomain|where-object InitialDomain -eq $true|select-object -expandproperty Domainname)
             $TenantInfo = "<p><body>Microsoft O/M365 AzureAD Tenant ID: $reportTenantID</body><p>"
@@ -192,9 +214,9 @@ function New-SC365ExOReport {
 
 
             if ($psversiontable.PSedition -eq 'Desktop') {
-                $HeaderLogo = [Convert]::ToBase64String((Get-Content -path $PSScriptRoot\..\HTML\SEPPmailLogo.jpg -encoding byte ))
+                $HeaderLogo = [Convert]::ToBase64String((Get-Content -path $PSScriptRoot\..\HTML\SEPPmailLogo_T.jpg -encoding byte ))
             } else {
-                $HeaderLogo = [Convert]::ToBase64String((Get-Content -path $PSScriptRoot\..\HTML\SEPPmailLogo.jpg -AsByteStream))
+                $HeaderLogo = [Convert]::ToBase64String((Get-Content -path $PSScriptRoot\..\HTML\SEPPmailLogo_T.jpg -AsByteStream))
             }
 
 
@@ -204,12 +226,12 @@ function New-SC365ExOReport {
 
             $hEndOfReport = '<p><h2>--- End of Report ---</h2><p>'
             $style = Get-Content $modulepath\HTML\SEPPmailReport.css
-            Convertto-HTML -Body "$LogoHTML $Top $RepCreationDatetime $moduleVersion $TenantInfo`
+            Convertto-HTML -Body "$LogoHTML $Top $RepCreationDatetime $RepCreatedBy $moduleVersion $TenantInfo`
                    $hSplitLine $hGeneral $hSplitLine $hA $a $hB $b $hP $P $hO $o`
                   $hSplitLine $hSecurity $hSplitLine $hC $c $hd $d $hE $e $hK $k $hH $h $hJ $j $hJ1 $J1 `
                  $hSplitLine $hOtherConn $hSplitLine $hG $g $hI $i `
                 $hSplitLine $hConnectors $hSplitLine $hL $l $hM $m `
-            $hSplitLine $hTransPortRules $hSplitLine $hN $n $hEndofReport " -Title "SEPPmail365 Exo Report" -Head $style|Out-File -FilePath $filePath -Force
+            $hSplitLine $hTransPortRules $hSplitLine $hN $n $hEndofReport " -Title "SEPPmail365 Exo Report" -Head $style|Out-File -FilePath $FinalPath -Force
 
         }
         catch {
