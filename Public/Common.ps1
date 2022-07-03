@@ -265,14 +265,14 @@ Function Get-SC365TenantID {
     )]
     param (
         [Parameter(Mandatory=$true)]
-        [ValidateScript(
+        <#[ValidateScript(
             {   if (Get-AcceptedDomain -Identity $_ -Erroraction silentlycontinue) {
                     $true
                 } else {
                     Write-Error "Domain $_ could not get validated, please check accepted domains with 'Get-AcceptedDomains'"
                 }
             }
-            )]           
+            )]#>           
         [string]$maildomain
     )
 
@@ -410,6 +410,8 @@ function Test-SC365ConnectionStatus
         }
     }
 }
+
+Register-ArgumentCompleter -CommandName Get-SC365TenantId -ParameterName MailDomain -ScriptBlock $paramDomSB
 
 
 # SIG # Begin signature block
