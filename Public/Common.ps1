@@ -313,7 +313,15 @@ function Test-SC365ConnectionStatus
             Mandatory=$false,
             HelpMessage = 'If turned on, the CmdLet will emit the current default domain'
         )]
-        [switch]$showDefaultDomain
+        [switch]$showDefaultDomain,
+
+        [Parameter(
+            Mandatory=$false,
+            HelpMessage = 'If turned on, the CmdLet will remove all Exchange PS-Sessions except the latest one established.'
+        )]
+        [switch]$SessionCleanup
+
+
     )
 
     [bool] $isConnected = $false
@@ -341,9 +349,28 @@ function Test-SC365ConnectionStatus
         {
             Write-Verbose "PS-Session $exoPSSession is available"
             #$activemodule = Get-Command Get-AcceptedDomain|select-Object -Expandproperty Module|Select-Object -Expandproperty Name
-            $activemodule = $($exoPssession.CurrentModuleName)
+            $ActiveExoPSSession = $null
+
+            if ($exoPSSession.count -gt 1) {
+                Write-Verbose "Found $($exoPSSession.count) ExchangeOnline Sessions"
+                [int]$maxExoSession = ($exoPSSession|Select-Object -ExpandProperty id|Measure-Object -Maximum).Maximum
+                $ActiveExoPSSession = $exoPSSession|Where-Object {$_.Id -eq $maxExoSession}
+                Write-Verbose "Selecting $($ActiveExoPSSession.Name)"
+
+                if ($SessionCleanup) {
+                    $exoPssession|Where-Object {$_.Id -ne $maxExoSession}|foreach-object {
+                        Remove-PSSession -Id $_.Id
+                        Write-verbose "Cleanup - Removed old Session $_"
+                    }
+                }
+            } 
+            else {
+                $ActiveExoPSSession = $exoPsSession
+            }
+
+            $activemodule = $($ActiveExoPssession.CurrentModuleName)
             Write-Verbose "Active implicit remoting PS-Module name is $activeModule"
-            $activesession = Get-PSSession |Where-Object currentmodulename -eq $activemodule
+            $activeSession = $ActiveExoPSSession
             Write-Verbose "PS-Session for the active module is $activesession"
             Write-Verbose "Check expiry time of Auth-Token"
             $delta = New-TimeSpan -Start (Get-Date) -End $activesession.TokenExpiryTime.Datetime
