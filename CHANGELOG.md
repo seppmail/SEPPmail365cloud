@@ -6,6 +6,9 @@
 
 - New-SC365ExoReport now also includes hidden Microsoft outbound "Testmode" connectors
 - New-SC365Rules now supports -InternalSignature Parameter. This setting adds the two required rules to support this service. ONLY USE WHEN SERVICE is PROVISIONED, otherwise mailflow will fail.
+- Argument-Completers (automatically select correct values by pressing TAB after a parameter) for 
+  - New-SC365Connectors -MailDomain
+  - New-SC365Rules -ExcludeDomain
 
 
 ### Maintenance

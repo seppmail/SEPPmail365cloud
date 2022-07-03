@@ -96,15 +96,6 @@ function New-SC365Connectors
             Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
             Position = 0
             )]
-        # [ValidatePattern('(?=^.{1,253}$)(^(((?!-)[a-zA-Z0-9-]{1,63}(?<!-))|((?!-)[a-zA-Z0-9-]{1,63}(?<!-)\.)+[a-zA-Z]{2,63})$)')]
-        [ValidateScript(
-            {   if (Get-AcceptedDomain -Identity $_ -Erroraction silentlycontinue) {
-                    $true
-                } else {
-                    Write-Error "Domain $_ could not get validated, please check accepted domains with 'Get-AcceptedDomains'"
-                }
-            }
-            )]   
         [Alias('domain')]
         [String] $maildomain,
 
@@ -441,6 +432,7 @@ function New-SC365Connectors
     }
 }
 
+
 <#
 .SYNOPSIS
     Removes the SEPPmail inbound and outbound connectors
@@ -588,6 +580,9 @@ function Backup-SC365Connectors
 if (!(Get-Alias 'Set-SC365Connectors' -ErrorAction SilentlyContinue)) {
     New-Alias -Name Set-SC365Connectors -Value New-SC365Connectors
 }
+
+Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName MailDomain -ScriptBlock $paramDomSB
+
 
 # SIG # Begin signature block
 # MIIL1wYJKoZIhvcNAQcCoIILyDCCC8QCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

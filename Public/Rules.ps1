@@ -87,13 +87,6 @@ function New-SC365Rules
                    HelpMessage='Should the new rules be placed before or after existing ones (if any)')]
         [ValidateSet('Top','Bottom')]
         [String] $PlacementPriority = 'Top',
-        #[SC365.PlacementPriority] $PlacementPriority = [SC365.PlacementPriority]::Top,
-
-        <#
-        [Parameter(Mandatory=$false,
-                   HelpMessage='Additional config options to activate')]
-        [SC365.ConfigOption[]] $Option,
-        #>
 
         [Parameter(
             Mandatory = $true,
@@ -104,14 +97,14 @@ function New-SC365Rules
 
         [Parameter(Mandatory=$false,
                    HelpMessage='E-Mail domains you want to exclude from beeing routed throu the SEPPmail.cloud')]
-        [ValidateScript(
+        <#[ValidateScript(
             {   if (Get-AcceptedDomain -Identity $_ -Erroraction silentlycontinue) {
                     $true
                 } else {
                     Write-Error "Domain $_ could not get validated, please check accepted domains with 'Get-AcceptedDomains'"
                 }
             }
-            )]           
+            )]#>
         [String[]]$ExcludeEmailDomain,
 
         [Parameter(
@@ -223,7 +216,7 @@ function New-SC365Rules
 
             if($createRules){
                
-                $transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\" -Exclude 'IntSig*'
+                $transportRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExoConfig\Rules\" -Exclude '24*','26*'
 
                 foreach($file in $transportRuleFiles) {
                 
@@ -246,54 +239,32 @@ function New-SC365Rules
 
                     if ($PSCmdlet.ShouldProcess($setting.Name, "Create transport rule"))
                     {
-                        #$param = $setting.ToHashtable()
-
-                        <#Write-Debug "Transport rule settings:"
-                        $param.GetEnumerator() | Foreach-Object {
-                            Write-Debug "$($_.Key) = $($_.Value)"
-                        }#>
-                        Write-Verbose "Adding Timestamp to Comment"
                         $Now = Get-Date
+                        Write-Verbose "Adding Timestamp $now to Comment"
                         $setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module on $now"
                         New-TransportRule @setting
                     }
     
                 }
 
-                # Add Code to create internal signature rules
                 if($InternalSignature -eq $true) {
-                    $IntSigRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\" -Filter 'IntSig*'
+                    Write-Verbose "Reading internal signature rule files"
+                    $IntSigRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExoConfig\Rules\" -Include '24*','26*'
 
                     foreach($file in $IntSigRuleFiles) {
                 
+                        Write-Verbose "Reading rule settings for file $($file.name)"
                         $setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
-                        # $setting = $_
-    
                         $setting.Priority = $placementPrio + $setting.SMPriority
                         $setting.Remove('SMPriority')
                         if ($Disabled -eq $true) {$setting.Enabled = $false}
-    
-                        if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPmail.cloud] - Route incoming e-mails to SEPmail.cloud')) {
-                            Write-Verbose "Excluding Inbound E-Mails domains $ExcludeEmailDomain"
-                            $Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
-                        }
-    
-                        if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPmail.cloud] - Route outgoing e-mails to SEPmail.cloud')) {
-                            Write-Verbose "Excluding Outbound E-Mail domains $ExcludeEmailDomain"
-                            $Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
-                        }
-    
+
                         if ($PSCmdlet.ShouldProcess($setting.Name, "Create transport rule"))
                         {
-                            #$param = $setting.ToHashtable()
-    
-                            <#Write-Debug "Transport rule settings:"
-                            $param.GetEnumerator() | Foreach-Object {
-                                Write-Debug "$($_.Key) = $($_.Value)"
-                            }#>
-                            Write-Verbose "Adding Timestamp to Comment"
                             $Now = Get-Date
+                            Write-Verbose "Adding Timestamp $now to Comment"
                             $setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module on $now"
+                            Write-Verbose "Creating TransportRule $Setting.Name"
                             New-TransportRule @setting
                         }
                     }
@@ -304,7 +275,6 @@ function New-SC365Rules
             throw [System.Exception] "Error: $($_.Exception.Message)"
         }
     }
-
     end
     {
 
@@ -444,6 +414,8 @@ function Backup-SC365Rules
 if (!(Get-Alias 'Set-SC365rules' -ErrorAction SilentlyContinue)) {
     New-Alias -Name Set-SC365Rules -Value New-SC365Rules
 }
+
+Register-ArgumentCompleter -CommandName New-SC365Rules -ParameterName ExcludeEmailDomain -ScriptBlock $paramDomSB
 
 # SIG # Begin signature block
 # MIIL1wYJKoZIhvcNAQcCoIILyDCCC8QCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
