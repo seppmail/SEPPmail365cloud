@@ -111,7 +111,7 @@ function New-SC365Rules
             Mandatory = $false,
             HelpMessage = 'Should the rules be created active or inactive'
         )]
-        [switch]$InternalSignature = $false,
+        [switch]$InternalSignature,
 
         [Parameter(
             Mandatory = $false,
@@ -246,10 +246,9 @@ function New-SC365Rules
     
                 }
 
-                if($InternalSignature -eq $true) {
+                if($InternalSignature) {
                     Write-Verbose "Reading internal signature rule files"
-                    $IntSigRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExoConfig\Rules\" -Include '24*','26*'
-
+                    $IntSigRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExoConfig\Rules\" -Filter '*Sig*'
                     foreach($file in $IntSigRuleFiles) {
                 
                         Write-Verbose "Reading rule settings for file $($file.name)"
