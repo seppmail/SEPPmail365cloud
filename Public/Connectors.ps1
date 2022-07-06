@@ -112,7 +112,7 @@ function New-SC365Connectors
             Position = 1
         )]
         [ValidateSet('ch','prv','de')]
-        [String]$Region = 'ch',
+        [String]$Region,
 
         [Parameter(
             Mandatory = $false,
@@ -127,7 +127,7 @@ function New-SC365Connectors
             Position = 2
             )]
         [ValidateSet('seppmail','microsoft')]
-        [String] $routing = 'seppmail',
+        [String] $routing,
 
         [Parameter(
             Mandatory = $false,
@@ -135,6 +135,19 @@ function New-SC365Connectors
             HelpMessage = 'For routingtype `"seppmail`", if only inbound service is used.'
         )]
         [switch]$inBoundOnly = $false,
+
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetname = 'BothDirections',
+            Helpmessage = 'Does not set IP-addresses of sending SEPPmail.cloud servers in EFSkipIPs-value in inbound connector.'
+            )]
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetname = 'InBoundOnly',
+            Helpmessage = 'Does not set IP-addresses of sending SEPPmail.cloud servers in EFSkipIPs in inbound connector',
+            Position = 2
+            )]
+        [switch]$NoInboundEFSkipIPs = $false,
 
         [Parameter(
             Mandatory = $false,
@@ -389,6 +402,14 @@ function New-SC365Connectors
             $param.RestrictDomainsToCertificate = $true
             $param.SenderIPAddresses = $SEPPmailIPv4Range
             $param.TlsSenderCertificateName = $TlsCertificateName
+
+            #region EFSkipIP in inbound connector
+            if ($NoInboundEFSkipIPs) {
+                Write-Verbose "Inbound Connector $param.Name will be build WITHOUT IP-addresses in EFSkipIPs"
+            } else {
+                [String[]]$EfSkipIPArray = "($cloudConfig.GeoRegion.($region.Tolower()).IPv4AllowList)" + "($cloudConfig.GeoRegion.($region.Tolower()).IPv4AllowList)"
+                $param.EFSkipIPs = $EfSkipIPArray
+            }
 
             Write-Verbose "Creating SEPPmail.cloud Inbound Connector $($param.Name)!"
             if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Inbound Connector'))

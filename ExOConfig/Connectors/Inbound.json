@@ -34,6 +34,6 @@
     },
     "Option":
     {
-       "NoAntiSpamAllowListing": false
+       "NoAntiSpamAllowListing"            : false
     }
 }

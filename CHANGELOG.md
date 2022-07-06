@@ -19,6 +19,8 @@ __Enhancements__
 __Maintenance__
 
 - Added numbered prefix to rule files for better identification and sorting order
+- Removed region ch as default value on connector creation.
+- Removed "seppmail" as default routing mode.
 
 __Fixes__
 
