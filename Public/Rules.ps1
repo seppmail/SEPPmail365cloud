@@ -111,8 +111,7 @@ function New-SC365Rules
             Mandatory = $false,
             HelpMessage = 'Should the rules be created active or inactive'
         )]
-
-        [switch[]]$InternalSignature,
+        [switch]$InternalSignature = $false,
 
         [Parameter(
             Mandatory = $false,
