@@ -407,7 +407,7 @@ function New-SC365Connectors
             if ($NoInboundEFSkipIPs) {
                 Write-Verbose "Inbound Connector $param.Name will be build WITHOUT IP-addresses in EFSkipIPs"
             } else {
-                [String[]]$EfSkipIPArray = "($cloudConfig.GeoRegion.($region.Tolower()).IPv4AllowList)" + "($cloudConfig.GeoRegion.($region.Tolower()).IPv4AllowList)"
+                [String[]]$EfSkipIPArray = $cloudConfig.GeoRegion.($region.Tolower()).IPv4AllowList + $cloudConfig.GeoRegion.($region.Tolower()).IPv6AllowList
                 $param.EFSkipIPs = $EfSkipIPArray
             }
 
