@@ -1,18 +1,23 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
-## 0.9.5   "Maintenance release"
+## 0.9.5   "Internal Signature Release"
 
 __Enhancements__
 
 - New-SC365ExoReport:
   - now also includes hidden Microsoft outbound "Testmode" connectors
-  - Adds the logged on User as Report-Creator in the header
+  - Adds the logged on user as Report-Creator in the header
   - Now has a transparent Logo
+
 - New-SC365Rules now supports -InternalSignature Parameter. This setting adds the two required rules to support this service. ONLY USE WHEN SERVICE is PROVISIONED, otherwise mailflow will fail.
+
 - Added Argument-Completers (automatically select correct values by pressing TAB after a parameter) for
   - New-SC365Connectors -MailDomain
   - New-SC365Rules -ExcludeDomain
   - Get-SC365TenantID -MailDomain
+
+- New-SC365Connectors
+  - Now has a "NoInboundEFSkipIPs" switch. If you turn it on, we will not add IPv4 and IPv6 adresses to the EfSkipIps List of the inbound connector
 
 - Test-SC365ConnectionStatus now has a -SessionCleanup parameter to remove old Exchange PS Sessions.
 

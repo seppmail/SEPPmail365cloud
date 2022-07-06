@@ -25,9 +25,9 @@ function New-SC365ExOReport {
         [Parameter(   
            Mandatory   = $true,
            HelpMessage = 'Relative path of the HTML report on disk',
-           ParameterSetName = 'Filepath',
-           Alias = 'Filepath'
+           ParameterSetName = 'Filepath'
         )]
+        [Alias('FilePath')]
         $Path,
 
         [Parameter(   
@@ -85,7 +85,7 @@ function New-SC365ExOReport {
             If (Test-Path -Path $SplitLiteralPath) {
                 $finalPath = $LiteralPath
             } else {
-                throw [System.Exception] "$LiteralPath does not exist. Enter a valid literalüath like ~\exoreport.html or c:\temp\expreport.html"
+                throw [System.Exception] "$LiteralPath does not exist. Enter a valid literalpath like ~\exoreport.html or c:\temp\expreport.html"
             }
         }
         #endregion
@@ -213,12 +213,7 @@ function New-SC365ExOReport {
             #endregion transport rules
 
 
-            if ($psversiontable.PSedition -eq 'Desktop') {
-                $HeaderLogo = [Convert]::ToBase64String((Get-Content -path $PSScriptRoot\..\HTML\SEPPmailLogo_T.jpg -encoding byte ))
-            } else {
-                $HeaderLogo = [Convert]::ToBase64String((Get-Content -path $PSScriptRoot\..\HTML\SEPPmailLogo_T.jpg -AsByteStream))
-            }
-
+            $HeaderLogo = [Convert]::ToBase64String((Get-Content -path $PSScriptRoot\..\HTML\SEPPmailLogo_T.png -AsByteStream))
 
             $LogoHTML = @"
 <img src="data:image/jpg;base64,$($HeaderLogo)" style="left:150px alt="Exchange Online System Report">
