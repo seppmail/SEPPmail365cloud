@@ -35,19 +35,19 @@ The module requires *PowerShell Core*, mimimum version 7.2.1 and was tested on W
 
 PowerShell Core on Linux should work as well, but has not been intensively tested so far.
 
->Note: *Windows PowerShell (5.1) is not supported!* To run the module from Windows, install PowerShell Core on your Windows machine, using the Microsoft Store on your client or go to [Github](https://github.com/powershell/powershell) for installation details.
+>Note: *Windows PowerShell (5.1 and earlier versions) is not supported!* To run the module from Windows, install __PowerShell Core__ on your Windows machine, using the Microsoft Store or go to [Github](https://github.com/powershell/powershell) for other installation options.
 
 ## Security
 
-When connecting to Exchange Online, we recommend using the -Device login option. If you want to use credential-based login, use Microsoft "Secrets Management" module to store your username/passwords in a secure place on your disk.
+When connecting to Exchange Online, we recommend using the -Device or -Credential based login login option. If you want to use credential-based login, use Microsoft "Secrets Management" module to store your username/passwords in a secure place on your disk.
 
 ## Module Installation
 
->IMPORTANT! Do not use the other PowerShell Module we have on the PowerShell Gallery "SEPPmail365". This module will create NON-WORKING Setups as it is intended to be used with self-hosted SEPPmail Appliances.
+>IMPORTANT! Do not use the other PowerShell Module we have on the PowerShell Gallery "SEPPmail365". This module will create NON-WORKING setups as it is intended to be used with self-hosted SEPPmail Appliances.
 
 ### Installation on Windows
 
-To install the module, open Powershell Core (pwsh.exe) and execute:
+To install the SEPPmail365Cloud module, open Powershell Core (pwsh.exe) and execute:
 
 ```powershell
 Install-Module "SEPPmail365cloud" -scope Currentuser
@@ -64,11 +64,11 @@ sudo pwsh -command 'Install-Module PSWSMan' #Read more on this here https://gith
 sudo pwsh -Command 'Install-WSMan'
 ```
 
-**Further information** on connecting to Exchange Online and bring the module up and running can be found on our GitHub repository for the other PowerShell Module [SEPPmail365 module documentation](https://github.com/seppmail/SEPPmail365#module-installation).
+__Further information__ on connecting to Exchange Online and bring the module up and running can be found on our GitHub repository for out other PowerShell Module [SEPPmail365 module documentation](https://github.com/seppmail/SEPPmail365#module-installation).
 
 ## Routing modes
 
-When integrating your Exchange online environment with seppmail.cloud, you have to decide between two e-mail routing modes to microsoft. We either set the mx-record to *seppmail.cloud* or leave it at *Microsoft*. Customers routing e-Mails via seppmail.cloud benefit from our outstanding e-mail filter which prevents spam and unwanted software flowing into your network via e-mail.
+When integrating your Exchange online environment with seppmail.cloud, you have to decide between two e-mail routing modes to Microsoft. We either set the mx-record to *seppmail.cloud* or leave it at *Microsoft*. Customers routing e-Mails via seppmail.cloud benefit from our outstanding e-mail filter which prevents spam and unwanted software flowing into your network via e-mail.
 
 >Note: If you leave the mx-record at microsoft you cannot use the seppmail.cloud e-mail filter, but for sure our encryption processing possibilities.
 
@@ -76,7 +76,7 @@ Now lets look into the 2 different modes.
 
 ### Routing mode "seppmail*
 
-Routing mode "seppmail" allows you to use the full Power of the SEPPmail.Cloud! In this scenario, the **mx-record of the e-mail domain is set to the SEPPmail cloud hosts**. Inbound e-mails flow to the seppmail.cloud, are scanned, treated cryptographically and then flow to Microsoft via connectors. Same is outbound, the mails simply pass the SEPPmail.cloud before leaving to the internet.
+Routing mode "seppmail" allows you to use the full power of the SEPPmail.Cloud! In this scenario, the __mx-record of the e-mail domain is set to the SEPPmail cloud hosts__. Inbound e-mails flow to the SEPPmail.Cloud, are scanned, treated cryptographically and then flow to Microsoft via connectors. Same is outbound, the mails simply pass the SEPPmail.Cloud before leaving to the internet.
 
 ![seppmail](./Visuals/seppmail365cloud-mxseppmail.png)
 
@@ -94,6 +94,10 @@ After module setup is completed and you have connected to your Exchange Online e
 
 ```powershell
 New-SC365ExOReport -FilePath /Users/you/Desktop/ExoReport.html
+
+# Even simpler with automatic creation of filename with timestamp
+New-SC365ExOReport -FilePath ~/Desktop
+
 ```
 
 The report will give you valued information about existing connectors, rules and other mailflow-related information. Keep this report stored for later investigation or questions.
@@ -103,7 +107,7 @@ The report will give you valued information about existing connectors, rules and
 If your Exchange Online environment was originally integrated with a SEPPmail already, you need to backup, remove (or disable) the existing SEPPmail365 connectors and rules before integrating into seppmail.cloud.
 To do this use our OTHER PS-Module **SEPPmail365**. Find info on [backup and removal SEPPmail connectors and rules here.](https://github.com/seppmail/SEPPmail365#cleanup-environment)
 
->Note: *If you do not remove existing \[SEPPmail\] rules and connectors, the mailflow will be a mess and the integration will not work.*
+>Note: *If you do not remove existing __[SEPPmail]__ rules and connectors, the mailflow will be a mess and the integration will not work.*
 
 ## Setup the integration
 
