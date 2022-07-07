@@ -8,7 +8,7 @@
         {
             "Name"                                : "[SEPPmail.cloud] - Route outgoing e-mails to SEPPmail",
             "Comments"                            : "E-mails sent from inside the organization to the Internet are sent to SEPPmail.cloud crypto-processing.",
-            "RouteMessageOutboundConnector"       : "[SEPPmail.cloud] ExO -> SEPPmail / MX:M365",
+            "RouteMessageOutboundConnector"       : "[SEPPmail.cloud] ExO -> SEPPmail - MX:M365",
             "SMPriority"                          : 1,
             "FromScope"                           : "InOrganization",
             "SentToScope"                         : "NotInOrganization",

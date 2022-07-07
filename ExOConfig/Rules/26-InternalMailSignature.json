@@ -9,7 +9,7 @@
         {
             "Name":                                 "[SEPPmail.cloud] - Internal Mail Signature",
             "Comments":                             "E-mails sent from inside the organization to inside are sent to the SEPPmail.cloud for internal signature.",
-            "RouteMessageOutboundConnector":        "[SEPPmail.cloud] ExO -> SEPPmail / MX:M365",
+            "RouteMessageOutboundConnector":        "[SEPPmail.cloud] ExO -> SEPPmail - MX:M365",
             "SMPriority":                           3,
             "FromScope":                            "InOrganization",
             "SentToScope":                          "InOrganization",

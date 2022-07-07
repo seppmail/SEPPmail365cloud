@@ -3,7 +3,7 @@
     {
         "seppmail":
         {
-            "Name"                         : "[SEPPmail.cloud] SEPPmail -> ExO / MX:SEPPmail",
+            "Name"                         : "[SEPPmail.cloud] SEPPmail -> ExO - MX:SEPPmail",
             "Comment"                      : "Accept E-Mails from SEPPmail.cloud host.",
             "CloudServicesMailEnabled"     : false,
             "ConnectorSource"              : "Default",
@@ -18,7 +18,7 @@
         },
         "microsoft":
         {
-            "Name"                         : "[SEPPmail.cloud] SEPPmail -> ExO / MX:M365",
+            "Name"                         : "[SEPPmail.cloud] SEPPmail -> ExO - MX:M365",
             "Comment"                      : "Accept E-Mails from SEPPmail.cloud host.",
             "CloudServicesMailEnabled"     : true,
             "ConnectorSource"              : "Default",
