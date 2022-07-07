@@ -13,6 +13,14 @@ $paramDomSB = {
     Get-AcceptedDomain -Erroraction silentlycontinue|select-Object -ExpandProperty DomainName
 }
 
+<#
+$paramRegionSB = {
+    (Get-Content "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -raw|Convertfrom-Json -AsHashtable -NoEnumerate).GeoRegion.Keys
+}
+
+$paramRoutingModeSB = {
+    (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Inbound.json" -raw|Convertfrom-Json -AsHashtable -NoEnumerate).routing.Keys
+}#>
 
 Write-Verbose 'Loading Module Files'
 . $ModulePath\Private\PrivateFunctions.ps1

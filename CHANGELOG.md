@@ -17,7 +17,7 @@ __Enhancements__
   - Get-SC365TenantID -MailDomain
 
 - New-SC365Connectors
-  - Now has a "NoInboundEFSkipIPs" switch. If you turn it on, we will not add IPv4 and IPv6 adresses to the EfSkipIps List of the inbound connector
+  - Now has a "NoInboundEFSkipIPs" switch. If you turn it on, we will not add IPv4 and IPv6 addresses to the EFSkipIps (Enhanced Filtering) list of the inbound connector.
 
 - Test-SC365ConnectionStatus now has a -SessionCleanup parameter to remove old Exchange PS Sessions.
 
@@ -39,7 +39,6 @@ __Fixes__
 ## 0.9.0   "German-Cloud" Release
 
 __Enhancements__
-
 
 - Update CmdLet-based help for all CmdLets (Get-Help New-SC365ExoReport)
 - Updated IP4 and IP6 addresses for german SEPPmail.cloud based on status 17.03.22

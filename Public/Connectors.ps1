@@ -144,8 +144,7 @@ function New-SC365Connectors
         [Parameter(
             Mandatory = $false,
             ParameterSetname = 'InBoundOnly',
-            Helpmessage = 'Does not set IP-addresses of sending SEPPmail.cloud servers in EFSkipIPs in inbound connector',
-            Position = 2
+            Helpmessage = 'Does not set IP-addresses of sending SEPPmail.cloud servers in EFSkipIPs in inbound connector'
             )]
         [switch]$NoInboundEFSkipIPs = $false,
 
@@ -453,7 +452,6 @@ function New-SC365Connectors
     }
 }
 
-
 <#
 .SYNOPSIS
     Removes the SEPPmail inbound and outbound connectors
@@ -603,6 +601,8 @@ if (!(Get-Alias 'Set-SC365Connectors' -ErrorAction SilentlyContinue)) {
 }
 
 Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName MailDomain -ScriptBlock $paramDomSB
+#Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName region -ScriptBlock $paramRegionSB
+#Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName routing -ScriptBlock $paramRoutingModeSB
 
 
 # SIG # Begin signature block
