@@ -4,7 +4,7 @@
 
 __Bugs__
 
-- Microsoft doesnt allow "/" in Inbiound Connector names - all Connector replaced "/" to "-"
+- Microsoft does not allow "/" in Inbound Connector names in some tenants - Connector-name character replaced: "/" to "-"
 - Copy/paste error in IPv6AllowList of prv - fixed
 
 ## 0.9.5   "Internal Signature Release"
