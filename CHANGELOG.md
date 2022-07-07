@@ -1,5 +1,12 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 0.9.6 Bugfix Release Internal Sinature
+
+__Bugs__
+
+- Microsoft doesnt allow "/" in Inbiound Connector names - all Connector replaced "/" to "-"
+- Copy/paste error in IPv6AllowList of prv - fixed
+
 ## 0.9.5   "Internal Signature Release"
 
 __Enhancements__
