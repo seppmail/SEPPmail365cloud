@@ -117,7 +117,11 @@ function New-SC365ExOReport {
             $mv = $myInvocation.MyCommand.Version
             $Top = "<p><h1>Exchange Online Report</h1><p>"
             $now = Get-Date
-            $repUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+            if ($PSVersionTable.OS -like 'Microsoft Windows*') {
+                $repUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+            } else {
+                $repUser = (hostname) + '/' + (whoami)
+            }
             $RepCreationDateTime = "<p><body>Report created on: $now</body><p>"
             $RepCreatedBy = "<p><body>Report created by: $repUser</body><p>"
             $moduleVersion = "<p><body>SEPPmail365cloud Module Version: $mv</body><p>"
