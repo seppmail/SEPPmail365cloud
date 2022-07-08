@@ -2,5 +2,5 @@ experiments/*
 test/*
 signing/*
 ceo.ps1
-gitinfo.ps1
 launch.json
+gitinfo*
