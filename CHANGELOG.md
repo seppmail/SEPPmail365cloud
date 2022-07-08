@@ -1,10 +1,14 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 0.9.7 Quality Release Internal Signature
+
+- Fix "ExcludeMaildomain" Parameter in New-SC365Rules. Works now also with IntSig Rules.
+
 ## 0.9.6 Bugfix Release Internal Sinature
 
 __Bugs__
 
-- Microsoft does not allow "/" in Inbound Connector names in some tenants - Connector-name character replaced: "/" to "-"
+- Microsoft does not allow "/" in Inbound Connector names in some tenants. Connector-name character replaced: "/" to "-"
 - Copy/paste error in IPv6AllowList of prv - fixed
 
 ## 0.9.5   "Internal Signature Release"

@@ -92,19 +92,11 @@ function New-SC365Rules
             Mandatory = $true,
             HelpMessage = 'MX record->SEPPmail means routingtype seppmail, MX->Microsoft means routingtype microsoft'
         )]
-        [ValidateSet('microsoft','seppmail')]
+        [ValidateSet('microsoft')]
         [String]$routing,
 
         [Parameter(Mandatory=$false,
                    HelpMessage='E-Mail domains you want to exclude from beeing routed throu the SEPPmail.cloud')]
-        <#[ValidateScript(
-            {   if (Get-AcceptedDomain -Identity $_ -Erroraction silentlycontinue) {
-                    $true
-                } else {
-                    Write-Error "Domain $_ could not get validated, please check accepted domains with 'Get-AcceptedDomains'"
-                }
-            }
-            )]#>
         [String[]]$ExcludeEmailDomain,
 
         [Parameter(
@@ -157,7 +149,7 @@ function New-SC365Rules
                     Write-Warning '--------------------------------------------'
                     Do {
                         try {
-                            [ValidateSet('Top', 'Bottom', 'Cancel', 't', 'T', 'b', 'B', 'c', 'C', $null)]$existingRulesAction = Read-Host -Prompt "Where shall we place the SEPmail.cloud rules ? (Top(Default)/Bottom/Cancel)"
+                            [ValidateSet('Top', 'Bottom', 'Cancel', 't', 'T', 'b', 'B', 'c', 'C', $null)]$existingRulesAction = Read-Host -Prompt "Where shall we place the SEPPmail.cloud rules ? (Top(Default)/Bottom/Cancel)"
                         }
                         catch {}
                     }
@@ -180,14 +172,14 @@ function New-SC365Rules
             }
             Write-Verbose "Placement priority is $placementPrio"
 
-            Write-Verbose "Read existing SEPmail.cloud transport rules"
+            Write-Verbose "Read existing SEPPmail.cloud transport rules"
             $existingSMTransportRules = Get-TransportRule | Where-Object Name -Match '^\[SEPPmail.cloud\].*$'
             [bool] $createRules = $true
             if ($existingSMTransportRules)
             {
                 if($InteractiveSession)
                 {
-                    Write-Warning 'Found existing [SEPmail.cloud] transport rules.'
+                    Write-Warning 'Found existing [SEPPmail.cloud] transport rules.'
                     Write-Warning '--------------------------------------------'
                     foreach ($eSMtpr in $existingSMTransportRules) {
                         Write-Warning "Rule name `"$($eSMtpr.Name)`" with state `"$($eSMtpr.State)`" has priority `"$($eSMtpr.Priority)`""
@@ -226,12 +218,12 @@ function New-SC365Rules
                     $setting.Remove('SMPriority')
                     if ($Disabled -eq $true) {$setting.Enabled = $false}
 
-                    if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPmail.cloud] - Route incoming e-mails to SEPmail.cloud')) {
+                    if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - Route incoming e-mails to SEPPmail')) {
                         Write-Verbose "Excluding Inbound E-Mails domains $ExcludeEmailDomain"
                         $Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
                     }
 
-                    if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPmail.cloud] - Route outgoing e-mails to SEPmail.cloud')) {
+                    if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - Route outgoing e-mails to SEPPmail')) {
                         Write-Verbose "Excluding Outbound E-Mail domains $ExcludeEmailDomain"
                         $Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
                     }
@@ -250,12 +242,22 @@ function New-SC365Rules
                     Write-Verbose "Reading internal signature rule files"
                     $IntSigRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExoConfig\Rules\" -Filter '*Sig*'
                     foreach($file in $IntSigRuleFiles) {
-                
+
                         Write-Verbose "Reading rule settings for file $($file.name)"
                         $setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
                         $setting.Priority = $placementPrio + $setting.SMPriority
                         $setting.Remove('SMPriority')
                         if ($Disabled -eq $true) {$setting.Enabled = $false}
+
+                        if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - Internal Mail Signature Loop Prevention')) {
+                            Write-Verbose "Excluding Inbound E-Mails domains $ExcludeEmailDomain"
+                            $Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
+                        }
+    
+                        if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - Internal Mail Signature')) {
+                            Write-Verbose "Excluding Outbound E-Mail domains $ExcludeEmailDomain"
+                            $Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
+                        }
 
                         if ($PSCmdlet.ShouldProcess($setting.Name, "Create transport rule"))
                         {
@@ -298,7 +300,7 @@ function Remove-SC365Rules {
             Mandatory = $false,
             HelpMessage = 'Use seppmail if the MX record points to SEPPmail and microsoft if the MX record points to the Microsoft Inrastructure'
         )]
-        [ValidateSet('seppmail','microsoft')]
+        [ValidateSet('microsoft')]
         [String]$routing = 'microsoft'
     )
 
@@ -335,33 +337,6 @@ function Remove-SC365Rules {
     end {
 
     }
-    <#
-    Write-Verbose "Removing module 1.1.x version rules"
-    [string[]]$11rules = '[SEPmail.cloud] - Route incoming/internal Mails to SEPmail.cloud',`
-                         '[SEPmail.cloud] - Route ExO organiz./internal Mails to SEPmail.cloud',`
-                         '[SEPmail.cloud] - Route outgoing/internal Mails to SEPmail.cloud',`
-                         '[SEPmail.cloud] - Skip SPF check after incoming appliance routing',`
-                         '[SEPmail.cloud] - Skip SPF check after internal appliance routing'
-    try 
-    {
-        foreach ($rule in $11rules) 
-        {
-            If($PSCmdLet.ShouldProcess($rule, "Remove module 1.1 transport rule")) 
-            {
-                If (Get-TransportRule -id $rule -ErrorAction SilentlyContinue) 
-                {
-                    {
-                        Remove-TransportRule -id $rule -Confirm:$false
-                    }
-                }
-            }
-        }
-    }
-    catch 
-    {
-        throw [System.Exception] "Error: $($_.Exception.Message)"
-    }
-    #>        
 }
 
 <#
