@@ -20,9 +20,9 @@
         {
             "Name"                         : "[SEPPmail.cloud] SEPPmail -> ExO - MX:M365",
             "Comment"                      : "Accept E-Mails from SEPPmail.cloud host.",
-            "CloudServicesMailEnabled"     : true,
+            "CloudServicesMailEnabled"     : false,
             "ConnectorSource"              : "Default",
-            "ConnectorType"                : "OnPremises",
+            "ConnectorType"                : "Partner",
             "Enabled"                      : true,
             "RequireTls"                   : true,
             "RestrictDomainsToIPAddresses" : "---Parameter input---",

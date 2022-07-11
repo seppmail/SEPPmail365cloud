@@ -3,6 +3,7 @@
 ## 0.9.7 Quality Release Internal Signature
 
 - Fix "ExcludeMaildomain" Parameter in New-SC365Rules. Works now also with IntSig Rules.
+- Changed ConnectorType in routingmode "microsoft" from "OnPremises" to "Partner"
 
 ## 0.9.6 Bugfix Release Internal Sinature
 
