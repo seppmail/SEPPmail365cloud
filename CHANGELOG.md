@@ -4,7 +4,7 @@
 
 __Enhancements__
 
-
+- The outbound rule will disallow E-mails with Spam Confidence Level (SCL) >8 and 
 
 __Maintenance__
 
@@ -15,6 +15,9 @@ __Maintenance__
 
 - New-SC365Connectors
   - Changed ConnectorType in routingmode "microsoft" from "OnPremises" to "Partner".
+
+- Remove-SC365Connectors
+  - Now reads also testmodeconnectors
 
 
 __BugFixes__

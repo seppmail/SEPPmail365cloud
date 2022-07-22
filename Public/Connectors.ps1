@@ -404,7 +404,7 @@ function New-SC365Connectors
 
             #region EFSkipIP in inbound connector
             if ($NoInboundEFSkipIPs) {
-                Write-Verbose "Inbound Connector $param.Name will be build WITHOUT IP-addresses in EFSkipIPs"
+                Write-Warning "Inbound Connector $param.Name will be build WITHOUT IP-addresses in EFSkipIPs. This will increase SPAM false-positives."
             } else {
                 [String[]]$EfSkipIPArray = $cloudConfig.GeoRegion.($region.Tolower()).IPv4AllowList + $cloudConfig.GeoRegion.($region.Tolower()).IPv6AllowList
                 $param.EFSkipIPs = $EfSkipIPArray
@@ -493,7 +493,7 @@ function Remove-SC365Connectors
 
     if($PSCmdlet.ShouldProcess($outbound.Name, "Remove SEPPmail outbound connector $($Outbound.Name)"))
     {
-        if (Get-OutboundConnector | Where-Object Identity -eq $($outbound.Name))
+        if (Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object Identity -eq $($outbound.Name))
         {
             Remove-OutboundConnector $outbound.Name -confirm:$false
         }
