@@ -32,7 +32,7 @@ function Get-SC365Connectors
 
         $inbound = Get-SC365InboundConnectorSettings -Routing $routing
         $outbound = Get-SC365OutboundConnectorSettings -Routing $routing
-        $obc = Get-OutboundConnector $outbound.Name
+        $obc = Get-OutboundConnector $outbound.Name -WarningAction SilentlyContinue
         $ibc = Get-InboundConnector $inbound.Name
 
         if ($obc | Where-Object Identity -eq $($outbound.Name))
@@ -217,7 +217,7 @@ function New-SC365Connectors
         #region collecting existing connectors and test for hybrid Setup
         Write-Verbose "Collecting existing connectors"
         $allInboundConnectors = Get-InboundConnector
-        $allOutboundConnectors = Get-OutboundConnector
+        $allOutboundConnectors = Get-OutboundConnector -WarningAction SilentlyContinue
 
         Write-Verbose "Testing for hybrid Setup"
         $HybridInboundConn = $allInboundConnectors |Where-Object {(($_.Name -clike 'Inbound from *') -or ($_.ConnectorSource -clike 'HybridWizard'))}
@@ -493,7 +493,7 @@ function Remove-SC365Connectors
 
     if($PSCmdlet.ShouldProcess($outbound.Name, "Remove SEPPmail outbound connector $($Outbound.Name)"))
     {
-        if (Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object Identity -eq $($outbound.Name))
+        if (Get-OutboundConnector -WarningAction SilentlyContinue | Where-Object Identity -eq $($outbound.Name))
         {
             Remove-OutboundConnector $outbound.Name -confirm:$false
         }
@@ -585,7 +585,7 @@ function Backup-SC365Connectors
             ConvertTo-Json -InputObject $_ | Out-File $p
         }
 
-        Get-OutboundConnector | foreach-object {
+        Get-OutboundConnector -WarningAction SilentlyContinue | foreach-object {
             $n = $_.Name
             $n = $n -replace "[\[\]*\\/?:><`"]"
 

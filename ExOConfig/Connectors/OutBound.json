@@ -3,7 +3,7 @@
     {
         "inline":
         {
-            "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail - MX:SEPPmail",
+            "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail - InLine",
             "Comment"                  : "Route all outgoing E-Mails are via SEPPmail.cloud",
             "ConnectorSource"          : "Default",
             "ConnectorType"            : "Partner",
@@ -17,7 +17,7 @@
         },
         "parallel":
         {
-            "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail - MX:M365",
+            "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail - Parallel",
             "Comment"                  : "Route outgoing E-Mails based on transport rules to SEPPmail.cloud",
             "ConnectorSource"          : "Default",
             "ConnectorType"            : "Partner",

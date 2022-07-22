@@ -4,22 +4,22 @@
 
 __Enhancements__
 
-- The outbound rule will disallow E-mails with Spam Confidence Level (SCL) >8 and 
-- RENAMED routingmodes from seppmail and microsoft to inline (former seppmail) and parallel (former microsoft)
+- The outbound rule will disallow e-mails with Spam Confidence Level (SCL) >=9
+- RENAMED routingmodes from "seppmail" and "microsoft" to "inline" (former seppmail) and "parallel" (former microsoft)
 
 __Maintenance__
 
 - New-SC365Rules
-  - Looks for Testmode Connectors when searching for existing SEPPmail.Cloud-Connectors
+  - Looks for testmode Connectors when searching for existing SEPPmail.Cloud-Connectors
   - Removes also [SEPPmail* rules, if client migrates from a selfhosted SEPPmail Appliance
-  - Places the SEPpmail Transportrules at te bottom by default. This should fit in most cases (i.e. 3rd Party disclaimer solutions)
+  - Places the SEPPmail transport rules at the bottom by default. This should fit in most cases (i.e. 3rd Party disclaimer solutions)
   - Writes now also module version in Comments
 
 - New-SC365Connectors
-  - Changed ConnectorType in routingmode "microsoft" from "OnPremises" to "Partner".
+  - Changed ConnectorType in routingmode "parallel" from "OnPremises" to "Partner".
 
 - Remove-SC365Connectors
-  - Now reads also testmode connectors
+  - No more warnings about missing testmode connectors
 
 __BugFixes__
 

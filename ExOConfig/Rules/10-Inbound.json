@@ -7,20 +7,22 @@
         },
         "parallel" :
         {
-            "Name":                                 "[SEPPmail.cloud] - Route incoming e-mails to SEPPmail",
-            "Comments":                             "E-mails sent from outside the organization are sent to the SEPPmail.cloud for crypto-processing.",
-            "RouteMessageOutboundConnector":        "[SEPPmail.cloud] ExO -> SEPPmail - MX:M365",
-            "SMPriority":                           0,
-            "FromScope":                            "NotInOrganization",
-            "SentToScope":                          "InOrganization",
-            "ExceptIfHeaderMatchesMessageHeader":   "X-SM-internal",
-            "ExceptIfHeaderMatchesPatterns":        "yes",
-            "ExceptIfHeaderContainsMessageHeader":  "X-SM-incoming",
-            "ExceptIfHeaderContainsWords":          "yes",
-            "Priority":                             0,
-            "SetAuditSeverity":                     "DoNotAudit",
-            "Mode":                                 "Enforce",
-            "SenderAddressLocation":                "Header"
+          "Name"                                    : "[SEPPmail.cloud] - Route incoming e-mails to SEPPmail",
+          "Comments"                                : "E-mails sent from outside the organization are sent to the SEPPmail.cloud for crypto-processing.",
+          "RouteMessageOutboundConnector"           : "[SEPPmail.cloud] ExO -> SEPPmail - MX:M365",
+          "SMPriority"                              : 0,
+          "FromScope"                               : "NotInOrganization",
+          "SentToScope"                             : "InOrganization",
+          "SetHeaderName"                           : "X-SM-maildirection",
+          "SetHeaderValue"                          : "inbound",
+          "ExceptIfHeaderMatchesMessageHeader"      : "X-SM-internal",
+          "ExceptIfHeaderMatchesPatterns"           : "yes",
+          "ExceptIfHeaderContainsMessageHeader"     : "X-SM-incoming",
+          "ExceptIfHeaderContainsWords"             : "yes",
+          "Priority"                                : 0,
+          "SetAuditSeverity"                        : "DoNotAudit",
+          "Mode"                                    : "Enforce",
+          "SenderAddressLocation"                   : "Header"
         }
     },
     "Option":

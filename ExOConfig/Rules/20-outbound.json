@@ -12,6 +12,8 @@
             "SMPriority"                          : 1,
             "FromScope"                           : "InOrganization",
             "SentToScope"                         : "NotInOrganization",
+            "SetHeaderName"                       : "X-SM-maildirection",
+            "SetHeaderValue"                      : "outbound",
             "ExceptIfHeaderMatchesMessageHeader"  : "X-SM-internal",
             "ExceptIfHeaderMatchesPatterns"       : "yes",
             "ExceptIfHeaderContainsMessageHeader" : "X-SM-outgoing",
