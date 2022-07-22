@@ -5,6 +5,7 @@
 __Enhancements__
 
 - The outbound rule will disallow E-mails with Spam Confidence Level (SCL) >8 and 
+- RENAMED routingmodes from seppmail and microsoft to inline (former seppmail) and parallel (former microsoft)
 
 __Maintenance__
 

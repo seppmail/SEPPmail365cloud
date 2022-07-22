@@ -124,7 +124,7 @@ You need to setup inbound and outbound-connectors and transport rules, so run th
 ### Routingtype: seppmail
 
 ```powershell
-New-SC365Connectors -maildomain 'contoso.eu' -routing 'seppmail' -region 'ch'
+New-SC365Connectors -maildomain 'contoso.eu' -routing 'inline' -region 'ch'
 
 # Currently no rules are needed for routingtype SEPPmail!
 ```
@@ -132,9 +132,9 @@ New-SC365Connectors -maildomain 'contoso.eu' -routing 'seppmail' -region 'ch'
 ### Routingtype: microsoft
 
 ```powershell
-New-SC365Connectors -maildomain 'contoso.eu' -routing 'microsoft' -region 'ch'
+New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'ch'
 
-New-SC365Rules -routing 'microsoft'
+New-SC365Rules -routing 'parallel'
 ```
 
 ## Review the changes

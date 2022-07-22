@@ -19,7 +19,7 @@ function Get-SC365Connectors
         [Parameter(
             Mandatory = $true
         )]
-        [ValidateSet('seppmail','microsoft')]
+        [ValidateSet('inline','parallel')]
         $routing
     )
 
@@ -61,10 +61,10 @@ function Get-SC365Connectors
     SEPPmail.cloud uses 2 Connectors to transfer messages between SEPPmail.cloud and Exchange Online
     This commandlet will create the connectors for you, depending on the routing mode.
 .EXAMPLE
-    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -region 'ch' -routing 'seppmail'
+    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -region 'ch' -routing 'inline'
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud
 .EXAMPLE
-    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -routing 'microsoft' -region 'de'
+    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'de'
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
 .INPUTS
     
@@ -117,22 +117,22 @@ function New-SC365Connectors
         [Parameter(
             Mandatory = $false,
             ParameterSetname = 'BothDirections',
-            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"microsoft`": mx points to Microsoft',
+            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft',
             Position = 2
             )]
         [Parameter(
             Mandatory = $false,
             ParameterSetname = 'InBoundOnly',
-            Helpmessage = '`"seppmail`": mx points to SEPPmail.cloud, `"microsoft`": mx points to Microsoft',
+            Helpmessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft',
             Position = 2
             )]
-        [ValidateSet('seppmail','microsoft')]
+        [ValidateSet('inline','parallel')]
         [String] $routing,
 
         [Parameter(
             Mandatory = $false,
             ParameterSetName = 'InBoundOnly',
-            HelpMessage = 'For routingtype `"seppmail`", if only inbound service is used.'
+            HelpMessage = 'For routingtype `"inline`", if only inbound service is used.'
         )]
         [switch]$inBoundOnly = $false,
 
@@ -196,10 +196,10 @@ function New-SC365Connectors
         Write-Verbose "Preparing values for Cloud configuration"
 
         Write-Verbose "Prepare Smarthosts for e-Mail domain $maildomain"
-        if ($routing -eq 'seppmail') {
+        if ($routing -eq 'inline') {
             $OutboundSmartHost = ($maildomain.Replace('.','-')) + '.relay.seppmail.cloud'
         }
-        if ($routing -eq 'microsoft') {
+        if ($routing -eq 'parallel') {
             $OutboundSmartHost = ($maildomain.Replace('.','-')) + '.mail.seppmail.cloud'
         }
         
@@ -475,7 +475,7 @@ function Remove-SC365Connectors
             Mandatory = $true,
             Helpmessage = 'The routing tyoe of the connector to you want to remove'
         )]
-        [ValidateSet('seppmail','microsoft')]
+        [ValidateSet('inline','parallel')]
         [String]$routing,
         
         [ValidateSet('NoAntiSpamAllowListing')]

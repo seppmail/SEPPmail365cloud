@@ -7,7 +7,7 @@
     If you want to get all installed transport rules, usw New-SC365ExoReport-
 
 .EXAMPLE
-    Get-SC365Rules -Routing 'microsoft'
+    Get-SC365Rules -Routing 'parallel'
 #>
 function Get-SC365Rules {
     [CmdletBinding(
@@ -16,7 +16,7 @@ function Get-SC365Rules {
     param
     (
         [Parameter(Mandatory = $false)]
-        $routing = 'microsoft'
+        $routing = 'parallel'
     )
 
     if (!(Test-SC365ConnectionStatus))
@@ -27,7 +27,7 @@ function Get-SC365Rules {
     {
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-        if ($routing -eq 'microsoft') {
+        if ($routing -eq 'parallel') {
             #Wait-Debugger
 
             $transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
@@ -57,16 +57,16 @@ function Get-SC365Rules {
 .DESCRIPTION
     Creates all necessary transport rules in Exchange Online to send E-Mails through seppmail.cloud for cryptographic processing.
 .EXAMPLE
-    PS C:\> New-SC365Rules -routing 'microsoft'
+    PS C:\> New-SC365Rules -routing 'parallel'
     Thats the one-show-solves-all-problem CmdLet with interactive questioning on rule generation. It will search for existing rules, create new rules and ask if rules are placed on top (before all other) or bottom (after all other).
 .EXAMPLE
-    PS C:\> New-SC365Rules -routing 'microsoft' -PlacementPriority Bottom
+    PS C:\> New-SC365Rules -routing 'parallel' -PlacementPriority Bottom
     Places the transport rules AFTER all other rules. If you want to place them before, use "TOP" as parameter value.
 .EXAMPLE
-    PS C:\> New-SC365Rules -routing 'microsoft' -disabled
+    PS C:\> New-SC365Rules -routing 'parallel' -disabled
     Sets the transport rules up, but keeps them inactive. For a smoother integration.
 .EXAMPLE
-    PS C:\> New-SC365Rules -routing 'seppmail'
+    PS C:\> New-SC365Rules -routing 'inline'
     Does literally nothing, except a message to the user that there are no rules needed.
 .INPUTS
     none
@@ -92,8 +92,8 @@ function New-SC365Rules
             Mandatory = $true,
             HelpMessage = 'MX record->SEPPmail means routingtype seppmail, MX->Microsoft means routingtype microsoft'
         )]
-        [ValidateSet('microsoft')]
-        [String]$routing = 'microsoft',
+        [ValidateSet('parallel')]
+        [String]$routing = 'parallel',
 
         [Parameter(Mandatory=$false,
                    HelpMessage='E-Mail domains you want to exclude from beeing routed through the SEPPmail.cloud')]
@@ -248,7 +248,7 @@ function New-SC365Rules
 .DESCRIPTION
     Convenience function to remove the SEPPmail.cloud rules in one CmdLet.
 .EXAMPLE
-    Remove-SC365Rules -routing 'microsoft'
+    Remove-SC365Rules -routing 'parallel'
 #>
 function Remove-SC365Rules {
     [CmdletBinding(SupportsShouldProcess = $true,
@@ -261,8 +261,8 @@ function Remove-SC365Rules {
             Mandatory = $false,
             HelpMessage = 'Use seppmail if the MX record points to SEPPmail and microsoft if the MX record points to the Microsoft Inrastructure'
         )]
-        [ValidateSet('microsoft')]
-        [String]$routing = 'microsoft'
+        [ValidateSet('parallel')]
+        [String]$routing = 'parallel'
     )
 
     begin {
@@ -277,7 +277,7 @@ function Remove-SC365Rules {
     process {
         Write-Verbose "Removing current version module rules"
         
-        if ($routing -eq 'microsoft') {
+        if ($routing -eq 'parallel') {
             foreach ($file in $transportRuleFiles) {
                 $setting = Get-SC365TransportRuleSettings -routing $routing -file $file
                 
@@ -291,7 +291,7 @@ function Remove-SC365Rules {
             }    
         }
         else {
-            Write-Warning "Routingtype 'seppmail' doesnt require any Mail Transport Rules. Use '-routing 'microsoft'' to remove existing rules."
+            Write-Warning "Routingtype 'inline' doesnt require any Mail Transport Rules. Use '-routing 'parallel'' to remove existing rules."
         }
 
     }
