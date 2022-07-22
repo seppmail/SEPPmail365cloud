@@ -324,7 +324,6 @@ function New-SC365Connectors
             {
 
                 $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-                #[void]New-OutboundConnector @param
                 New-OutboundConnector @param
 
                 if(!$?)

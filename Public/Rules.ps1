@@ -1,352 +1,353 @@
 ﻿<#
 .SYNOPSIS
-    Read existing SEPPmail.cloud transport rules in the exchange online environment.
+	Read existing SEPPmail.cloud transport rules in the exchange online environment.
 .DESCRIPTION
-    Use this tofigure out if there are already SEPPmail.cloud rules implemented in Exchange oinline.
-    It is only emitting installed rules which come with the seppmail365cloud PowerShell Module.
-    If you want to get all installed transport rules, usw New-SC365ExoReport-
+	Use this tofigure out if there are already SEPPmail.cloud rules implemented in Exchange oinline.
+	It is only emitting installed rules which come with the seppmail365cloud PowerShell Module.
+	If you want to get all installed transport rules, usw New-SC365ExoReport-
 
 .EXAMPLE
-    Get-SC365Rules -Routing 'parallel'
+	Get-SC365Rules -Routing 'parallel'
 #>
 function Get-SC365Rules {
-    [CmdletBinding(
-        HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
-    )]
-    param
-    (
-        [Parameter(Mandatory = $false)]
-        $routing = 'parallel'
-    )
+	[CmdletBinding(
+		HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
+	)]
+	param
+	(
+		[Parameter(Mandatory = $false)]
+		$routing = 'parallel'
+	)
 
-    if (!(Test-SC365ConnectionStatus))
-    { 
-        throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" 
-    }
-    else 
-    {
-        Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+	if (!(Test-SC365ConnectionStatus))
+	{ 
+		throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" 
+	}
+	else 
+	{
+		Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-        if ($routing -eq 'parallel') {
-            #Wait-Debugger
+		if ($routing -eq 'parallel') {
+			#Wait-Debugger
 
-            $transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
+			$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
 
-            foreach($file in $transportRuleFiles) {
-            
-                $setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
-                $rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
-                if ($rule) {
-                    $rule
-                }
-                else
-                {
-                    Write-Warning "Rule $($setting.Name) does not exist"
-                }
-            }    
-        }
-        else {
-            Write-Warning "No transport rules needed for routingtype $routing"
-        }
-    }
+			foreach($file in $transportRuleFiles) {
+			
+				$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
+				$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
+				if ($rule) {
+					$rule
+				}
+				else
+				{
+					Write-Warning "Rule $($setting.Name) does not exist"
+				}
+			}    
+		}
+		else {
+			Write-Warning "No transport rules needed for routingtype $routing"
+		}
+	}
 }
 
 <#
 .SYNOPSIS
-    Create transport rules for routingmode "parallel"
+	Create transport rules for routingmode "parallel"
 .DESCRIPTION
-    Creates all necessary transport rules in Exchange Online to send E-Mails through seppmail.cloud for cryptographic processing.
+	Creates all necessary transport rules in Exchange Online to send E-Mails through seppmail.cloud for cryptographic processing.
 .EXAMPLE
-    PS C:\> New-SC365Rules -routing 'parallel'
-    Thats the one-show-solves-all-problem CmdLet with interactive questioning on rule generation. It will search for existing rules, create new rules and ask if rules are placed on top (before all other) or bottom (after all other).
+	PS C:\> New-SC365Rules -routing 'parallel'
+	Thats the one-show-solves-all-problem CmdLet with interactive questioning on rule generation. It will search for existing rules, create new rules and ask if rules are placed on top (before all other) or bottom (after all other).
 .EXAMPLE
-    PS C:\> New-SC365Rules -routing 'parallel' -PlacementPriority Bottom
-    Places the transport rules AFTER all other rules. If you want to place them before, use "TOP" as parameter value.
+	PS C:\> New-SC365Rules -routing 'parallel' -PlacementPriority Bottom
+	Places the transport rules AFTER all other rules. If you want to place them before, use "TOP" as parameter value.
 .EXAMPLE
-    PS C:\> New-SC365Rules -routing 'parallel' -disabled
-    Sets the transport rules up, but keeps them inactive. For a smoother integration.
+	PS C:\> New-SC365Rules -routing 'parallel' -disabled
+	Sets the transport rules up, but keeps them inactive. For a smoother integration.
 .EXAMPLE
-    PS C:\> New-SC365Rules -routing 'inline'
-    Does literally nothing, except a message to the user that there are no rules needed.
+	PS C:\> New-SC365Rules -routing 'inline'
+	Does literally nothing, except a message to the user that there are no rules needed.
 .INPUTS
-    none
+	none
 .OUTPUTS
-    transport rules
+	transport rules
 .NOTES
-    
+	
 #>
 function New-SC365Rules
 {
-    [CmdletBinding(SupportsShouldProcess = $true,
-                   ConfirmImpact = 'Medium',
-                   HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
-                  )]
-    param
-    (
-        [Parameter(Mandatory=$false,
-                   HelpMessage='Should the new rules be placed before or after existing ones (if any)')]
-        [ValidateSet('Top','Bottom')]
-        [String] $PlacementPriority = 'Bottom',
+	[CmdletBinding(SupportsShouldProcess = $true,
+				   ConfirmImpact = 'Medium',
+				   HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
+				  )]
+	param
+	(
+		[Parameter(Mandatory=$false,
+				   HelpMessage='Should the new rules be placed before or after existing ones (if any)')]
+		[ValidateSet('Top','Bottom')]
+		[String] $PlacementPriority = 'Bottom',
 
-        [Parameter(
-            Mandatory = $true,
-            HelpMessage = 'MX record->SEPPmail means routingtype seppmail, MX->Microsoft means routingtype microsoft'
-        )]
-        [ValidateSet('parallel')]
-        [String]$routing = 'parallel',
+		[Parameter(
+			Mandatory = $false,
+			HelpMessage = 'MX record->SEPPmail means routingtype seppmail, MX->Microsoft means routingtype microsoft'
+		)]
+		[ValidateSet('parallel')]
+		[String]$routing = 'parallel',
 
-        [Parameter(Mandatory=$false,
-                   HelpMessage='E-Mail domains you want to exclude from beeing routed through the SEPPmail.cloud')]
-        [String[]]$ExcludeEmailDomain,
+		[Parameter(Mandatory=$false,
+				   HelpMessage='E-Mail domains you want to exclude from beeing routed through the SEPPmail.cloud')]
+		[String[]]$ExcludeEmailDomain,
 
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Add rules if you provisioned internal e-mail signature in the SEPPmail.cloud Service'
-        )]
-        
-        [switch]$Disabled
-    )
+		[Parameter(
+			Mandatory = $false,
+			HelpMessage = 'Add rules if you provisioned internal e-mail signature in the SEPPmail.cloud Service'
+		)]
+		
+		[switch]$Disabled
+	)
 
-    begin
-    {
-        if (!(Test-SC365ConnectionStatus))
-        { throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
+	begin
+	{
+		if (!(Test-SC365ConnectionStatus))
+		{ throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
 
-        Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+		Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-        $outboundConnectors = Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
-        if(!($outboundConnectors))
-        {
-            throw [System.Exception] "No SEPPmail.cloud outbound connector found. Run `"New-SC365Connectors`" to add the proper SEPPmail.cloud connectors"
-        }
-        if ($($outboundConnectors.Enabled) -ne $true) {
-            throw [System.Exception] "SEPPmail.cloud outbound-connector is disabled, cannot create rules. Create connectors without -Disable switch, or enable them in the admin portal."
-        }
-    }
+		$outboundConnectors = Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
+		if(!($outboundConnectors))
+		{
+			throw [System.Exception] "No SEPPmail.cloud outbound connector found. Run `"New-SC365Connectors`" to add the proper SEPPmail.cloud connectors"
+		}
+		if ($($outboundConnectors.Enabled) -ne $true) {
+			throw [System.Exception] "SEPPmail.cloud outbound-connector is disabled, cannot create rules. Create connectors without -Disable switch, or enable them in the admin portal."
+		}
+	}
 
-    process
-    {
-        try
-        {
-            Write-Verbose "Read all `"non-[SEPPmail`" transport rules"
-            $existingTransportRules = Get-TransportRule | Where-Object Name -NotMatch '\[SEPPmail*'
-            [int] $placementPrio = @(0, $existingTransportRules.Count)[!($PlacementPriority -eq "Top")] <# Poor man's ternary operator #>
-            if ($existingTransportRules)
-            {
-                if($InteractiveSession -and !$PSBoundParameters.ContainsKey("PlacementPriority") <# Prio already set, so no need to ask #>)
-                {
-                    Write-Warning 'Found existing custom transport rules.'
-                    Write-Warning '--------------------------------------------'
-                    foreach ($etpr in $existingTransportRules) {
-                        Write-Warning "Rule name `"$($etpr.Name)`" with state `"$($etpr.State)`" has priority `"$($etpr.Priority)`""
-                    }
-                    Write-Warning '--------------------------------------------'
-                    Do {
-                        try {
-                            [ValidateSet('Top', 'Bottom', 'Cancel', 't', 'T', 'b', 'B', 'c', 'C', $null)]$existingRulesAction = Read-Host -Prompt "Where shall we place the SEPPmail.cloud rules ? (Top(Default)/Bottom/Cancel)"
-                        }
-                        catch {}
-                    }
-                    until ($?)
+	process
+	{
+		try
+		{
+			Write-Verbose "Read all `"non-[SEPPmail`" transport rules"
+			$existingTransportRules = Get-TransportRule | Where-Object Name -NotMatch '\[SEPPmail*'
+			[int] $placementPrio = @(0, $existingTransportRules.Count)[!($PlacementPriority -eq "Top")] <# Poor man's ternary operator #>
+			if ($existingTransportRules)
+			{
+				if($InteractiveSession -and !$PSBoundParameters.ContainsKey("PlacementPriority") <# Prio already set, so no need to ask #>)
+				{
+					Write-Warning 'Found existing custom transport rules.'
+					Write-Warning '--------------------------------------------'
+					foreach ($etpr in $existingTransportRules) {
+						Write-Warning "Rule name `"$($etpr.Name)`" with state `"$($etpr.State)`" has priority `"$($etpr.Priority)`""
+					}
+					Write-Warning '--------------------------------------------'
+					Do {
+						try {
+							[ValidateSet('Top', 'Bottom', 'Cancel', 't', 'T', 'b', 'B', 'c', 'C', $null)]$existingRulesAction = Read-Host -Prompt "Where shall we place the SEPPmail.cloud rules ? (Top(Default)/Bottom/Cancel)"
+						}
+						catch {}
+					}
+					until ($?)
 
-                    switch ($existingRulesAction) {
-                        'Top' { $placementPrio = '0' }
-                        't' { $placementPrio = '0' }
-                        'Bottom' { $placementPrio = ($existingTransportRules).count }
-                        'b' { $placementPrio = ($existingTransportRules).count }
-                        'Cancel' { return }
-                        'c' { return }
-                        default { $placementPrio = '0' }
-                    }
-                }
-            }
-            else
-            {
-                Write-Verbose 'No existing custom rules found'
-            }
-            Write-Verbose "Placement priority is $placementPrio"
+					switch ($existingRulesAction) {
+						'Top' { $placementPrio = '0' }
+						't' { $placementPrio = '0' }
+						'Bottom' { $placementPrio = ($existingTransportRules).count }
+						'b' { $placementPrio = ($existingTransportRules).count }
+						'Cancel' { return }
+						'c' { return }
+						default { $placementPrio = '0' }
+					}
+				}
+			}
+			else
+			{
+				Write-Verbose 'No existing custom rules found'
+			}
+			Write-Verbose "Placement priority is $placementPrio"
 
-            Write-Verbose "Read existing [SEPPmail.cloud] transport rules"
-            $existingSMCTransportRules = Get-TransportRule | Where-Object Name -Match '\[SEPPmail*'
-            [bool] $createRules = $true
-            if ($existingSMCTransportRules)
-            {
-                if($InteractiveSession)
-                {
-                    Write-Warning 'Found existing [SEPPmail* transport rules.'
-                    Write-Warning '--------------------------------------------'
-                    foreach ($eSMCtpr in $existingSMCTransportRules) {
-                        Write-Warning "Rule name `"$($eSMCtpr.Name)`" with state `"$($eSMCtpr.State)`" has priority `"$($eSMCtpr.Priority)`""
-                    }
-                    Write-Warning '--------------------------------------------'
-                    Do {
-                        try {
-                            [ValidateSet('y', 'Y', 'n', 'N')]$recreateSMRules = Read-Host -Prompt "Shall we delete and recreate them ? (Y/N)"
-                        }
-                        catch {}
-                    }
-                    until ($?)
-                    if ($recreateSMRules -like 'y') {
-                        $existingSMCTransportRules|ForEach-Object {Remove-Transportrule -Identity $_.Identity -Confirm:$false}
-                    }
-                    else {
-                        $createRules = $false
-                    }
-                }
-                else
-                {
-                    throw [System.Exception] "SEPPmail* transport rules already exist"
-                }
-            }
+			Write-Verbose "Read existing [SEPPmail.cloud] transport rules"
+			$existingSMCTransportRules = Get-TransportRule | Where-Object Name -Match '\[SEPPmail*'
+			[bool] $createRules = $true
+			if ($existingSMCTransportRules)
+			{
+				if($InteractiveSession)
+				{
+					Write-Warning 'Found existing [SEPPmail* transport rules.'
+					Write-Warning '--------------------------------------------'
+					foreach ($eSMCtpr in $existingSMCTransportRules) {
+						Write-Warning "Rule name `"$($eSMCtpr.Name)`" with state `"$($eSMCtpr.State)`" has priority `"$($eSMCtpr.Priority)`""
+					}
+					Write-Warning '--------------------------------------------'
+					Do {
+						try {
+							[ValidateSet('y', 'Y', 'n', 'N')]$recreateSMRules = Read-Host -Prompt "Shall we delete and recreate them ? (Y/N)"
+						}
+						catch {}
+					}
+					until ($?)
+					if ($recreateSMRules -like 'y') {
+						$existingSMCTransportRules|ForEach-Object {Remove-Transportrule -Identity $_.Identity -Confirm:$false}
+					}
+					else {
+						$createRules = $false
+					}
+				}
+				else
+				{
+					throw [System.Exception] "SEPPmail* transport rules already exist"
+				}
+			}
 
-            if($createRules){
-               
-                $transportRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExoConfig\Rules\"
+			if($createRules){
+			   
+				$transportRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExoConfig\Rules\"
 
-                foreach($file in $transportRuleFiles) {
-                
-                    $setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
-                    # $setting = $_
+				foreach($file in $transportRuleFiles) {
+				
+					$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
+					# $setting = $_
 
-                    $setting.Priority = $placementPrio + $setting.SMPriority
-                    $setting.Remove('SMPriority')
-                    if ($Disabled -eq $true) {$setting.Enabled = $false}
+					$setting.Priority = $placementPrio + $setting.SMPriority
+					$setting.Remove('SMPriority')
+					if ($Disabled -eq $true) {$setting.Enabled = $false}
 
-                    if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - Route incoming e-mails to SEPPmail')) {
-                        Write-Verbose "Excluding Inbound E-Mails domains $ExcludeEmailDomain"
-                        $Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
-                    }
+					if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - Route incoming e-mails to SEPPmail')) {
+						Write-Verbose "Excluding Inbound E-Mails domains $ExcludeEmailDomain"
+						$Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
+					}
 
-                    if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - Route outgoing e-mails to SEPPmail')) {
-                        Write-Verbose "Excluding Outbound E-Mail domains $ExcludeEmailDomain"
-                        $Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
-                    }
+					if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - Route outgoing e-mails to SEPPmail')) {
+						Write-Verbose "Excluding Outbound E-Mail domains $ExcludeEmailDomain"
+						$Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
+					}
 
-                    if ($PSCmdlet.ShouldProcess($setting.Name, "Create transport rule"))
-                    {
-                        $Now = Get-Date
-                        Write-Verbose "Adding Timestamp $now to Comment"
-                        $setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-                        New-TransportRule @setting
-                    }
-                }
-            }
-        }
-        catch {
-            throw [System.Exception] "Error: $($_.Exception.Message)"
-        }
-    }
-    end
-    {
+					if ($PSCmdlet.ShouldProcess($setting.Name, "Create transport rule"))
+					{
+						$Now = Get-Date
+						$moduleVersion = $myInvocation.MyCommand.Version
+						Write-Verbose "Adding Timestamp $now to Comment"
+						$setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
+						New-TransportRule @setting
+					}
+				}
+			}
+		}
+		catch {
+			throw [System.Exception] "Error: $($_.Exception.Message)"
+		}
+	}
+	end
+	{
 
-    }
+	}
 }
 
 <#
 .SYNOPSIS
-    Removes the SEPPmail.cloud transport rules
+	Removes the SEPPmail.cloud transport rules
 .DESCRIPTION
-    Convenience function to remove the SEPPmail.cloud rules in one CmdLet.
+	Convenience function to remove the SEPPmail.cloud rules in one CmdLet.
 .EXAMPLE
-    Remove-SC365Rules -routing 'parallel'
+	Remove-SC365Rules -routing 'parallel'
 #>
 function Remove-SC365Rules {
-    [CmdletBinding(SupportsShouldProcess = $true,
-                   ConfirmImpact = 'Medium',
-                   HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
-                  )]
-    param
-    (
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Use seppmail if the MX record points to SEPPmail and microsoft if the MX record points to the Microsoft Inrastructure'
-        )]
-        [ValidateSet('parallel')]
-        [String]$routing = 'parallel'
-    )
+	[CmdletBinding(SupportsShouldProcess = $true,
+				   ConfirmImpact = 'Medium',
+				   HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
+				  )]
+	param
+	(
+		[Parameter(
+			Mandatory = $false,
+			HelpMessage = 'Use seppmail if the MX record points to SEPPmail and microsoft if the MX record points to the Microsoft Inrastructure'
+		)]
+		[ValidateSet('parallel')]
+		[String]$routing = 'parallel'
+	)
 
-    begin {
-        $transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
-        if (!(Test-SC365ConnectionStatus))
-        { 
-            throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" 
-        }
-        Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
-    }
+	begin {
+		$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
+		if (!(Test-SC365ConnectionStatus))
+		{ 
+			throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" 
+		}
+		Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+	}
 
-    process {
-        Write-Verbose "Removing current version module rules"
-        
-        if ($routing -eq 'parallel') {
-            foreach ($file in $transportRuleFiles) {
-                $setting = Get-SC365TransportRuleSettings -routing $routing -file $file
-                
-                if($PSCmdlet.ShouldProcess($setting.Name, "Remove transport rule")) {
-                    $rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
-                    if($rule -ne $null)
-                        {$rule | Remove-TransportRule -Confirm:$false}
-                    else
-                        {Write-Warning "Rule $($setting.Name) does not exist"}
-                }
-            }    
-        }
-        else {
-            Write-Warning "Routingtype 'inline' doesnt require any Mail Transport Rules. Use '-routing 'parallel'' to remove existing rules."
-        }
+	process {
+		Write-Verbose "Removing current version module rules"
+		
+		if ($routing -eq 'parallel') {
+			foreach ($file in $transportRuleFiles) {
+				$setting = Get-SC365TransportRuleSettings -routing $routing -file $file
+				
+				if($PSCmdlet.ShouldProcess($setting.Name, "Remove transport rule")) {
+					$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
+					if($rule -ne $null)
+						{$rule | Remove-TransportRule -Confirm:$false}
+					else
+						{Write-Warning "Rule $($setting.Name) does not exist"}
+				}
+			}    
+		}
+		else {
+			Write-Warning "Routingtype 'inline' doesnt require any Mail Transport Rules. Use '-routing 'parallel'' to remove existing rules."
+		}
 
-    }
-    end {
+	}
+	end {
 
-    }
+	}
 }
 
 <#
 .SYNOPSIS
-    Backs up all existing transport rules to individual json files
+	Backs up all existing transport rules to individual json files
 .DESCRIPTION
-    Convenience function to perform a backup of all existing transport rules
+	Convenience function to perform a backup of all existing transport rules
 .EXAMPLE
-    Backup-SC365Rules -OutFolder "C:\temp"
+	Backup-SC365Rules -OutFolder "C:\temp"
 #>
 function Backup-SC365Rules
 {
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(
-             Mandatory = $true,
-             HelpMessage = 'Folder in which the backed up configuration will be stored'
-         )]
-        [Alias("Folder")]
-        [String] $OutFolder
-    )
+	[CmdletBinding()]
+	param
+	(
+		[Parameter(
+			 Mandatory = $true,
+			 HelpMessage = 'Folder in which the backed up configuration will be stored'
+		 )]
+		[Alias("Folder")]
+		[String] $OutFolder
+	)
 
-    begin
-    {
-        if (!(Test-SC365ConnectionStatus))
-        { throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
+	begin
+	{
+		if (!(Test-SC365ConnectionStatus))
+		{ throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
 
-        Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
-    }
+		Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+	}
 
-    process
-    {
-        if(!(Test-Path $OutFolder))
-        {New-Item $OutFolder -ItemType Directory}
+	process
+	{
+		if(!(Test-Path $OutFolder))
+		{New-Item $OutFolder -ItemType Directory}
 
-        Get-TransportRule | Foreach-Object{
-            $n = $_.Name
-            $n = $n -replace "[\[\]*\\/?:><`"]"
+		Get-TransportRule | Foreach-Object{
+			$n = $_.Name
+			$n = $n -replace "[\[\]*\\/?:><`"]"
 
-            $p = "$OutFolder\rule_$n.json"
-            Write-Verbose "Backing up $($_.Name) to $p"
-            ConvertTo-Json -InputObject $_ | Out-File $p
-        }
-    }
+			$p = "$OutFolder\rule_$n.json"
+			Write-Verbose "Backing up $($_.Name) to $p"
+			ConvertTo-Json -InputObject $_ | Out-File $p
+		}
+	}
 }
 
 if (!(Get-Alias 'Set-SC365rules' -ErrorAction SilentlyContinue)) {
-    New-Alias -Name Set-SC365Rules -Value New-SC365Rules
+	New-Alias -Name Set-SC365Rules -Value New-SC365Rules
 }
 
 Register-ArgumentCompleter -CommandName New-SC365Rules -ParameterName ExcludeEmailDomain -ScriptBlock $paramDomSB

@@ -3,7 +3,7 @@
     {
         "inline":
         {
-            "Name"                         : "[SEPPmail.cloud] SEPPmail -> ExO - InLine",
+            "Name"                         : "[SEPPmail.cloud] Inbound-InLine",
             "Comment"                      : "Accept E-Mails from SEPPmail.cloud host.",
             "CloudServicesMailEnabled"     : false,
             "ConnectorSource"              : "Default",
@@ -18,7 +18,7 @@
         },
         "parallel":
         {
-            "Name"                         : "[SEPPmail.cloud] SEPPmail -> ExO - Parallel",
+            "Name"                         : "[SEPPmail.cloud] Inbound-Parallel",
             "Comment"                      : "Accept E-Mails from SEPPmail.cloud host.",
             "CloudServicesMailEnabled"     : false,
             "ConnectorSource"              : "Default",
