@@ -1,18 +1,34 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
-## 0.9.7 Quality Release Internal Signature
+## 1.0.0 Production Release
 
-- Fix "ExcludeMaildomain" Parameter in New-SC365Rules. Works now also with IntSig Rules.
-- Changed ConnectorType in routingmode "microsoft" from "OnPremises" to "Partner"
+__Enhancements__
+
+
+
+__Maintenance__
+
+- New-SC365Rules
+  - Looks for Testmode Connectors when searching for existing SEPPmail.Cloud-Connectors
+  - Removes also [SEPPmail* rules, if client migrates from a selfhosted SEPPmail Appliance
+  - Places the SEPpmail Transportrules at te bottom by default. This should fit in most cases (i.e. 3rd Party disclaimer solutions)
+
+- New-SC365Connectors
+  - Changed ConnectorType in routingmode "microsoft" from "OnPremises" to "Partner".
+
+
+__BugFixes__
+
+- Fix Parameter -ExcludeMaildomain in New-SC365Rules.
 
 ## 0.9.6 Bugfix Release Internal Sinature
 
-__Bugs__
+__BugFixes__
 
 - Microsoft does not allow "/" in Inbound Connector names in some tenants. Connector-name character replaced: "/" to "-"
 - Copy/paste error in IPv6AllowList of prv - fixed
 
-## 0.9.5   "Internal Signature Release"
+## 0.9.5 "Bugfix release"
 
 __Enhancements__
 
@@ -20,8 +36,6 @@ __Enhancements__
   - now also includes hidden Microsoft outbound "Testmode" connectors
   - Adds the logged on user as Report-Creator in the header
   - Now has a transparent Logo
-
-- New-SC365Rules now supports -InternalSignature Parameter. This setting adds the two required rules to support this service. ONLY USE WHEN SERVICE is PROVISIONED, otherwise mailflow will fail.
 
 - Added Argument-Completers (automatically select correct values by pressing TAB after a parameter) for
   - New-SC365Connectors -MailDomain
@@ -39,7 +53,7 @@ __Maintenance__
 - Removed region ch as default value on connector creation.
 - Removed "seppmail" as default routing mode.
 
-__Fixes__
+__BugFixes__
 
 - Corrections, typo fixes and better graphics in Readme.MD
 - Test-SC365Connection status does not raise an error anymore if only one session is available
@@ -61,7 +75,7 @@ __Enhancements__
 - Added -force switch to New-SC365Connectors. With Force, this CmdLet works without any interaction.
 - Added -InboundOnly switch to New-SC365Connectors. Now you can create only Inbound Connectors in -routing 'seppmail' mode.
 
-__Fixes__
+__BugFixes__
 
 - Fixed module version issue in Test-SC365Connectors
 

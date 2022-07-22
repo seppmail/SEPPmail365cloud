@@ -86,7 +86,7 @@ function New-SC365Rules
         [Parameter(Mandatory=$false,
                    HelpMessage='Should the new rules be placed before or after existing ones (if any)')]
         [ValidateSet('Top','Bottom')]
-        [String] $PlacementPriority = 'Top',
+        [String] $PlacementPriority = 'Bottom',
 
         [Parameter(
             Mandatory = $true,
@@ -98,12 +98,6 @@ function New-SC365Rules
         [Parameter(Mandatory=$false,
                    HelpMessage='E-Mail domains you want to exclude from beeing routed throu the SEPPmail.cloud')]
         [String[]]$ExcludeEmailDomain,
-
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = 'Should the rules be created active or inactive'
-        )]
-        [switch]$InternalSignature,
 
         [Parameter(
             Mandatory = $false,
@@ -120,7 +114,7 @@ function New-SC365Rules
 
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-        $outboundConnectors = Get-OutboundConnector | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
+        $outboundConnectors = Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
         if(!($outboundConnectors))
         {
             throw [System.Exception] "No SEPPmail.cloud outbound connector found. Run `"New-SC365Connectors`" to add the proper SEPPmail.cloud connectors"
@@ -134,8 +128,8 @@ function New-SC365Rules
     {
         try
         {
-            Write-Verbose "Read all `"other`" existing custom transport rules"
-            $existingTransportRules = Get-TransportRule | Where-Object Name -NotMatch '^\[SEPPmail.cloud\].*$'
+            Write-Verbose "Read all `"non-[SEPPmail`" transport rules"
+            $existingTransportRules = Get-TransportRule | Where-Object Name -NotMatch '\[SEPPmail*'
             [int] $placementPrio = @(0, $existingTransportRules.Count)[!($PlacementPriority -eq "Top")] <# Poor man's ternary operator #>
             if ($existingTransportRules)
             {
@@ -172,17 +166,17 @@ function New-SC365Rules
             }
             Write-Verbose "Placement priority is $placementPrio"
 
-            Write-Verbose "Read existing SEPPmail.cloud transport rules"
-            $existingSMTransportRules = Get-TransportRule | Where-Object Name -Match '^\[SEPPmail.cloud\].*$'
+            Write-Verbose "Read existing [SEPPmail.cloud] transport rules"
+            $existingSMCTransportRules = Get-TransportRule | Where-Object Name -Match '\[SEPPmail*'
             [bool] $createRules = $true
-            if ($existingSMTransportRules)
+            if ($existingSMCTransportRules)
             {
                 if($InteractiveSession)
                 {
-                    Write-Warning 'Found existing [SEPPmail.cloud] transport rules.'
+                    Write-Warning 'Found existing [SEPPmail* transport rules.'
                     Write-Warning '--------------------------------------------'
-                    foreach ($eSMtpr in $existingSMTransportRules) {
-                        Write-Warning "Rule name `"$($eSMtpr.Name)`" with state `"$($eSMtpr.State)`" has priority `"$($eSMtpr.Priority)`""
+                    foreach ($eSMCtpr in $existingSMCTransportRules) {
+                        Write-Warning "Rule name `"$($eSMCtpr.Name)`" with state `"$($eSMCtpr.State)`" has priority `"$($eSMCtpr.Priority)`""
                     }
                     Write-Warning '--------------------------------------------'
                     Do {
@@ -193,7 +187,7 @@ function New-SC365Rules
                     }
                     until ($?)
                     if ($recreateSMRules -like 'y') {
-                        Remove-SC365Rules
+                        $existingSMCTransportRules|ForEach-Object {Remove-Transportrule -Identity $_.Identity -Confirm:$false}
                     }
                     else {
                         $createRules = $false
@@ -201,13 +195,13 @@ function New-SC365Rules
                 }
                 else
                 {
-                    throw [System.Exception] "SEPPmail.cloud transport rules already exist"
+                    throw [System.Exception] "SEPPmail* transport rules already exist"
                 }
             }
 
             if($createRules){
                
-                $transportRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExoConfig\Rules\" -Exclude '24*','26*'
+                $transportRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExoConfig\Rules\"
 
                 foreach($file in $transportRuleFiles) {
                 
@@ -234,39 +228,6 @@ function New-SC365Rules
                         Write-Verbose "Adding Timestamp $now to Comment"
                         $setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module on $now"
                         New-TransportRule @setting
-                    }
-    
-                }
-
-                if($InternalSignature) {
-                    Write-Verbose "Reading internal signature rule files"
-                    $IntSigRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExoConfig\Rules\" -Filter '*Sig*'
-                    foreach($file in $IntSigRuleFiles) {
-
-                        Write-Verbose "Reading rule settings for file $($file.name)"
-                        $setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
-                        $setting.Priority = $placementPrio + $setting.SMPriority
-                        $setting.Remove('SMPriority')
-                        if ($Disabled -eq $true) {$setting.Enabled = $false}
-
-                        if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - Internal Mail Signature Loop Prevention')) {
-                            Write-Verbose "Excluding Inbound E-Mails domains $ExcludeEmailDomain"
-                            $Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
-                        }
-    
-                        if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - Internal Mail Signature')) {
-                            Write-Verbose "Excluding Outbound E-Mail domains $ExcludeEmailDomain"
-                            $Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
-                        }
-
-                        if ($PSCmdlet.ShouldProcess($setting.Name, "Create transport rule"))
-                        {
-                            $Now = Get-Date
-                            Write-Verbose "Adding Timestamp $now to Comment"
-                            $setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module on $now"
-                            Write-Verbose "Creating TransportRule $Setting.Name"
-                            New-TransportRule @setting
-                        }
                     }
                 }
             }
