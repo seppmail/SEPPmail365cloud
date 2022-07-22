@@ -8,7 +8,7 @@
     - [Installation on macOS and Linux](#installation-on-macos-and-linux)
   - [Routing modes](#routing-modes)
     - [Routing mode "seppmail*](#routing-mode-seppmail)
-    - [Routing mode "microsoft"](#routing-mode-microsoft)
+    - [Routing mode "parallel"](#routing-mode-microsoft)
   - [Using the seppmail365cloud PowerShell module](#using-the-seppmail365cloud-powershell-module)
     - [Get to know your environment](#get-to-know-your-environment)
     - [Clean up before installing](#clean-up-before-installing)
@@ -76,11 +76,11 @@ Now lets look into the 2 different modes.
 
 ### Routing mode "seppmail*
 
-Routing mode "seppmail" allows you to use the full power of the SEPPmail.Cloud! In this scenario, the __mx-record of the e-mail domain is set to the SEPPmail cloud hosts__. Inbound e-mails flow to the SEPPmail.Cloud, are scanned, treated cryptographically and then flow to Microsoft via connectors. Same is outbound, the mails simply pass the SEPPmail.Cloud before leaving to the internet.
+Routing mode "inline" allows you to use the full power of the SEPPmail.Cloud! In this scenario, the __mx-record of the e-mail domain is set to the SEPPmail cloud hosts__. Inbound e-mails flow to the SEPPmail.Cloud, are scanned, treated cryptographically and then flow to Microsoft via connectors. Same is outbound, the mails simply pass the SEPPmail.Cloud before leaving to the internet.
 
 ![seppmail](./Visuals/seppmail365cloud-mxseppmail.png)
 
-### Routing mode "microsoft"
+### Routing mode "parallel"
 
 This routing mode is similar to the way you would integrate any SEPPmail Appliance (self hosted or MSP) with ExchangeOnline. E-mails flow to Microsoft, and are looped through SEPPmail based on the need for cryptographic treatment. No SEPPmail Virus or SPAM filter is possible in this configuration.
 
@@ -116,7 +116,7 @@ After you are sure that your Exchange Online environment is prepared, you have r
 You need to know 3 input values to run the CmdLets.
 
 - **maildomain** (the e-mail domain of your Exchange Online environnement that has been configured in the seppmail.cloud)
-- **routing** (either "seppmail" or "microsoft", read above for details)
+- **routing** (either "inline" or "parallel", read above for details)
 - **region** (the geographical region of the SEPPmail.cloud infrastructure)
 
 You need to setup inbound and outbound-connectors and transport rules, so run the two commands as explained below.

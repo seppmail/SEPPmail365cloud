@@ -1,7 +1,7 @@
 {
     "routing":
     {
-        "seppmail":
+        "inline":
         {
             "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail - MX:SEPPmail",
             "Comment"                  : "Route all outgoing E-Mails are via SEPPmail.cloud",
@@ -15,7 +15,7 @@
             "TlsDomain"                : "---Parameter input---",
             "UseMXRecord"              : false
         },
-        "microsoft":
+        "parallel":
         {
             "Name"                     : "[SEPPmail.cloud] ExO -> SEPPmail - MX:M365",
             "Comment"                  : "Route outgoing E-Mails based on transport rules to SEPPmail.cloud",

@@ -53,7 +53,7 @@ function Get-SC365Rules {
 
 <#
 .SYNOPSIS
-    Create transport rules for routingmode "microsoft"
+    Create transport rules for routingmode "parallel"
 .DESCRIPTION
     Creates all necessary transport rules in Exchange Online to send E-Mails through seppmail.cloud for cryptographic processing.
 .EXAMPLE
@@ -93,10 +93,10 @@ function New-SC365Rules
             HelpMessage = 'MX record->SEPPmail means routingtype seppmail, MX->Microsoft means routingtype microsoft'
         )]
         [ValidateSet('microsoft')]
-        [String]$routing,
+        [String]$routing = 'microsoft',
 
         [Parameter(Mandatory=$false,
-                   HelpMessage='E-Mail domains you want to exclude from beeing routed throu the SEPPmail.cloud')]
+                   HelpMessage='E-Mail domains you want to exclude from beeing routed through the SEPPmail.cloud')]
         [String[]]$ExcludeEmailDomain,
 
         [Parameter(
@@ -226,7 +226,7 @@ function New-SC365Rules
                     {
                         $Now = Get-Date
                         Write-Verbose "Adding Timestamp $now to Comment"
-                        $setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module on $now"
+                        $setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
                         New-TransportRule @setting
                     }
                 }

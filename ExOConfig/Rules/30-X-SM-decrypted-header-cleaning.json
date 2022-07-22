@@ -1,11 +1,11 @@
 {
     "routing":
     {
-        "seppmail" :
+        "inline" :
         {
             
         },
-        "microsoft":
+        "parallel":
         {
             "Name"                  : "[SEPPmail.cloud] - Clean outbound SEPPmail header decrypted",
             "Comments"              : "Removes decrypted SEPPmail.cloud x-headers from E-Mail.",

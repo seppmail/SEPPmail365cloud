@@ -1,7 +1,7 @@
 {
     "routing":
     {
-        "seppmail":
+        "inline":
         {
             "Name"                         : "[SEPPmail.cloud] SEPPmail -> ExO - MX:SEPPmail",
             "Comment"                      : "Accept E-Mails from SEPPmail.cloud host.",
@@ -16,7 +16,7 @@
             "SenderIPAddresses"            : "---Parameter input---",
             "TlsSenderCertificateName"     : "---Parameter input---"
         },
-        "microsoft":
+        "parallel":
         {
             "Name"                         : "[SEPPmail.cloud] SEPPmail -> ExO - MX:M365",
             "Comment"                      : "Accept E-Mails from SEPPmail.cloud host.",

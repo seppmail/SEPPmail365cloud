@@ -12,13 +12,13 @@ __Maintenance__
   - Looks for Testmode Connectors when searching for existing SEPPmail.Cloud-Connectors
   - Removes also [SEPPmail* rules, if client migrates from a selfhosted SEPPmail Appliance
   - Places the SEPpmail Transportrules at te bottom by default. This should fit in most cases (i.e. 3rd Party disclaimer solutions)
+  - Writes now also module version in Comments
 
 - New-SC365Connectors
   - Changed ConnectorType in routingmode "microsoft" from "OnPremises" to "Partner".
 
 - Remove-SC365Connectors
-  - Now reads also testmodeconnectors
-
+  - Now reads also testmode connectors
 
 __BugFixes__
 
