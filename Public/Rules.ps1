@@ -133,7 +133,8 @@ function New-SC365Rules
 			[int] $placementPrio = @(0, $existingTransportRules.Count)[!($PlacementPriority -eq "Top")] <# Poor man's ternary operator #>
 			if ($existingTransportRules)
 			{
-				if($InteractiveSession -and !$PSBoundParameters.ContainsKey("PlacementPriority") <# Prio already set, so no need to ask #>)
+				<#34 fix if($InteractiveSession -and !$PSBoundParameters.ContainsKey("PlacementPriority") )<# Prio already set, so no need to ask
+				if($InteractiveSession -and !$Placementpriority)
 				{
 					Write-Warning 'Found existing custom transport rules.'
 					Write-Warning '--------------------------------------------'
@@ -158,7 +159,7 @@ function New-SC365Rules
 						'c' { return }
 						default { $placementPrio = '0' }
 					}
-				}
+				} Code Irrelevant as Placementprio is Default now#>
 			}
 			else
 			{
