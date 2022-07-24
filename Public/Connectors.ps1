@@ -126,7 +126,7 @@ function New-SC365Connectors
             Helpmessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft',
             Position = 2
             )]
-        [ValidateSet('inline','parallel')]
+        [ValidateSet('inline','parallel','seppmail','microsoft')]
         [String] $routing,
 
         [Parameter(
@@ -195,7 +195,15 @@ function New-SC365Connectors
         #region Preparing common setup
         Write-Verbose "Preparing values for Cloud configuration"
 
-        Write-Verbose "Prepare Smarthosts for e-Mail domain $maildomain"
+        #rename pre-1.0.0 routing-modes
+        if ($routing -eq 'seppmail') {
+            $routing = 'inline'
+        } else {
+            $routing = 'parallel'
+        }
+
+
+        Write-Verbose "Prepare smarthosts for e-Mail domain $maildomain"
         if ($routing -eq 'inline') {
             $OutboundSmartHost = ($maildomain.Replace('.','-')) + '.relay.seppmail.cloud'
         }
