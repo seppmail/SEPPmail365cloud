@@ -24,6 +24,7 @@ __Maintenance__
 __BugFixes__
 
 - Fix Parameter -ExcludeMaildomain in New-SC365Rules.
+- Fix Placementprio Default Parameter "Bottom" had no impact.
 
 ## 0.9.6 Bugfix Release Internal Sinature
 
