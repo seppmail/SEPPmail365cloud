@@ -324,8 +324,16 @@ function New-SC365Connectors
             {
 
                 $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-                New-OutboundConnector @param
-
+                $nobc = New-OutboundConnector @param
+                $SC365ConnectorsHash = [ordered]@{
+                    OBName                           = $nobc.Identity
+                    OBEnabled                        = $nobc.Enabled
+                    OBTlsDomain                      = $nobc.TlsDomain
+                    OBTlsSettings                    = $nobc.TlsSettings
+                    OBSmartHosts                     = $nobc.SmartHosts
+                    OBOriginatingServer              = $nobc.OriginatingServer
+                    OBOrganizationalUnitRootInternal = $nobc.OrganizationalUnitRootInternal
+                }
                 if(!$?)
                 {throw $error[0]}
             }
@@ -415,8 +423,16 @@ function New-SC365Connectors
 
                 $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
                 #[void](New-InboundConnector @param)
-                New-InboundConnector @param
-
+                $nibc = New-InboundConnector @param
+                $SC365ConnectorsHash += [ordered]@{
+                    IBName                           = $nibc.Identity
+                    IBEnabled                        = $nibc.Enabled
+                    IBTLSCertificate                 = $nibc.TlsSenderCertificateName
+                    IBSenderIPAddresses              = $nibc.SenderIPAddresses
+                    IBEFSkipIPs                      = $nibc.EFSkipIPs
+                    IBOriginatingServer              = $nibc.OriginatingServer
+                    IBOrganizationalUnitRootInternal = $nibc.OrganizationalUnitRootInternal
+                }
                 if(!$?) {
                     throw $error[0]
                 } else {
@@ -448,6 +464,8 @@ function New-SC365Connectors
 
     end
     {
+        $SC365Connectors = New-Object -TypeName PSobject -property $SC365ConnectorsHash
+        $SC365Connectors
     }
 }
 

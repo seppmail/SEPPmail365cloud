@@ -6,6 +6,7 @@ __Enhancements__
 
 - The outbound rule will disallow e-mails with Spam Confidence Level (SCL) >=9
 - RENAMED routingmodes from "seppmail" and "microsoft" to "inline" (former seppmail) and "parallel" (former microsoft)
+- New-SC365Connectors will create a summary of connector information when finished.
 
 __Maintenance__
 
