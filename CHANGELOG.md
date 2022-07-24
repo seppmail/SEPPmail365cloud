@@ -26,6 +26,7 @@ __BugFixes__
 
 - Fix Parameter -ExcludeMaildomain in New-SC365Rules.
 - Fix Placementprio Default Parameter "Bottom" had no impact.
+- Test-SC365Connection now correctly shows the domain of the newest PSSession
 
 ## 0.9.6 Bugfix Release Internal Sinature
 

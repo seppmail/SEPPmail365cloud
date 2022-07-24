@@ -420,11 +420,7 @@ function Test-SC365ConnectionStatus
                 $isconnected = $true
                 $tokenLifeTime = [math]::Round($delta.TotalHours)
                 Write-verbose "Active session token exipry time is $($activesession.TokenExpiryTime.Datetime) (roughly $tokenLifeTime hours)"
-                if($isConnected -and !$Script:ExODefaultDomain)
-                {
-                    [string] $Script:ExODefaultDomain = Get-AcceptedDomain | Where-Object{$_.Default} | Select-Object -ExpandProperty DomainName -First 1
-
-                }
+                [string] $Script:ExODefaultDomain = Get-AcceptedDomain | Where-Object{$_.Default} | Select-Object -ExpandProperty DomainName -First 1
                 if ($showDefaultDomain) {"$Script:ExoDefaultdomain"}
                 return $isConnected
             }
