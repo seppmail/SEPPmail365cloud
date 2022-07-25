@@ -17,7 +17,7 @@ __Maintenance__
   - Writes now also module version in Comments
 
 - New-SC365Connectors
-  - Changed ConnectorType in routingmode "parallel" from "OnPremises" to "Partner".
+  - Changed Outbound ConnectorType in routingmode "parallel" from "OnPremises" to "Partner".
 
 - Remove-SC365Connectors
   - No more warnings about missing testmode connectors
