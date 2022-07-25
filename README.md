@@ -13,10 +13,14 @@
     - [Get to know your environment](#get-to-know-your-environment)
     - [Clean up before installing](#clean-up-before-installing)
   - [Setup the integration](#setup-the-integration)
-    - [Routingtype: inline](#routingtype-inline)
-    - [Routingtype: parallel](#routingtype-parallel)
+    - [Example for routingmode: inline](#example-for-routingmode-inline)
+    - [Example for routingmode: parallel](#example-for-routingmode-parallel)
   - [Review the changes](#review-the-changes)
   - [Test your mailflow](#test-your-mailflow)
+  - [Advanced Setup](#advanced-setup)
+    - [Creating disabled Connectors and Rules for time-controlled integration](#creating-disabled-connectors-and-rules-for-time-controlled-integration)
+    - [Exclude e-Mail domains from the mailflow](#exclude-e-mail-domains-from-the-mailflow)
+    - [Place TransportRules at the top](#place-transportrules-at-the-top)
 
 # The SEPPmail365cloud PowerShell Module README.MD
 
@@ -123,7 +127,7 @@ You need to know 3 input values to run the CmdLets.
 
 You need to setup inbound and outbound-connectors and transport rules, so run the two commands as explained below.
 
-### Routingtype: inline
+### Example for routingmode: inline
 
 ```powershell
 New-SC365Connectors -maildomain 'contoso.eu' -routing 'inline' -region 'ch'
@@ -131,7 +135,7 @@ New-SC365Connectors -maildomain 'contoso.eu' -routing 'inline' -region 'ch'
 # Currently no rules are needed for routingtype SEPPmail, so you are done after setting up the connectors!
 ```
 
-### Routingtype: parallel
+### Example for routingmode: parallel
 
 ```powershell
 New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'ch'
@@ -143,9 +147,32 @@ New-SC365Rules
 
 ```Get-Inboundconnector``` and ```Get-OutboundConnector``` will show the installed connectors, and ```Get-Transportrule``` CmdLet will give you all information about transport rules.
 
-
 ## Test your mailflow
 
 Send an e-mail from inside-out and outside-in to see if the mailflow is working.
+
+## Advanced Setup
+
+The module allows some extra-tweaks for advanced configurations
+
+### Creating disabled Connectors and Rules for time-controlled integration
+
+For sensitive environments, where mailflow may only be changed in specific time frames, it is possible to create rules and connectors "disabled". Both CmdLets New-SC365Connectors and New-SC365Rules have a -disabled switch. See examples below:
+
+```powershell
+New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'ch' -disabled
+New-SC365Rules -disabled
+```
+
+To enable the disabled objects in ExchangeOnline so that e-mails can flow through the SEPPmail.cloud, use the Exchange Online admin-website or the PowerShell Commands Set-OutboundConnector, Set-InboundConnector and Set-TransportRule.
+
+### Exclude e-Mail domains from the mailflow
+
+TBD
+
+### Place TransportRules at the top
+
+TBD
+
 
 <p style="text-align: center;">--- End of document ---</p>
