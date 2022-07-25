@@ -20,7 +20,7 @@
   - [Advanced Setup](#advanced-setup)
     - [Creating disabled Connectors and Rules for time-controlled integration](#creating-disabled-connectors-and-rules-for-time-controlled-integration)
     - [Exclude e-Mail domains from the mailflow](#exclude-e-mail-domains-from-the-mailflow)
-    - [Place TransportRules at the top](#place-transportrules-at-the-top)
+    - [Place TransportRules at the top of the rule-list](#place-transportrules-at-the-top-of-the-rule-list)
 
 # The SEPPmail365cloud PowerShell Module README.MD
 
@@ -174,13 +174,12 @@ By default, out transport rules allow e-mails from any accepted domain of the Ex
 New-SC365Rules -ExcludeEmailDomain 'contoso.onmicrosoft.com','contosotest.ch'
 ```
 
-### Place TransportRules at the top
+### Place TransportRules at the top of the rule-list
 
 By default out transport rules will be placed at the bottom of all other transport rules. If you want to change this use:
 
 ```powershell
 New-SC365Rules -PlacementPriority Top
 ```
-
 
 <p style="text-align: center;">--- End of document ---</p>
