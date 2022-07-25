@@ -130,7 +130,7 @@ You need to setup inbound and outbound-connectors and transport rules, so run th
 ### Example for routingmode: inline
 
 ```powershell
-New-SC365Connectors -maildomain 'contoso.eu' -routing 'inline' -region 'ch'
+New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'inline' -region 'ch'
 
 # Currently no rules are needed for routingtype SEPPmail, so you are done after setting up the connectors!
 ```
@@ -138,7 +138,7 @@ New-SC365Connectors -maildomain 'contoso.eu' -routing 'inline' -region 'ch'
 ### Example for routingmode: parallel
 
 ```powershell
-New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'ch'
+New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'parallel' -region 'ch'
 
 New-SC365Rules
 ```
@@ -160,7 +160,7 @@ The module allows some extra-tweaks for advanced configurations
 For sensitive environments, where mailflow may only be changed in specific time frames, it is possible to create rules and connectors "disabled". Both CmdLets New-SC365Connectors and New-SC365Rules have a -disabled switch. See examples below:
 
 ```powershell
-New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'ch' -disabled
+New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'parallel' -region 'ch' -disabled
 New-SC365Rules -disabled
 ```
 
@@ -168,11 +168,19 @@ To enable the disabled objects in ExchangeOnline so that e-mails can flow throug
 
 ### Exclude e-Mail domains from the mailflow
 
-TBD
+By default, out transport rules allow e-mails from any accepted domain of the ExchangeOnline tenant to be sent through SEPPmail.cloud. If you want to limit the e-mail domains by excluding them use the -ExcludeEmailDomain parameter.
+
+```powershell
+New-SC365Rules -ExcludeEmailDomain 'contoso.onmicrosoft.com','contosotest.ch'
+```
 
 ### Place TransportRules at the top
 
-TBD
+By default out transport rules will be placed at the bottom of all other transport rules. If you want to change this use:
+
+```powershell
+New-SC365Rules -PlacementPriority Top
+```
 
 
 <p style="text-align: center;">--- End of document ---</p>
