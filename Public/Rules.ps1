@@ -2,9 +2,9 @@
 .SYNOPSIS
 	Read existing SEPPmail.cloud transport rules in the exchange online environment.
 .DESCRIPTION
-	Use this tofigure out if there are already SEPPmail.cloud rules implemented in Exchange oinline.
+	Use this tofigure out if there are already SEPPmail.cloud rules implemented in Exchange online.
 	It is only emitting installed rules which come with the seppmail365cloud PowerShell Module.
-	If you want to get all installed transport rules, usw New-SC365ExoReport-
+	If you want to be informed about all installed transport rules, use New-SC365ExoReport.
 
 .EXAMPLE
 	Get-SC365Rules -Routing 'parallel'
@@ -28,7 +28,6 @@ function Get-SC365Rules {
 		Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
 		if ($routing -eq 'parallel') {
-			#Wait-Debugger
 
 			$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
 
@@ -58,16 +57,16 @@ function Get-SC365Rules {
 	Creates all necessary transport rules in Exchange Online to send E-Mails through seppmail.cloud for cryptographic processing.
 .EXAMPLE
 	PS C:\> New-SC365Rules -routing 'parallel'
-	Thats the one-show-solves-all-problem CmdLet with interactive questioning on rule generation. It will search for existing rules, create new rules and ask if rules are placed on top (before all other) or bottom (after all other).
+	Thats the one-solves-all-problem CmdLet to generate rules for routingmode 'parallel'.
 .EXAMPLE
-	PS C:\> New-SC365Rules -routing 'parallel' -PlacementPriority Bottom
-	Places the transport rules AFTER all other rules. If you want to place them before, use "TOP" as parameter value.
+	PS C:\> New-SC365Rules -PlacementPriority Top
+	Places the transport rules BEFORE all other rules. This is unusual and against the default. It may make sense in some situations.
 .EXAMPLE
-	PS C:\> New-SC365Rules -routing 'parallel' -disabled
-	Sets the transport rules up, but keeps them inactive. For a smoother integration.
+	PS C:\> New-SC365Rules -ExcludeEMailDomain 'contosoeu.onmicrosoft.com','contosotest.ch'
+	Creates the rules, and creates a denylist for specific domains. Use -excludeEMailDomain if you want to avoid E-mails to be sent to SEPPmail for cryptographic processing for specific domains.
 .EXAMPLE
-	PS C:\> New-SC365Rules -routing 'inline'
-	Does literally nothing, except a message to the user that there are no rules needed.
+	PS C:\> New-SC365Rules -disabled
+	Sets the transport rules up, but keeps them inactive. Useful for a smoother integration.
 .INPUTS
 	none
 .OUTPUTS
@@ -90,14 +89,14 @@ function New-SC365Rules
 
 		[Parameter(
 			Mandatory = $false,
-			HelpMessage = 'MX record->SEPPmail means routingtype seppmail, MX->Microsoft means routingtype microsoft'
+			HelpMessage = 'MX record->SEPPmail means routingtype inline, MX->Microsoft means routingtype parallel'
 		)]
 		[ValidateSet('parallel')]
 		[String]$routing = 'parallel',
 
 		[Parameter(Mandatory=$false,
 				   HelpMessage='E-Mail domains you want to exclude from beeing routed through the SEPPmail.cloud')]
-		[String[]]$ExcludeEmailDomain,
+		[String[]]$excludeEmailDomain,
 
 		[Parameter(
 			Mandatory = $false,
@@ -131,40 +130,6 @@ function New-SC365Rules
 			Write-Verbose "Read all `"non-[SEPPmail`" transport rules"
 			$existingTransportRules = Get-TransportRule | Where-Object Name -NotMatch '\[SEPPmail*'
 			[int] $placementPrio = @(0, $existingTransportRules.Count)[!($PlacementPriority -eq "Top")] <# Poor man's ternary operator #>
-			if ($existingTransportRules)
-			{
-				<#34 fix if($InteractiveSession -and !$PSBoundParameters.ContainsKey("PlacementPriority") )<# Prio already set, so no need to ask
-				if($InteractiveSession -and !$Placementpriority)
-				{
-					Write-Warning 'Found existing custom transport rules.'
-					Write-Warning '--------------------------------------------'
-					foreach ($etpr in $existingTransportRules) {
-						Write-Warning "Rule name `"$($etpr.Name)`" with state `"$($etpr.State)`" has priority `"$($etpr.Priority)`""
-					}
-					Write-Warning '--------------------------------------------'
-					Do {
-						try {
-							[ValidateSet('Top', 'Bottom', 'Cancel', 't', 'T', 'b', 'B', 'c', 'C', $null)]$existingRulesAction = Read-Host -Prompt "Where shall we place the SEPPmail.cloud rules ? (Top(Default)/Bottom/Cancel)"
-						}
-						catch {}
-					}
-					until ($?)
-
-					switch ($existingRulesAction) {
-						'Top' { $placementPrio = '0' }
-						't' { $placementPrio = '0' }
-						'Bottom' { $placementPrio = ($existingTransportRules).count }
-						'b' { $placementPrio = ($existingTransportRules).count }
-						'Cancel' { return }
-						'c' { return }
-						default { $placementPrio = '0' }
-					}
-				} Code Irrelevant as Placementprio is Default now#>
-			}
-			else
-			{
-				Write-Verbose 'No existing custom rules found'
-			}
 			Write-Verbose "Placement priority is $placementPrio"
 
 			Write-Verbose "Read existing [SEPPmail.cloud] transport rules"
@@ -250,7 +215,7 @@ function New-SC365Rules
 .DESCRIPTION
 	Convenience function to remove the SEPPmail.cloud rules in one CmdLet.
 .EXAMPLE
-	Remove-SC365Rules -routing 'parallel'
+	Remove-SC365Rules
 #>
 function Remove-SC365Rules {
 	[CmdletBinding(SupportsShouldProcess = $true,
@@ -263,7 +228,7 @@ function Remove-SC365Rules {
 			Mandatory = $false,
 			HelpMessage = 'Use seppmail if the MX record points to SEPPmail and microsoft if the MX record points to the Microsoft Inrastructure'
 		)]
-		[ValidateSet('parallel')]
+		[ValidateSet('parallel','inline')]
 		[String]$routing = 'parallel'
 	)
 

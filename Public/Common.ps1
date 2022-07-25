@@ -25,7 +25,8 @@ function New-SC365ExOReport {
         [Parameter(   
            Mandatory   = $true,
            HelpMessage = 'Relative path of the HTML report on disk',
-           ParameterSetName = 'Filepath'
+           ParameterSetName = 'Filepath',
+           Position = 0
         )]
         [Alias('FilePath')]
         $Path,
@@ -33,7 +34,8 @@ function New-SC365ExOReport {
         [Parameter(   
            Mandatory   = $true,
            HelpMessage = 'Literal path of the HTML report on disk',
-           ParameterSetName = 'LiteralPath'
+           ParameterSetName = 'LiteralPath',
+           Position = 0
         )]
         $Literalpath
     )
@@ -311,11 +313,14 @@ Function Get-SC365TenantID {
     PS C:\> Test-SC365ConnectionStatus
     Whithout any parameter the CmdLet emits just true or false
 .EXAMPLE
+    PS C:\> Test-SC365ConnectionStatus -verbose
+    For deeper analisys of connectivity issues the verbose switch provides a lot of relevant information.
+.EXAMPLE
     PS C:\> Test-SC365ConnectionStatus -showDefaultDomain
     ShowDeaultdomain will also emit the current default e-mail domain 
 .EXAMPLE
-    PS C:\> Test-SC365ConnectionStatus -verbose
-    For deeper analisys of connectivity issues the verbose switch provides a lot of relevant information.
+    PS C:\> Test-SC365ConnectionStatus -Sessioncleanup
+    If you connect from one Exo-tenant to another on the commandline, use -Sessioncleanup to be sure only the last PS-Session to the latest ExO used is active. All other sessions are removed.
 .INPUTS
     Inputs (if any)
 .OUTPUTS
@@ -350,8 +355,7 @@ function Test-SC365ConnectionStatus
     Write-Verbose "Check if module ExchangeOnlinemanagement is imported"
     if(!(Get-Module ExchangeOnlineManagement -ErrorAction SilentlyContinue))
     {
-        Write-Warning "ExchangeOnlineManagement module not yet imported"
-        Write-Verbose "Import-Module ExchangeOnlineManagement"
+        Write-Warning "ExchangeOnlineManagement module not yet imported, importing ..."
         $m = Import-Module ExchangeOnlineManagement -PassThru -ErrorAction SilentlyContinue
 
         if(!$m)
@@ -369,7 +373,6 @@ function Test-SC365ConnectionStatus
         else 
         {
             Write-Verbose "PS-Session $exoPSSession is available"
-            #$activemodule = Get-Command Get-AcceptedDomain|select-Object -Expandproperty Module|Select-Object -Expandproperty Name
             $ActiveExoPSSession = $null
 
             if ($exoPSSession.count -gt 1) {
@@ -429,7 +432,6 @@ function Test-SC365ConnectionStatus
 }
 
 Register-ArgumentCompleter -CommandName Get-SC365TenantId -ParameterName MailDomain -ScriptBlock $paramDomSB
-
 
 # SIG # Begin signature block
 # MIIL1wYJKoZIhvcNAQcCoIILyDCCC8QCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

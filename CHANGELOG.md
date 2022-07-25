@@ -2,10 +2,13 @@
 
 ## 1.0.0 Production Release
 
+This release is based on customer and partner feedback from the first few months of SEPPmail.cloud existence.
+
 __Enhancements__
 
-- The outbound rule will disallow e-mails with Spam Confidence Level (SCL) >=9
-- RENAMED ROUTING MODES: "seppmail" ==> "inline" and "microsoft" ==> "parallel"
+- Renamed Connectors from the complicated 'MX' name to inbound and outbound.
+- RENAMED ROUTING MODES: "seppmail" -> "inline" and "microsoft" -> "parallel".
+- The outbound rule will disallow e-mails with Spam Confidence Level (SCL) >=9.
 - New-SC365Connectors will create a summary of connector information when finished.
 
 __Maintenance__
@@ -18,6 +21,7 @@ __Maintenance__
 
 - New-SC365Connectors
   - Changed Outbound ConnectorType in routingmode "parallel" from "OnPremises" to "Partner".
+  - Changed parameter -maildomain to -primarymaildomain to better reflect its purpose
 
 - Remove-SC365Connectors
   - No more warnings about missing testmode connectors
@@ -25,7 +29,7 @@ __Maintenance__
 __BugFixes__
 
 - Fix Parameter -ExcludeMaildomain in New-SC365Rules.
-- Fix Placementprio Default Parameter "Bottom" had no impact.
+- Fix - Placementprio Default Parameter "Bottom" had no impact.
 - Test-SC365Connection now correctly shows the domain of the newest PSSession
 
 ## 0.9.6 Bugfix Release Internal Sinature

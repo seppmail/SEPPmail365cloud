@@ -5,16 +5,16 @@
   - [Security](#security)
   - [Module Installation](#module-installation)
     - [Installation on Windows](#installation-on-windows)
-    - [Installation on macOS and Linux](#installation-on-macos-and-linux)
+    - [Installation on macOS and Linux (experimental)](#installation-on-macos-and-linux-experimental)
   - [Routing modes](#routing-modes)
-    - [Routing mode "seppmail*](#routing-mode-seppmail)
-    - [Routing mode "parallel"](#routing-mode-microsoft)
+    - [Routing mode "inline"](#routing-mode-inline)
+    - [Routing mode "parallel"](#routing-mode-parallel)
   - [Using the seppmail365cloud PowerShell module](#using-the-seppmail365cloud-powershell-module)
     - [Get to know your environment](#get-to-know-your-environment)
     - [Clean up before installing](#clean-up-before-installing)
   - [Setup the integration](#setup-the-integration)
-    - [Routingtype: seppmail](#routingtype-seppmail)
-    - [Routingtype: microsoft](#routingtype-microsoft)
+    - [Routingtype: inline](#routingtype-inline)
+    - [Routingtype: parallel](#routingtype-parallel)
   - [Review the changes](#review-the-changes)
   - [Test your mailflow](#test-your-mailflow)
 
@@ -23,7 +23,7 @@
 ## Introduction
 
 The SEPPmail365cloud PowerShell Core module is intended to integrate Exchange Online instances into the SEPPmail.cloud (SMC).
-The module requires you to connect to your Exchange Online environment as administrator via PowerShell and creates all necessary connectors and rules, based on the e-mail-routing type and region for you with a few simple commands.
+The module requires you to connect to your Exchange Online environment as administrator (or at least with Exchange Online administrative rights) via PowerShell and creates all necessary connectors and rules, based on the e-mail-routing type and region for you with a few commands.
 
 ## Latest Changes
 
@@ -39,11 +39,11 @@ PowerShell Core on Linux should work as well, but has not been intensively teste
 
 ## Security
 
-When connecting to Exchange Online, we recommend using the -Device or -Credential based login login option. If you want to use credential-based login, use Microsoft "Secrets Management" module to store your username/passwords in a secure place on your disk.
+When connecting to Exchange Online, we recommend using the -Device or -Credential based login option. If you want to use credential-based login, we recommend using the Microsoft "Secrets Management" module to store your username/passwords in a secure place on your disk.
 
 ## Module Installation
 
->IMPORTANT! Do not use the other PowerShell Module we have on the PowerShell Gallery "SEPPmail365". This module will create NON-WORKING setups as it is intended to be used with self-hosted SEPPmail Appliances.
+>IMPORTANT! Do not use the other PowerShell Module we have on the PowerShell Gallery "SEPPmail365". This module will create NON-WORKING setups as it is intended to be used with self-hosted, customer owned or MSP-operated SEPPmail Appliances.
 
 ### Installation on Windows
 
@@ -53,7 +53,7 @@ To install the SEPPmail365Cloud module, open Powershell Core (pwsh.exe) and exec
 Install-Module "SEPPmail365cloud" -scope Currentuser
 ```
 
-### Installation on macOS and Linux
+### Installation on macOS and Linux (experimental)
 
 In addition to the main module you need to add PSWSMan which adds WSMan client libraries to Linux and macOS for remote connectivity to Exchange Online.
 
@@ -68,21 +68,21 @@ __Further information__ on connecting to Exchange Online and bring the module up
 
 ## Routing modes
 
-When integrating your Exchange online environment with seppmail.cloud, you have to decide between two e-mail routing modes to Microsoft. We either set the mx-record to *seppmail.cloud* or leave it at *Microsoft*. Customers routing e-Mails via seppmail.cloud benefit from our outstanding e-mail filter which prevents spam and unwanted software flowing into your network via e-mail.
+When integrating your Exchange online environment with seppmail.cloud, you have to decide between two e-mail routing modes to Microsoft. We either set the mx-record to *SEPPmail.cloud* (inline) or leave it at *Microsoft* (parallel). Customers routing e-Mails via seppmail.cloud benefit from our outstanding e-mail filter which prevents spam and unwanted software flowing into your network via e-mail.
 
->Note: If you leave the mx-record at microsoft you cannot use the seppmail.cloud e-mail filter, but for sure our encryption processing possibilities.
+>Note: If you leave the mx-record at microsoft you CANNOT use the SEPPmail.cloud e-mail filter, but for sure our encryption processing possibilities.
 
 Now lets look into the 2 different modes.
 
-### Routing mode "seppmail*
+### Routing mode "inline"
 
-Routing mode "inline" allows you to use the full power of the SEPPmail.Cloud! In this scenario, the __mx-record of the e-mail domain is set to the SEPPmail cloud hosts__. Inbound e-mails flow to the SEPPmail.Cloud, are scanned, treated cryptographically and then flow to Microsoft via connectors. Same is outbound, the mails simply pass the SEPPmail.Cloud before leaving to the internet.
+Routing mode "inline" allows you to use the full power of the SEPPmail.cloud! In this scenario, the __mx-record of the e-mail domain is set to the SEPPmail cloud hosts__. Inbound e-mails flow to the SEPPmail.cloud, are scanned, treated cryptographically and then flow to Microsoft via connectors. Same is outbound, the mails simply pass the SEPPmail.cloud before leaving to the internet.
 
 ![seppmail](./Visuals/seppmail365cloud-mxseppmail.png)
 
 ### Routing mode "parallel"
 
-This routing mode is similar to the way you would integrate any SEPPmail Appliance (self hosted or MSP) with ExchangeOnline. E-mails flow to Microsoft, and are looped through SEPPmail based on the need for cryptographic treatment. No SEPPmail Virus or SPAM filter is possible in this configuration.
+This routing mode is similar to the way you would integrate any SEPPmail Appliance (self hosted or MSP) with ExchangeOnline. E-mails flow to Microsoft, and are looped through SEPPmail.cloud, based on the need for cryptographic treatment. No SEPPmail Virus or SPAM filter is possible in this configuration.
 
 ![microsoft](./Visuals/seppmail365cloud-mxmicrosoft.png)
 
@@ -90,7 +90,7 @@ This routing mode is similar to the way you would integrate any SEPPmail Applian
 
 ### Get to know your environment
 
-After module setup is completed and you have connected to your Exchange Online environment, create an environment report.
+After the module setup is completed as described above and you have connected to your Exchange Online environment, create an environment report.
 
 ```powershell
 New-SC365ExOReport -FilePath /Users/you/Desktop/ExoReport.html
@@ -98,6 +98,8 @@ New-SC365ExOReport -FilePath /Users/you/Desktop/ExoReport.html
 # Even simpler with automatic creation of filename with timestamp
 New-SC365ExOReport -FilePath ~/Desktop
 
+# If you want to specify a literal path use:
+New-SC365ExOReport -Literalpath c:\temp\myexoreport.html
 ```
 
 The report will give you valued information about existing connectors, rules and other mailflow-related information. Keep this report stored for later investigation or questions.
@@ -121,20 +123,20 @@ You need to know 3 input values to run the CmdLets.
 
 You need to setup inbound and outbound-connectors and transport rules, so run the two commands as explained below.
 
-### Routingtype: seppmail
+### Routingtype: inline
 
 ```powershell
 New-SC365Connectors -maildomain 'contoso.eu' -routing 'inline' -region 'ch'
 
-# Currently no rules are needed for routingtype SEPPmail!
+# Currently no rules are needed for routingtype SEPPmail, so you are done after setting up the connectors!
 ```
 
-### Routingtype: microsoft
+### Routingtype: parallel
 
 ```powershell
 New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'ch'
 
-New-SC365Rules -routing 'parallel'
+New-SC365Rules
 ```
 
 ## Review the changes

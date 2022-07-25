@@ -19,7 +19,7 @@ function Get-SC365Connectors
         [Parameter(
             Mandatory = $true
         )]
-        [ValidateSet('inline','parallel')]
+        [ValidateSet('inline','parallel','microsoft','seppmail')]
         $routing
     )
 
@@ -29,6 +29,13 @@ function Get-SC365Connectors
     }
     else {
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+
+        #rename pre-1.0.0 routing-modes
+        if ($routing -eq 'seppmail') {
+            $routing = 'inline'
+        } else {
+            $routing = 'parallel'
+        }
 
         $inbound = Get-SC365InboundConnectorSettings -Routing $routing
         $outbound = Get-SC365OutboundConnectorSettings -Routing $routing
@@ -64,8 +71,24 @@ function Get-SC365Connectors
     PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -region 'ch' -routing 'inline'
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud
 .EXAMPLE
+    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -region 'ch' -routing 'inline' -disabled
+    Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud.
+    Connectors will be created in "disabled"-mode. You need to enable them manually.
+.EXAMPLE
+    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -region 'ch' -routing 'inline' -Confirm:$false -Force
+    Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud.
+    Connectors will be created and existing connectors will be deleted without any further interaction.
+.EXAMPLE
     PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'de'
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
+.EXAMPLE
+    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'de' -noInboundEFSkipIPs
+    Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
+    In addition the IP-Addresses of SEPPmail.cloud are not listed in the "Enhanced Filter Skip list". This will impact SPAM of detection of MS Defender, USE WITH CARE!
+.EXAMPLE
+    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'de' -option NoAntiSpamAllowListing
+    Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
+    In addition the IP-addresses of SEPPmail.cloud are not listed in the Default Hosted Connection Filter Policy. This will impact SPAM of detection of MS Defender, USE WITH CARE!
 .INPUTS
     
 .OUTPUTS
@@ -96,8 +119,8 @@ function New-SC365Connectors
             Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
             Position = 0
             )]
-        [Alias('domain')]
-        [String] $maildomain,
+        [Alias('domain','maidomain')]
+        [String] $primaryMailDomain,
 
         [Parameter(
             Mandatory = $false,
@@ -112,7 +135,7 @@ function New-SC365Connectors
             Position = 1
         )]
         [ValidateSet('ch','prv','de')]
-        [String]$Region,
+        [String]$region,
 
         [Parameter(
             Mandatory = $false,
@@ -146,7 +169,7 @@ function New-SC365Connectors
             ParameterSetname = 'InBoundOnly',
             Helpmessage = 'Does not set IP-addresses of sending SEPPmail.cloud servers in EFSkipIPs in inbound connector'
             )]
-        [switch]$NoInboundEFSkipIPs = $false,
+        [switch]$noInboundEFSkipIPs = $false,
 
         [Parameter(
             Mandatory = $false,
@@ -159,7 +182,7 @@ function New-SC365Connectors
             HelpMessage = 'Which configuration option to use'
         )]
         [ValidateSet('NoAntiSpamAllowListing')]
-        [String[]]$Option,
+        [String[]]$option,
 
         [Parameter(
             Mandatory = $false,
@@ -171,7 +194,7 @@ function New-SC365Connectors
             ParameterSetName = 'InBoundOnly',
             HelpMessage = 'Disable the connectors on creation'
         )]
-        [switch]$Disabled,
+        [switch]$disabled,
 
         [Parameter(
             Mandatory = $false,
@@ -203,12 +226,12 @@ function New-SC365Connectors
         }
 
 
-        Write-Verbose "Prepare smarthosts for e-Mail domain $maildomain"
+        Write-Verbose "Prepare smarthosts for e-Mail domain $primaryMailDomain"
         if ($routing -eq 'inline') {
-            $OutboundSmartHost = ($maildomain.Replace('.','-')) + '.relay.seppmail.cloud'
+            $OutboundSmartHost = ($primaryMailDomain.Replace('.','-')) + '.relay.seppmail.cloud'
         }
         if ($routing -eq 'parallel') {
-            $OutboundSmartHost = ($maildomain.Replace('.','-')) + '.mail.seppmail.cloud'
+            $OutboundSmartHost = ($primaryMailDomain.Replace('.','-')) + '.mail.seppmail.cloud'
         }
         
         Write-Verbose "Prepare GeoRegion configuration for region: $region"
@@ -511,6 +534,13 @@ function Remove-SC365Connectors
     { throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
 
     Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+
+    Write-Verbose "re-write pre-1.0.0 routing-modes of parametervalue $routing"
+    if ($routing -eq 'seppmail') {
+        $routing = 'inline'
+    } else {
+        $routing = 'parallel'
+    }
 
     $inbound = Get-SC365InboundConnectorSettings -routing $routing 
     $outbound = Get-SC365OutboundConnectorSettings -routing $routing
