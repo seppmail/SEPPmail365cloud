@@ -82,13 +82,13 @@ Now lets look into the 2 different modes.
 
 Routing mode "inline" allows you to use the full power of the SEPPmail.cloud! In this scenario, the __mx-record of the e-mail domain is set to the SEPPmail cloud hosts__. Inbound e-mails flow to the SEPPmail.cloud, are scanned, treated cryptographically and then flow to Microsoft via connectors. Same is outbound, the mails simply pass the SEPPmail.cloud before leaving to the internet.
 
-![seppmail](./Visuals/seppmail365cloud-mxseppmail.png)
+![seppmail](./Visuals/seppmail365cloud-visuals-inline.png)
 
 ### Routing mode "parallel"
 
 This routing mode is similar to the way you would integrate any SEPPmail Appliance (self hosted or MSP) with ExchangeOnline. E-mails flow to Microsoft, and are looped through SEPPmail.cloud, based on the need for cryptographic treatment. No SEPPmail Virus or SPAM filter is possible in this configuration.
 
-![microsoft](./Visuals/seppmail365cloud-mxmicrosoft.png)
+![microsoft](./Visuals/seppmail365cloud-visuals-parallel.png)
 
 ## Using the seppmail365cloud PowerShell module
 
