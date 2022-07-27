@@ -655,7 +655,7 @@ if (!(Get-Alias 'Set-SC365Connectors' -ErrorAction SilentlyContinue)) {
     New-Alias -Name Set-SC365Connectors -Value New-SC365Connectors
 }
 
-Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName MailDomain -ScriptBlock $paramDomSB
+Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName PrimaryMailDomain -ScriptBlock $paramDomSB
 #Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName region -ScriptBlock $paramRegionSB
 #Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName routing -ScriptBlock $paramRoutingModeSB
 
