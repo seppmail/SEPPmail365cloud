@@ -60,7 +60,7 @@ function New-SC365ExOReport {
                 else {
                     Write-Verbose "Creating and adding a filename as only a path was entered."
                     $reporttimestamp = "{0:dd-MMMM-yyy_HH-mm-ss}" -f (Get-Date)
-                    $reportdomainname = Get-AcceptedDomain|where-object InitialDomain -eq $true|select-object -expandproperty Domainname
+                    $reportdomainname = Get-AcceptedDomain|where-object default -eq $true|select-object -expandproperty Domainname
                     $ReportFileName = $reportTimeStamp + $reportdomainname + '.html'
 
                     $FinalPath = Join-path -Path $Path -ChildPath $ReportFileName
@@ -82,7 +82,7 @@ function New-SC365ExOReport {
                 }
             }
         }
-        else {
+        else {                                              # Literalpath
             $SplitLiteralPath = Split-Path -Path $LiteralPath -Parent
             If (Test-Path -Path $SplitLiteralPath) {
                 $finalPath = $LiteralPath
@@ -134,6 +134,7 @@ function New-SC365ExOReport {
             #region General infos
             $hGeneral =  '<p><h2>General Exchange Online and Subscription Information</h2><p>'
             
+            <#
             $hA = '<p><h3>Accepted Domains</h3><p>'
             $A = Get-ExoHTMLData -ExoCmd 'Get-AcceptedDomain |select-object Domainname,DomainType,Default,EmailOnly,ExternallyManaged,OutboundOnly|Sort-Object -Descending Default '
             # Find out Office Configuration
@@ -217,6 +218,7 @@ function New-SC365ExOReport {
             $hN = '<p><h3>Existing Transport Rules</h3><p>'
             $N = Get-ExoHTMLData -ExoCmd 'Get-TransportRule | select-object Name,State,Mode,Priority,FromScope,SentToScope'
             #endregion transport rules
+            #>
 
 
             $HeaderLogo = [Convert]::ToBase64String((Get-Content -path $PSScriptRoot\..\HTML\SEPPmailLogo_T.png -AsByteStream))
@@ -226,7 +228,7 @@ function New-SC365ExOReport {
 "@
 
             $hEndOfReport = '<p><h2>--- End of Report ---</h2><p>'
-            $style = Get-Content $modulepath\HTML\SEPPmailReport.css
+            $style = Get-Content -Path $PSScriptRoot\..\HTML\SEPPmailReport.css
             Convertto-HTML -Body "$LogoHTML $Top $RepCreationDatetime $RepCreatedBy $moduleVersion $TenantInfo`
                    $hSplitLine $hGeneral $hSplitLine $hA $a $hB $b $hP $P $hO $o`
                   $hSplitLine $hSecurity $hSplitLine $hC $c $hd $d $hE $e $hK $k $hH $h $hJ $j $hJ1 $J1 `
@@ -234,6 +236,7 @@ function New-SC365ExOReport {
                 $hSplitLine $hConnectors $hSplitLine $hL $l $hM $m `
             $hSplitLine $hTransPortRules $hSplitLine $hN $n $hEndofReport " -Title "SEPPmail365 Exo Report" -Head $style|Out-File -FilePath $FinalPath -Force
 
+            # for 1.0.5 Invoke-Expression "&'$finalpath'"
         }
         catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
