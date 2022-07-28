@@ -5,8 +5,8 @@
 
 __Enhancements__
 
-- Rules have now 2-digit numbers 10,20, .. to identify their order number
-- The report is now automatically opened with the default web-browser
+- Rules have now 3-digit numbers 100,200, .. to identify their order number
+- The report is now automatically opens with the default web-browser
 
 __Bugfixes__
 
