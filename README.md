@@ -35,7 +35,11 @@ Changes in the module versions are documented in ![CHANGELOG.md](./CHANGELOG.md)
 
 ## Prerequisites
 
-The module requires *PowerShell Core*, mimimum version 7.2.1 and was tested on Windows and macOS. The module code wraps around the *ExchangeOnline* Powershell Commandlets, so the Exchange Online Module minimum version 2.0.5 is a requirement as well.
+The module requires *PowerShell Core*, mimimum version 7.2.1 and was tested on Windows and macOS. The module code wraps around the *ExchangeOnline* Powershell Commandlets, so the Exchange Online Module version 2.0.5 is a requirement as well.
+
+>Note: Microsoft promotes to install the preview version of the ExchangeOnline PowerShell Module 2.0.6-preview5 or so. DO NOT INSTALL THE PREVIEW VERSION, as our module WILL NOT WORK.
+
+__Use Version 2.0.5 of ExchangeOnlineManagement, and you will be fine.__
 
 PowerShell Core on Linux should work as well, but has not been intensively tested so far.
 
