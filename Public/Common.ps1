@@ -17,27 +17,28 @@ function New-SC365ExOReport {
     [CmdletBinding(
         SupportsShouldProcess = $true,
                 ConfirmImpact = 'Medium',
-      DefaultparameterSetname = 'FilePath',
+     DefaultParameterSetName  = 'FilePath',
                       HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
         )]
     Param (
         # Define output relative Filepath
         [Parameter(   
-           Mandatory   = $true,
+           Mandatory   = $false,
            HelpMessage = 'Relative path of the HTML report on disk',
-           ParameterSetName = 'Filepath',
+           ParameterSetName = 'FilePath',
            Position = 0
+           #Position = 0
         )]
-        [Alias('FilePath')]
-        $Path,
+        [Alias('Path')]
+        [string]$filePath = '.',
 
         [Parameter(   
-           Mandatory   = $true,
+           Mandatory   = $false,
            HelpMessage = 'Literal path of the HTML report on disk',
            ParameterSetName = 'LiteralPath',
            Position = 0
         )]
-        $Literalpath
+        [string]$Literalpath = '.'
     )
 
     begin
@@ -49,45 +50,43 @@ function New-SC365ExOReport {
             Write-verbose 'Defining Function fo read Exo Data and return an info Message in HTML even if nothing is retrieved'
         }
 
+        $SGReportFileName = $null
+        function New-SelfGeneratedReportName {
+            Write-Verbose "Creating self-generated report filename."
+            return ("{0:HHm-ddMMyyy}" -f (Get-Date)) + (Get-AcceptedDomain|where-object default -eq $true|select-object -expandproperty Domainname) + '.html'
+        }
+
         #region Filetest only if not $Literalpath is selected
         if ($PsCmdlet.ParameterSetName -eq "FilePath") {
-            If (!($Path.Contains('.'))) {
 
-                Write-Verbose "Test if $Path exists"
-                If (!(Test-Path $Path)) {
-                    throw [System.Exception] "$Path does not exist. Enter a valid filepath including filename like ~\exoreport.html or c:\temp\expreport.html"
+            If (Test-Path $FilePath -PathType Container) {
+                Write-Verbose "Filepath $Filepath is a directory"
+                
+                if (Test-Path (Split-Path (Resolve-Path $Filepath) -Parent)) {
+                    Write-Verbose "Filepath $Filepath Container exists on disk, creating default ReportFilename"
+                    $ReportFilename = New-SelfGeneratedReportName
+                    $FinalPath = Join-Path -Path $filePath -ChildPath $ReportFilename
+                } else {
+                    throw [System.Exception] "$FilePath is not valid. Enter a valid filepath like ~\Desktop or c:\temp\expreport.html"
                 }
-                else {
-                    Write-Verbose "Creating and adding a filename as only a path was entered."
-                    $reporttimestamp = "{0:dd-MMMM-yyy_HH-mm-ss}" -f (Get-Date)
-                    $reportdomainname = Get-AcceptedDomain|where-object default -eq $true|select-object -expandproperty Domainname
-                    $ReportFileName = $reportTimeStamp + $reportdomainname + '.html'
 
-                    $FinalPath = Join-path -Path $Path -ChildPath $ReportFileName
-                    Write-Verbose "File will be stored to $FinalPath"
-                }
-            
-            }
-            else {
-                $ParentFilePath = Split-Path $Path -Parent
-                If (!(Test-Path $ParentFilePath)) {
-                    throw [System.Exception] "The Path $ParentFilePath does not exist. Enter a valid filepath including filename like ~\exoreport.html"
-                }
-                else {
-                    Write-Verbose "Test if $Path is a valid Filename"
-                    
-                    If (!(($Path.Contains('.html')) -or ($Path.Contains('.html')))) {
-                        Write-Warning "$Path does not contain a usual html-report filename. We recommend using 'html' or 'htm' as file-extension."
+                } else {
+                    Write-Verbose "FilePath $Filepath is a Full Path including Filename"
+                    if ((Split-Path $FilePath -Extension) -eq '.html') {
+                        $FinalPath = $Filepath
+                    } else {
+                        throw [System.Exception] "$FilePath is not an HTML file. Enter a valid filepath like ~\Desktop or c:\temp\expreport.html"
                     }
                 }
             }
-        }
-        else {                                              # Literalpath
+
+        else {
+        # Literalpath
             $SplitLiteralPath = Split-Path -Path $LiteralPath -Parent
             If (Test-Path -Path $SplitLiteralPath) {
                 $finalPath = $LiteralPath
             } else {
-                throw [System.Exception] "$LiteralPath does not exist. Enter a valid literalpath like ~\exoreport.html or c:\temp\expreport.html"
+                throw [System.Exception] "$LiteralPath does not exist. Enter a valid literal path like ~\exoreport.html or c:\temp\expreport.html"
             }
         }
         #endregion
@@ -134,7 +133,6 @@ function New-SC365ExOReport {
             #region General infos
             $hGeneral =  '<p><h2>General Exchange Online and Subscription Information</h2><p>'
             
-            <#
             $hA = '<p><h3>Accepted Domains</h3><p>'
             $A = Get-ExoHTMLData -ExoCmd 'Get-AcceptedDomain |select-object Domainname,DomainType,Default,EmailOnly,ExternallyManaged,OutboundOnly|Sort-Object -Descending Default '
             # Find out Office Configuration
@@ -218,8 +216,6 @@ function New-SC365ExOReport {
             $hN = '<p><h3>Existing Transport Rules</h3><p>'
             $N = Get-ExoHTMLData -ExoCmd 'Get-TransportRule | select-object Name,State,Mode,Priority,FromScope,SentToScope'
             #endregion transport rules
-            #>
-
 
             $HeaderLogo = [Convert]::ToBase64String((Get-Content -path $PSScriptRoot\..\HTML\SEPPmailLogo_T.png -AsByteStream))
 
