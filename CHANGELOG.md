@@ -1,5 +1,19 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+
+## 1.0.5 Mini-Feature & Bugfix Release
+
+__Enhancements__
+
+- Rules have now 2-digit numbers 10,20, .. to identify their order number
+- The report is now automatically opened with the default web-browser
+
+__Bugfixes__
+
+- New-SC365exoReport works with "-Filepath" again
+- Autocompleter did not work with PrimaryMailDomain parameter
+- Inline Connector creation failed
+
 ## 1.0.0 Production Release
 
 This release is based on customer and partner feedback from the first few months of SEPPmail.cloud existence.
