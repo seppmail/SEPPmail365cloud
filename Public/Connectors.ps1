@@ -221,10 +221,10 @@ function New-SC365Connectors
         #rename pre-1.0.0 routing-modes
         if ($routing -eq 'seppmail') {
             $routing = 'inline'
-        } else {
+        }
+        if ($routing -eq 'microsoft') {
             $routing = 'parallel'
         }
-
 
         Write-Verbose "Prepare smarthosts for e-Mail domain $primaryMailDomain"
         if ($routing -eq 'inline') {
