@@ -7,7 +7,7 @@
         },
         "parallel":
         {
-            "Name"                  : "[SEPPmail.cloud] - 50 Clean outbound SEPPmail header outgoing",
+            "Name"                  : "[SEPPmail.cloud] - 500 Clean outbound SEPPmail header outgoing",
             "Comments"              : "Removes outgoing SEPPmail.cloud x-headers from E-Mail.",
             "SMPriority"            : 4,
             "FromScope"             : "InOrganization",
