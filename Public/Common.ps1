@@ -232,7 +232,7 @@ function New-SC365ExOReport {
                 $hSplitLine $hConnectors $hSplitLine $hL $l $hM $m `
             $hSplitLine $hTransPortRules $hSplitLine $hN $n $hEndofReport " -Title "SEPPmail365 Exo Report" -Head $style|Out-File -FilePath $FinalPath -Force
 
-            # for 1.0.5 Invoke-Expression "&'$finalpath'"
+            Invoke-Expression "&'$finalpath'"
         }
         catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
