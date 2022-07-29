@@ -1,5 +1,8 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 1.0.6 prv Georegion update
+
+- Added ip adresses for prv region
 
 ## 1.0.5 Mini-Feature & Bugfix Release
 
