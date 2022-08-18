@@ -2,8 +2,14 @@
 
 ## 1.1.0 ARC Signing update
 
+__Enhancements__
+
 - Added ip adresses for prv region
-- Fixed -ExcludeMaildomain Parameter issue #46
+- Added Arc-Sealing with every connector creation to seppmail.cloud
+
+__BugFixes__
+
+- Fixed -ExcludeMaildomain Parameter issue
 
 ## 1.0.5 Mini-Feature & Bugfix Release
 

@@ -280,6 +280,9 @@ function New-SC365Connectors
             Write-Verbose "No Hybrid Connectors detected, seems to be a clean cloud-only environment" -InformationAction Continue
         }
         #endregion
+
+        Write-Verbose "Add ARC-Signature for seppmail.cloud"
+        Set-ArcConfig -Identity default -ArcTrustedSealers 'seppmail.cloud'
     }
 
     process
