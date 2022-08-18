@@ -1,8 +1,9 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
-## 1.0.6 prv Georegion update
+## 1.1.0 ARC Signing update
 
 - Added ip adresses for prv region
+- Fixed -ExcludeMaildomain Parameter issue #46
 
 ## 1.0.5 Mini-Feature & Bugfix Release
 

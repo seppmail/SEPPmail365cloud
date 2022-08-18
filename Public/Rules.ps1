@@ -178,12 +178,12 @@ function New-SC365Rules
 					$setting.Remove('SMPriority')
 					if ($Disabled -eq $true) {$setting.Enabled = $false}
 
-					if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - Route incoming e-mails to SEPPmail')) {
+					if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail')) {
 						Write-Verbose "Excluding Inbound E-Mails domains $ExcludeEmailDomain"
 						$Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
 					}
 
-					if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - Route outgoing e-mails to SEPPmail')) {
+					if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail')) {
 						Write-Verbose "Excluding Outbound E-Mail domains $ExcludeEmailDomain"
 						$Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
 					}
