@@ -264,7 +264,8 @@ function New-SC365Connectors
                     try {
                         [ValidateSet('y', 'Y', 'n', 'N')]$hybridContinue = Read-Host -Prompt "Create SEPPmail connectors in hybrid environment ? (Y/N)"
                     }
-                    catch {}
+                    catch {
+                    }
                 }
                 until ($?)
                 if ($hybridContinue -eq 'n') {
@@ -282,7 +283,11 @@ function New-SC365Connectors
         #endregion
 
         Write-Verbose "Add ARC-Signature for seppmail.cloud"
-        Set-ArcConfig -Identity default -ArcTrustedSealers 'seppmail.cloud'
+        try {
+            Set-ArcConfig -Identity default -ArcTrustedSealers 'seppmail.cloud'
+        } catch {
+            throw [System.Exception] "Error: $($_.Exception.Message)"
+        }
     }
 
     process

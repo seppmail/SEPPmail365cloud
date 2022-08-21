@@ -1,10 +1,10 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
-## 1.1.0 ARC Signing update
+## 1.1.0 ARC Signing update (22-08-2022)
 
 __Enhancements__
 
-- Added ip adresses for prv region
+- Added IP-addresses for Preview region
 - Added Arc-Sealing with every connector creation to seppmail.cloud
 
 __BugFixes__
