@@ -284,7 +284,9 @@ function New-SC365Connectors
 
         Write-Verbose "Add ARC-Signature for seppmail.cloud"
         try {
-            Set-ArcConfig -Identity default -ArcTrustedSealers 'seppmail.cloud'
+            if ((Get-ArcConfig).ArctrustedSealers -ne 'SEPPmail.cloud') {
+                Set-ArcConfig -Identity default -ArcTrustedSealers 'seppmail.cloud'|Out-Null
+            }
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
         }
