@@ -18,7 +18,7 @@
   - [Review the changes](#review-the-changes)
   - [Test your mailflow](#test-your-mailflow)
   - [Advanced Setup](#advanced-setup)
-    - [Creating disabled Connectors and Rules for time-controlled integration](#creating-disabled-connectors-and-rules-for-time-controlled-integration)
+    - [Creating Connectors and disabled Rules for time-controlled integration](#creating-connectors-and-disabled-rules-for-time-controlled-integration)
     - [Exclude e-Mail domains from the mailflow](#exclude-e-mail-domains-from-the-mailflow)
     - [Place TransportRules at the top of the rule-list](#place-transportrules-at-the-top-of-the-rule-list)
 
@@ -90,7 +90,7 @@ Routing mode "inline" allows you to use the full power of the SEPPmail.cloud! In
 
 ### Routing mode "parallel"
 
-This routing mode is similar to the way you would integrate any SEPPmail Appliance (self hosted or MSP) with ExchangeOnline. E-mails flow to Microsoft, and are looped through SEPPmail.cloud, based on the need for cryptographic treatment. No SEPPmail Virus or SPAM filter is possible in this configuration.
+This routing mode is similar to the way you would integrate any SEPPmail Appliance (self hosted or MSP) with ExchangeOnline. E-mails flow to Microsoft, and are looped through SEPPmail.cloud, based on the need for cryptographic treatment. Unfortunately, no SEPPmail Virus or SPAM filter is possible in this configuration.
 
 ![microsoft](./Visuals/seppmail365cloud-visuals-parallel.png)
 
@@ -125,7 +125,7 @@ After you are sure that your Exchange Online environment is prepared, you have r
 
 You need to know 3 input values to run the CmdLets.
 
-- **maildomain** (the e-mail domain of your Exchange Online environnement that has been configured in the seppmail.cloud)
+- **maildomain** (the e-mail domain of your Exchange Online environnement that has been configured in the seppmail.cloud. Most of the time this is the default-domain in your Exchange Online Tenant.)
 - **routing** (either "inline" or "parallel", read above for details)
 - **region** (the geographical region of the SEPPmail.cloud infrastructure)
 
@@ -144,6 +144,7 @@ New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'inline' -region 'c
 ```powershell
 New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'parallel' -region 'ch'
 
+# Important: Rules can only be created if the connectors are enabled. They are enabled by default, so if you use the example above it will work.
 New-SC365Rules
 ```
 
@@ -159,16 +160,26 @@ Send an e-mail from inside-out and outside-in to see if the mailflow is working.
 
 The module allows some extra-tweaks for advanced configurations
 
-### Creating disabled Connectors and Rules for time-controlled integration
+### Creating Connectors and disabled Rules for time-controlled integration
 
 For sensitive environments, where mailflow may only be changed in specific time frames, it is possible to create rules and connectors "disabled". Both CmdLets New-SC365Connectors and New-SC365Rules have a -disabled switch. See examples below:
 
 ```powershell
-New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'parallel' -region 'ch' -disabled
+New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'parallel' -region 'ch'
 New-SC365Rules -disabled
 ```
 
-To enable the disabled objects in ExchangeOnline so that e-mails can flow through the SEPPmail.cloud, use the Exchange Online admin-website or the PowerShell Commands Set-OutboundConnector, Set-InboundConnector and Set-TransportRule.
+To enable the disabled transport rules in ExchangeOnline so that e-mails can flow through the SEPPmail.cloud, use the Exchange Online admin-website or the PowerShell Commands Enable/Disable-TransportRule.
+
+```powershell
+
+# Enable SEPPmail.cloud TransportRules
+Get-TransportRule -Identity '[SEPPmail.cloud]*'|Enable-TransportRule
+
+# Disable SEPPmail.cloud TransportRules
+Get-TransportRule -Identity '[SEPPmail.cloud]*'|Disable-TransportRule
+
+```
 
 ### Exclude e-Mail domains from the mailflow
 
