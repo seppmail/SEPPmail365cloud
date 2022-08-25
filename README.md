@@ -101,10 +101,14 @@ This routing mode is similar to the way you would integrate any SEPPmail Applian
 After the module setup is completed as described above and you have connected to your Exchange Online environment, create an environment report.
 
 ```powershell
-New-SC365ExOReport -FilePath /Users/you/Desktop/ExoReport.html
+# The easiest way is to run the command without any parameter
+New-SC365ExOReport
 
 # Even simpler with automatic creation of filename with timestamp
 New-SC365ExOReport -FilePath ~/Desktop
+
+# Of define the filename manually
+New-SC365ExoReport -FilePath /Users/you/Desktop/MyExoReport.html
 
 # If you want to specify a literal path use:
 New-SC365ExOReport -Literalpath c:\temp\myexoreport.html
