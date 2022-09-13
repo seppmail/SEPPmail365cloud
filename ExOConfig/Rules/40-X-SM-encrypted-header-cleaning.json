@@ -7,12 +7,12 @@
         },
         "parallel":
         {
-            "Name"                  : "[SEPPmail.cloud] - 300 Clean outbound SEPPmail header decrypted",
-            "Comments"              : "Removes decrypted SEPPmail.cloud x-headers from E-Mail.",
+            "Name"                  : "[SEPPmail.cloud] - 400 Clean outbound SEPPmail header encrypted",
+            "Comments"              : "Removes encrypted SEPPmail.cloud x-headers from E-Mail.",
             "SMPriority"            : 3,
             "FromScope"             : "InOrganization",
             "SentToScope"           : "NotInOrganization",
-            "RemoveHeader"          : "X-SM-decrypted",
+            "RemoveHeader"          : "X-SM-encrypted",
             "Priority"              : 0,
             "SetAuditSeverity"      : "DoNotAudit",
             "Mode"                  : "Enforce",
