@@ -45,7 +45,7 @@ function Get-SC365Rules {
 			}    
 		}
 		else {
-			Write-Warning "No transport rules needed for routingtype $routing"
+			Write-Information "No transport rules needed for routingtype $routing"
 		}
 	}
 }

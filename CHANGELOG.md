@@ -11,8 +11,8 @@ __BugFixes__
 
 __Maintenance__
 
-- Removes old routing modes seppmail and microsoft. Now only 'inline' and 'parallel' is allowed.
-
+- Removes old routing modes "seppmail" and "microsoft". Now only 'inline' and 'parallel' is allowed.
+- Renamed rules.json files to 3 digit numbers to reflect rule names
 
 ## 1.1.0 ARC Signing update (22-08-2022)
 
