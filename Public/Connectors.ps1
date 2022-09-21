@@ -19,7 +19,7 @@ function Get-SC365Connectors
         [Parameter(
             Mandatory = $true
         )]
-        [ValidateSet('inline','parallel','microsoft','seppmail')]
+        [ValidateSet('inline','parallel')]
         $routing
     )
 
@@ -30,34 +30,55 @@ function Get-SC365Connectors
     else {
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-        #rename pre-1.0.0 routing-modes
-        if ($routing -eq 'seppmail') {
-            $routing = 'inline'
-        } else {
-            $routing = 'parallel'
-        }
-
         $inbound = Get-SC365InboundConnectorSettings -Routing $routing
         $outbound = Get-SC365OutboundConnectorSettings -Routing $routing
-        $obc = Get-OutboundConnector $outbound.Name -WarningAction SilentlyContinue
-        $ibc = Get-InboundConnector $inbound.Name
+        $obc = Get-OutboundConnector $outbound.Name -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+        $ibc = Get-InboundConnector $inbound.Name -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
 
         if ($obc | Where-Object Identity -eq $($outbound.Name))
         {
-            $obc
+            $SC365ObcHash = [ordered]@{
+                OBName                           = $obc.Identity
+                OBEnabled                        = $obc.Enabled
+                OBTlsDomain                      = $obc.TlsDomain
+                OBTlsSettings                    = $obc.TlsSettings
+                OBSmartHosts                     = $obc.SmartHosts
+                OBOriginatingServer              = $obc.OriginatingServer
+                OBOrganizationalUnitRoot         = $obc.OrganizationalUnitRoot
+                OBWhenCreated                    = $obc.WhenCreated
+                OBWhenChanged                    = $obc.WhenChanged
+            }
+
+            $Sc365Obc = New-Object -TypeName PSobject -property $SC365ObcHash
+            $SC365Obc
         }
         else {
-            Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found"
+            Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found (Wrong routing mode ?). Try Get-OutBoundConnector to get a current list of all connectors."
         }
         if ($ibc | Where-Object Identity -eq $($inbound.Name))
         {
-            $ibc
+
+            $SC365IbcHash += [ordered]@{
+                IBName                           = $ibc.Identity
+                IBEnabled                        = $ibc.Enabled
+                IBTLSCertificate                 = $ibc.TlsSenderCertificateName
+                IBSenderIPAddresses              = $ibc.SenderIPAddresses
+                IBEFSkipIPs                      = $ibc.EFSkipIPs
+                IBOriginatingServer              = $ibc.OriginatingServer
+                IBOrganizationalUnitRootInternal = $ibc.OrganizationalUnitRootInternal
+                IBWhenCreated                    = $ibc.WhenCreated
+                IBWhenChanged                    = $ibc.WhenChanged
+            }
+
+            $SC365ibc = New-Object -TypeName PSobject -property $SC365IbcHash
+            $SC365Ibc
 
         }
         else 
         {
-            Write-Warning "No SEPPmail.cloud Inbound Connector with Name `"$($inbound.Name)`" found"
+            Write-Warning "No SEPPmail.cloud Inbound Connector with Name `"$($inbound.Name)`" found (Wrong routing mode ?). Try Get-InBoundConnector to get a current list of all connectors."
         }
+
     }
 }
 
@@ -149,7 +170,7 @@ function New-SC365Connectors
             Helpmessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft',
             Position = 2
             )]
-        [ValidateSet('inline','parallel','seppmail','microsoft')]
+        [ValidateSet('inline','parallel')]
         [String] $routing,
 
         [Parameter(
@@ -217,14 +238,6 @@ function New-SC365Connectors
  
         #region Preparing common setup
         Write-Verbose "Preparing values for Cloud configuration"
-
-        #rename pre-1.0.0 routing-modes
-        if ($routing -eq 'seppmail') {
-            $routing = 'inline'
-        }
-        if ($routing -eq 'microsoft') {
-            $routing = 'parallel'
-        }
 
         Write-Verbose "Prepare smarthosts for e-Mail domain $primaryMailDomain"
         if ($routing -eq 'inline') {

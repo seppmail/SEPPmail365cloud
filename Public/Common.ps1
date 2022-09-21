@@ -381,7 +381,10 @@ function Test-SC365ConnectionStatus
             else # Valid connection
             {
                 $tokenLifeTime = [math]::Round($delta.TotalHours)
-                Write-verbose "Active session token exipry time is $($ExoConnInfo.TokenExpiryTime.Datetime) (roughly $tokenLifeTime hours)"
+                Write-verbose "Active session token exipry time is $TokenExpiryTimeLocal (roughly $tokenLifeTime hours)"
+                $tmpModuleName = Split-Path -Path $ExoConnInfo.ModuleName -Leaf
+                Write-verbose "Active session Module name is $tmpModuleName"
+                
                 $isConnected = $true
                     
                 [string] $Script:ExODefaultDomain = Get-AcceptedDomain | Where-Object{$_.Default} | Select-Object -ExpandProperty DomainName -First 1
@@ -400,16 +403,13 @@ function Test-SC365ConnectionStatus
                         # throws an exception if authentication fails
                         Write-Verbose "Connecting to Exchange Online"
                         Connect-ExchangeOnline -SkipLoadingFormatData
-                        #$isConnected = $true
                     }
                     catch
                     {
                         throw [System.Exception] "Could not connect to Exchange Online, please retry."}
                 }
-
             }
         }
-
 }
 
 
