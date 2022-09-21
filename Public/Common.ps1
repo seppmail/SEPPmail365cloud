@@ -315,10 +315,7 @@ Function Get-SC365TenantID {
     For deeper analisys of connectivity issues the verbose switch provides a lot of relevant information.
 .EXAMPLE
     PS C:\> Test-SC365ConnectionStatus -showDefaultDomain
-    ShowDeaultdomain will also emit the current default e-mail domain 
-.EXAMPLE
-    PS C:\> Test-SC365ConnectionStatus -Sessioncleanup
-    If you connect from one Exo-tenant to another on the commandline, use -Sessioncleanup to be sure only the last PS-Session to the latest ExO used is active. All other sessions are removed.
+    ShowDefaultdomain will also emit the current default e-mail domain 
 .INPUTS
     Inputs (if any)
 .OUTPUTS
@@ -337,97 +334,84 @@ function Test-SC365ConnectionStatus
             Mandatory=$false,
             HelpMessage = 'If turned on, the CmdLet will emit the current default domain'
         )]
-        [switch]$showDefaultDomain,
-
-        [Parameter(
-            Mandatory=$false,
-            HelpMessage = 'If turned on, the CmdLet will remove all Exchange PS-Sessions except the latest one established.'
-        )]
-        [switch]$SessionCleanup
-
+        [switch]$showDefaultDomain
 
     )
 
-    [bool] $isConnected = $false
+    [bool]$isConnected = $false
 
-    Write-Verbose "Check if module ExchangeOnlinemanagement is imported"
+    Write-Verbose "Check if module ExchangeOnlineManagement is imported"
     if(!(Get-Module ExchangeOnlineManagement -ErrorAction SilentlyContinue))
     {
         Write-Warning "ExchangeOnlineManagement module not yet imported, importing ..."
         $m = Import-Module ExchangeOnlineManagement -PassThru -ErrorAction SilentlyContinue
 
         if(!$m)
-        {throw [System.Exception] "ExchangeOnlineManagement module does not seem to be installed"}
+        {throw [System.Exception] "ExchangeOnlineManagement module does not seem to be installed! Use 'Install-Module ExchangeOnlineManagement' to install.'"}
     }
     else
     {
-        Write-Verbose "Check availability of PSSession to Exo"
-        $exoPssession = (Get-PSSession|where-object name -like 'ExchangeOnlineInternalSession_*')
-        if (!$exoPssession)
-        {
-            Write-Error "ExchangeOnline Module loaded, but no PSSession found. Connect to Exchange Online before proceeding!"
-            throw [System.Exception] "Could not find Remote Connection to Exchange online"
-        } 
-        else 
-        {
-            Write-Verbose "PS-Session $exoPSSession is available"
-            $ActiveExoPSSession = $null
+        $ExoConnInfo = if (Get-Connectioninformation) {(Get-ConnectionInformation)[-1]}
 
-            if ($exoPSSession.count -gt 1) {
-                Write-Verbose "Found $($exoPSSession.count) ExchangeOnline Sessions"
-                [int]$maxExoSession = ($exoPSSession|Select-Object -ExpandProperty id|Measure-Object -Maximum).Maximum
-                $ActiveExoPSSession = $exoPSSession|Where-Object {$_.Id -eq $maxExoSession}
-                Write-Verbose "Selecting $($ActiveExoPSSession.Name)"
+        if ($ExoConnInfo) {
+            Write-Verbose "Connected to Exchange Online Tenant $($ExoConnInfo.TenantID)"
 
-                if ($SessionCleanup) {
-                    $exoPssession|Where-Object {$_.Id -ne $maxExoSession}|foreach-object {
-                        Remove-PSSession -Id $_.Id
-                        Write-verbose "Cleanup - Removed old Session $_"
-                    }
-                }
-            } 
-            else {
-                $ActiveExoPSSession = $exoPsSession
-            }
-
-            $activemodule = $($ActiveExoPssession.CurrentModuleName)
-            Write-Verbose "Active implicit remoting PS-Module name is $activeModule"
-            $activeSession = $ActiveExoPSSession
-            Write-Verbose "PS-Session for the active module is $activesession"
-            Write-Verbose "Check expiry time of Auth-Token"
-            $delta = New-TimeSpan -Start (Get-Date) -End $activesession.TokenExpiryTime.Datetime
-            $ticks = $delta|Select-Object -ExpandProperty Ticks
-            if ($ticks -like '-*') 
+            [datetime]$TokenExpiryTimeLocal = $ExoConnInfo.TokenExpiryTimeUTC.Datetime.ToLocalTime()
+            $delta = New-TimeSpan -Start (Get-Date) -End $TokenExpiryTimeLocal
+            $ticks = $delta.Ticks
+            if ($ticks -like '-*') # Token expired
             {
                 $isconnected = $false
-                Write-Warning "You're not actively connected to your Exchange Online organization."
+                Write-Warning "You're not actively connected to your Exchange Online organization. TOKEN is EXPIRED"
                 if($InteractiveSession) # defined in public/Functions.ps1
                 {
                     try
                     {
                         # throws an exception if authentication fails
                         Write-Verbose "Reconnecting to Exchange Online"
-                        Connect-ExchangeOnline
-                        $isConnected = $true
+                        Connect-ExchangeOnline -SkipLoadingFormatData
+                        #$isConnected = $true
                     }
                     catch
                     {
-                        
-                    }
+                        throw [System.Exception] "Could not connect to Exchange Online, please retry."}
                 }
-            } 
-            else 
+                
+            }
+            else # Valid connection
             {
-                $isconnected = $true
                 $tokenLifeTime = [math]::Round($delta.TotalHours)
-                Write-verbose "Active session token exipry time is $($activesession.TokenExpiryTime.Datetime) (roughly $tokenLifeTime hours)"
+                Write-verbose "Active session token exipry time is $($ExoConnInfo.TokenExpiryTime.Datetime) (roughly $tokenLifeTime hours)"
+                $isConnected = $true
+                    
                 [string] $Script:ExODefaultDomain = Get-AcceptedDomain | Where-Object{$_.Default} | Select-Object -ExpandProperty DomainName -First 1
                 if ($showDefaultDomain) {"$Script:ExoDefaultdomain"}
+        
                 return $isConnected
+
+            }
+            } 
+            else # No Connection 
+            {
+                if($InteractiveSession) # defined in public/Functions.ps1
+                {
+                    try
+                    {
+                        # throws an exception if authentication fails
+                        Write-Verbose "Connecting to Exchange Online"
+                        Connect-ExchangeOnline -SkipLoadingFormatData
+                        #$isConnected = $true
+                    }
+                    catch
+                    {
+                        throw [System.Exception] "Could not connect to Exchange Online, please retry."}
+                }
+
             }
         }
-    }
+
 }
+
 
 Register-ArgumentCompleter -CommandName Get-SC365TenantId -ParameterName MailDomain -ScriptBlock $paramDomSB
 

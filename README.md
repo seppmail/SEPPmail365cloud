@@ -24,6 +24,10 @@
 
 # The SEPPmail365cloud PowerShell Module README.MD
 
+## Sometest
+
+I did install the azure preview predictor
+
 ## Introduction
 
 The SEPPmail365cloud PowerShell Core module is intended to integrate Exchange Online instances into the SEPPmail.cloud (SMC).

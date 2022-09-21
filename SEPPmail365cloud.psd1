@@ -12,7 +12,7 @@
 RootModule = 'SEPPmail365cloud.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.1.1'
+ModuleVersion = '1.2.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Core')
@@ -54,7 +54,7 @@ ProcessorArchitecture = 'Amd64'
 RequiredModules = @(
     @{
         ModuleName = 'ExchangeOnlineManagement'
-        ModuleVersion = '2.0.5'
+        ModuleVersion = '3.0.0'
         GUID = 'B5ECED50-AFA4-455B-847A-D8FB64140A22'
     }
 )

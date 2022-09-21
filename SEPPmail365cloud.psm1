@@ -13,15 +13,6 @@ $paramDomSB = {
     Get-AcceptedDomain -Erroraction silentlycontinue|select-Object -ExpandProperty DomainName
 }
 
-<#
-$paramRegionSB = {
-    (Get-Content "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -raw|Convertfrom-Json -AsHashtable -NoEnumerate).GeoRegion.Keys
-}
-
-$paramRoutingModeSB = {
-    (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Inbound.json" -raw|Convertfrom-Json -AsHashtable -NoEnumerate).routing.Keys
-}#>
-
 Write-Verbose 'Loading Module Files'
 . $ModulePath\Private\PrivateFunctions.ps1
 . $ModulePath\Private\ConfigBundle.ps1
@@ -30,9 +21,7 @@ Write-Verbose 'Loading Module Files'
 . $ModulePath\Public\Connectors.ps1
 
 Write-Verbose "Testing Exchange Online connectivity"
-If (!(Get-Module -Name 'tmp_*')) {
-    Write-Warning "It seems you are not connected to Exchange Online. Connect using 'Connect-ExchangeOnline'"
-}
+Test-SC365ConnectionStatus
 
 Export-ModuleMember -Alias * -Function *
 

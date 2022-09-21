@@ -1,5 +1,14 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 1.2.0 ExchangeOnlineManagement Module Version 3.0.0 Update
+
+__Enhancements__
+
+- Add Support for ExchangeOnlineManagement 3.0.0. Support for older Versions is disabled.
+
+__BugFixes__
+
+
 ## 1.1.0 ARC Signing update (22-08-2022)
 
 __Enhancements__
