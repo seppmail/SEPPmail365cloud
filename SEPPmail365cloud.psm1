@@ -21,7 +21,7 @@ Write-Verbose 'Loading Module Files'
 . $ModulePath\Public\Connectors.ps1
 
 Write-Verbose "Testing Exchange Online connectivity"
-if (Test-SC365ConnectionStatus) {
+if (!(Test-SC365ConnectionStatus)) {
     Write-Warning "You are not connected to Exchange Online. Use Connect-ExchangeOnline to connect to your tenant"
 }
 

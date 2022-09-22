@@ -77,7 +77,7 @@ function New-SC365ExOReport {
                         throw [System.Exception] "$FilePath is not an HTML file. Enter a valid filepath like ~\Desktop or c:\temp\expreport.html"
                     }
                 }
-            }
+        }
 
         else {
         # Literalpath
@@ -129,6 +129,7 @@ function New-SC365ExOReport {
             }
             $RepCreationDateTime = "<p><body>Report created on: $now</body><p>"
             $RepCreatedBy = "<p><body>Report created by: $repUser</body><p>"
+            $ReportFilename = Split-Path $FinalPath -Leaf
             $moduleVersion = "<p><body>SEPPmail365cloud Module Version: $mv</body><p>"
             $reportTenantID = Get-SC365TenantID -maildomain (Get-AcceptedDomain|where-object InitialDomain -eq $true|select-object -expandproperty Domainname)
             $TenantInfo = "<p><body>Microsoft O/M365 AzureAD Tenant ID: $reportTenantID</body><p>"
@@ -150,9 +151,9 @@ function New-SC365ExOReport {
             $P = Get-ExoHTMLData -ExoCmd  'Get-TransportConfig |Select-Object MaxSendSize,MaxReceiveSize'
 
             # Find out possible Office Message Encryption Settings
-            #Write-Verbose "Collecting Office Message Encryption Settings"
-            #$hP = '<p><h3>Office Message Encryption Settings</h3><p>'
-            #$P = Get-ExoHTMLData -ExoCmd 'Get-OMEConfiguration|Select-Object PSComputerName,TemplateName,OTPEnabled,SocialIdSignIn,ExternalMailExpiryInterval,Identity,IsValid'
+            Write-Verbose "Collecting Office Message Encryption Settings"
+            $hP = '<p><h3>Office Message Encryption Settings</h3><p>'
+            $P = Get-ExoHTMLData -ExoCmd 'Get-OMEConfiguration|Select-Object PSComputerName,TemplateName,OTPEnabled,SocialIdSignIn,ExternalMailExpiryInterval,Identity,IsValid'
             
             # Get MX Record Report for each domain
             $hO = '<p><h3>MX Record for each Domain</h3><p>'
@@ -178,9 +179,9 @@ function New-SC365ExOReport {
             $hk = '<p><h3>Content Filter Policy</h3><p>'
             $k= Get-ExoHTMLData -ExoCmd 'Get-HostedContentFilterPolicy|Select-Object QuarantineRetentionPeriod,EndUserSpamNotificationFrequency,TestModeAction,IsValid,BulkSpamAction,PhishSpamAction,OriginatingServer'
 
-            #Write-Verbose "Blocked Sender Addresses"
-            #$hH = '<p><h3>Show Senders which are locked due to outbound SPAM</h3><p>'
-            #$h = Get-ExoHTMLData -ExoCmd 'Get-BlockedSenderAddress'
+            Write-Verbose "Blocked Sender Addresses"
+            $hH = '<p><h3>Show Senders which are locked due to outbound SPAM</h3><p>'
+            $h = Get-ExoHTMLData -ExoCmd 'Get-BlockedSenderAddress'
             
             Write-Verbose "Get Outbound SPAM Filter Policy"
             $hJ = '<p><h3>Outbound SPAM Filter Policy</h3><p>'
@@ -229,14 +230,40 @@ function New-SC365ExOReport {
 
             $hEndOfReport = '<p><h2>--- End of Report ---</h2><p>'
             $style = Get-Content -Path $PSScriptRoot\..\HTML\SEPPmailReport.css
-            Convertto-HTML -Body "$LogoHTML $Top $RepCreationDatetime $RepCreatedBy $moduleVersion $TenantInfo`
+            $finalreport = Convertto-HTML -Body "$LogoHTML $Top $RepCreationDatetime $RepCreatedBy $moduleVersion $TenantInfo`
                    $hSplitLine $hGeneral $hSplitLine $hA $a $hB $b $hO $o`
-                  $hSplitLine $hSecurity $hSplitLine $hC $c $hd $d $hE $e $hK $k $hJ $j $hJ1 $J1 `
+                  $hSplitLine $hSecurity $hSplitLine $hC $c $hd $d $hE $e $hP $P $hH $H $hK $k $hJ $j $hJ1 $J1 `
                  $hSplitLine $hOtherConn $hSplitLine $hG $g $hI $i `
                 $hSplitLine $hConnectors $hSplitLine $hL $l $hM $m `
-            $hSplitLine $hTransPortRules $hSplitLine $hN $n $hEndofReport " -Title "SEPPmail365 Exo Report" -Head $style|Out-File -FilePath $FinalPath -Force
+            $hSplitLine $hTransPortRules $hSplitLine $hN $n $hEndofReport " -Title "SEPPmail365 Exo Report" -Head $style
 
-            Invoke-Expression "&'$finalpath'"
+            # Write Report to Disk
+            try {
+                $finalReport|Out-File -FilePath $FinalPath -Force
+            }
+            catch{
+                Write-Warning "Could not write report to $FinalPath"
+                if ($IsWindows) {
+                    $FinalPath = Join-Path -Path $env:localappdata -ChildPath $ReportFilename
+                }
+                if ($IsMacOs) {
+                    $Finalpath = Join-Path -Path $env:HOME -ChildPath $ReportFilename
+                }
+                Write-Information "Writing report to $finalPath"
+                try {
+                    $finalReport|Out-File -FilePath $FinalPath -Force
+                }
+                catch {
+                    $error[0]
+                }
+            }
+
+            if ($IsWindows) {
+                Invoke-Expression "& '$finalpath'"
+            }
+            if ($IsMacOs) {
+                "Report is stored on your disk at $finalpath. Open with your favorite browser."
+            }
         }
         catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
