@@ -7,7 +7,7 @@
 	If you want to be informed about all installed transport rules, use New-SC365ExoReport.
 
 .EXAMPLE
-	Get-SC365Rules -Routing 'parallel'
+	Get-SC365Rules
 #>
 function Get-SC365Rules {
 	[CmdletBinding(
@@ -31,16 +31,16 @@ function Get-SC365Rules {
 
 			$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
 
-			foreach($file in $transportRuleFiles) {
+			foreach ($file in $transportRuleFiles) {
 			
 				$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
 				$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
 				if ($rule) {
-					$rule
+					$rule|Select-Object Name,Priority,State
 				}
 				else
 				{
-					Write-Warning "Rule $($setting.Name) does not exist"
+					Write-Warning "Missing transport rule '$($setting.Name)'"
 				}
 			}    
 		}
@@ -56,7 +56,7 @@ function Get-SC365Rules {
 .DESCRIPTION
 	Creates all necessary transport rules in Exchange Online to send E-Mails through seppmail.cloud for cryptographic processing.
 .EXAMPLE
-	PS C:\> New-SC365Rules -routing 'parallel'
+	PS C:\> New-SC365Rules
 	Thats the one-solves-all-problem CmdLet to generate rules for routingmode 'parallel'.
 .EXAMPLE
 	PS C:\> New-SC365Rules -PlacementPriority Top
@@ -194,7 +194,7 @@ function New-SC365Rules
 						$moduleVersion = $myInvocation.MyCommand.Version
 						Write-Verbose "Adding Timestamp $now to Comment"
 						$setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-						New-TransportRule @setting
+						New-TransportRule @setting |Select-Object Name,Priority,State
 					}
 				}
 			}

@@ -37,42 +37,14 @@ function Get-SC365Connectors
 
         if ($obc | Where-Object Identity -eq $($outbound.Name))
         {
-            $SC365ObcHash = [ordered]@{
-                OBName                           = $obc.Identity
-                OBEnabled                        = $obc.Enabled
-                OBTlsDomain                      = $obc.TlsDomain
-                OBTlsSettings                    = $obc.TlsSettings
-                OBSmartHosts                     = $obc.SmartHosts
-                OBOriginatingServer              = $obc.OriginatingServer
-                OBOrganizationalUnitRoot         = $obc.OrganizationalUnitRoot
-                OBWhenCreated                    = $obc.WhenCreated
-                OBWhenChanged                    = $obc.WhenChanged
-            }
-
-            $Sc365Obc = New-Object -TypeName PSobject -property $SC365ObcHash
-            $SC365Obc
+            $obc|select-object Name,enabled,OriginatingServer
         }
         else {
             Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found (Wrong routing mode ?). Try Get-OutBoundConnector to get a current list of all connectors."
         }
         if ($ibc | Where-Object Identity -eq $($inbound.Name))
         {
-
-            $SC365IbcHash += [ordered]@{
-                IBName                           = $ibc.Identity
-                IBEnabled                        = $ibc.Enabled
-                IBTLSCertificate                 = $ibc.TlsSenderCertificateName
-                IBSenderIPAddresses              = $ibc.SenderIPAddresses
-                IBEFSkipIPs                      = $ibc.EFSkipIPs
-                IBOriginatingServer              = $ibc.OriginatingServer
-                IBOrganizationalUnitRootInternal = $ibc.OrganizationalUnitRootInternal
-                IBWhenCreated                    = $ibc.WhenCreated
-                IBWhenChanged                    = $ibc.WhenChanged
-            }
-
-            $SC365ibc = New-Object -TypeName PSobject -property $SC365IbcHash
-            $SC365Ibc
-
+            $ibc|select-object Name,enabled,OriginatingServer
         }
         else 
         {
@@ -293,6 +265,10 @@ function New-SC365Connectors
         } else {
             Write-Verbose "No Hybrid Connectors detected, seems to be a clean cloud-only environment" -InformationAction Continue
         }
+
+        Write-Verbose "Checking for existing SEPPmail.cloud rules"
+        $existingSc365Rules = Get-TransportRule -Identity '[SEPPmail.Cloud]*' -WarningAction SilentlyContinue -erroraction SilentlyContinue
+
         #endregion
 
         Write-Verbose "Look for ARC-Signature for seppmail.cloud and add if missing"
@@ -319,219 +295,238 @@ function New-SC365Connectors
 
     process
     {
-        #region - OutboundConnector
-        Write-Verbose "Building Outbound parameters based on smarthost $outboundtlsdomain"
-        #$outbound = Get-SC365OutboundConnectorSettings -routing $routing -Option $Option
-        $param = Get-SC365OutboundConnectorSettings -Routing $routing -Option $option
-        $param.SmartHosts = $OutboundSmartHost            
-        $param.TlsDomain = $TlsCertificateName
- 
-        Write-verbose "if -disabled switch is used, the connector stays deactivated"
-        if ($Disabled) {
-            $param.Enabled = $false
-        }
-
-        Write-Verbose "Read existing SEPPmail.cloud outbound connector"
-        $existingSMOutboundConn = $allOutboundConnectors | Where-Object Name -eq $param.Name
-        # only $false if the user says so interactively
         
-        [bool]$createOutBound = $true #Set Default Value
-        #wait-debugger
-        if ($existingSMOutboundConn)
-        {
-            Write-Warning "Found existing SEPPmail.cloud outbound connector with name: `"$($existingSMOutboundConn.Name)`" created on `"$($existingSMOutboundConn.WhenCreated)`" pointing to SEPPmail `"$($existingSMOutboundConn.TlsDomain)`" "
-            if (($InteractiveSession) -and (!($force)))
+        if ((!($existingsc365rules)) -and ($routing -eq 'parallel')) {
+
+        
+            #region - OutboundConnector
+            Write-Verbose "Building Outbound parameters based on smarthost $outboundtlsdomain"
+            #$outbound = Get-SC365OutboundConnectorSettings -routing $routing -Option $Option
+            $param = Get-SC365OutboundConnectorSettings -Routing $routing -Option $option
+            $param.SmartHosts = $OutboundSmartHost            
+            $param.TlsDomain = $TlsCertificateName
+            
+            Write-verbose "if -disabled switch is used, the connector stays deactivated"
+            if ($Disabled) {
+                $param.Enabled = $false
+            }
+
+            Write-Verbose "Read existing SEPPmail.cloud outbound connector"
+            $existingSMOutboundConn = $allOutboundConnectors | Where-Object Name -eq $param.Name
+            # only $false if the user says so interactively
+
+            [bool]$createOutBound = $true #Set Default Value
+            #wait-debugger
+            if ($existingSMOutboundConn)
             {
-                [string] $tmp = $null
+                Write-Warning "Found existing SEPPmail.cloud outbound connector with name: `"$($existingSMOutboundConn.Name)`" created on `"$($existingSMOutboundConn.WhenCreated)`" pointing to SEPPmail `"$($existingSMOutboundConn.TlsDomain)`" "
+                if (($InteractiveSession) -and (!($force)))
+                {
+                    [string] $tmp = $null
 
-                Do {
-                    try {
-                        [ValidateSet('y', 'Y', 'n', 'N')]$tmp = Read-Host -Prompt "Shall we delete and recreate the outbound connector (will only work if no rules use it)? (Y/N)"
-                        break
+                    Do {
+                        try {
+                            [ValidateSet('y', 'Y', 'n', 'N')]$tmp = Read-Host -Prompt "Shall we delete and recreate the outbound connector (will only work if no rules use it)? (Y/N)"
+                            break
+                        }
+                        catch {}
                     }
-                    catch {}
-                }
-                until ($?)
+                    until ($?)
 
-                if ($tmp -eq 'y') {
-                    $createOutbound = $true
+                    if ($tmp -eq 'y') {
+                        $createOutbound = $true
 
-                    Write-Verbose "Removing existing Outbound Connector $($existingSMOutboundConn.Name) !"
-                    if ($PSCmdLet.ShouldProcess($($existingSMOutboundConn.Name), 'Removing existing SEPPmail.cloud Outbound Connector')) {
-                        $existingSMOutboundConn | Remove-OutboundConnector -Confirm:$false # user confirmation action
+                        Write-Verbose "Removing existing Outbound Connector $($existingSMOutboundConn.Name) !"
+                        if ($PSCmdLet.ShouldProcess($($existingSMOutboundConn.Name), 'Removing existing SEPPmail.cloud Outbound Connector')) {
+                            Remove-OutboundConnector -Identity $($ExistingSMOutboundConn.Identity) -Confirm:$false # user confirmation action
 
-                        if (!$?)
-                        { throw $error[0] }
+                            if (!$?)
+                            { throw $error[0] }
+                        }
+                    }
+                    else {
+                        Write-Warning "Leaving existing SEPPmail outbound connector `"$($existingSMOutboundConn.Name)`" untouched."
+                        $createOutbound = $false
                     }
                 }
-                else {
-                    Write-Warning "Leaving existing SEPPmail outbound connector `"$($existingSMOutboundConn.Name)`" untouched."
-                    $createOutbound = $false
+                else
+                {
+                    if (!($force)) {
+                        throw [System.Exception] "Outbound connector $($outbound.Name) already exists"
+                    }
+                    else {
+                        Write-Verbose "Removing existing OutBound Connector $existingSMOutboundConn.Identity dur to -force parameter"
+                        try {
+                            $existingSMOutboundConn | Remove-OutboundConnector -Confirm:$false # due to -force 
+                        }
+                        catch {
+                            # Errormessage
+                            $error[0]
+                        }
+                    }
                 }
             }
             else
+            { Write-Verbose "No existing Outbound Connector found" }
+
+            if($createOutbound -and (!($inboundonly)))
             {
-                if (!($force)) {
-                    throw [System.Exception] "Outbound connector $($outbound.Name) already exists"
-                }
-                else {
-                    Write-Verbose "Removing existing OutBound Connector $existingSMOutboundConn.Identity dur to -force parameter"
-                    $existingSMOutboundConn | Remove-OutboundConnector -Confirm:$false # due to -force 
+                Write-Verbose "Creating SEPPmail.cloud Outbound Connector $($param.Name)!"
+                if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Outbound Connector'))
+                {
+
+                    $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
+                    New-OutboundConnector @param | select-object Name,enabled,OriginatingServer
+
+                    <#$SC365ConnectorsHash = [ordered]@{
+                        OBName                           = $nobc.Identity
+                        OBEnabled                        = $nobc.Enabled
+                        OBTlsDomain                      = $nobc.TlsDomain
+                        OBTlsSettings                    = $nobc.TlsSettings
+                        OBSmartHosts                     = $nobc.SmartHosts
+                        OBOriginatingServer              = $nobc.OriginatingServer
+                        OBOrganizationalUnitRootInternal = $nobc.OrganizationalUnitRootInternal
+                    }
+                    #>
+                    if(!$?)
+                    {throw $error[0]}
                 }
             }
-        }
-        else
-        { Write-Verbose "No existing Outbound Connector found" }
+            #endregion - OutboundConnector
 
-        if($createOutbound -and (!($inboundonly)))
-        {
-            Write-Verbose "Creating SEPPmail.cloud Outbound Connector $($param.Name)!"
-            if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Outbound Connector'))
-            {
-
-                $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-                $nobc = New-OutboundConnector @param
-                $SC365ConnectorsHash = [ordered]@{
-                    OBName                           = $nobc.Identity
-                    OBEnabled                        = $nobc.Enabled
-                    OBTlsDomain                      = $nobc.TlsDomain
-                    OBTlsSettings                    = $nobc.TlsSettings
-                    OBSmartHosts                     = $nobc.SmartHosts
-                    OBOriginatingServer              = $nobc.OriginatingServer
-                    OBOrganizationalUnitRootInternal = $nobc.OrganizationalUnitRootInternal
-                }
-                if(!$?)
-                {throw $error[0]}
+            #region - InboundConnector
+            Write-Verbose "Read Inbound Connector Settings"
+            $param = $null
+            $param = Get-SC365InboundConnectorSettings -routing $routing -option $option
+        
+            Write-verbose "if -disabled switch is used, the connector stays deactivated"
+            if ($disabled) {
+                $param.Enabled = $false
             }
-        }
-        #endregion - OutboundConnector
 
-        #region - InboundConnector
-        Write-Verbose "Read Inbound Connector Settings"
-        $param = $null
-        $param = Get-SC365InboundConnectorSettings -routing $routing -option $option
-       
-        Write-verbose "if -disabled switch is used, the connector stays deactivated"
-        if ($disabled) {
-            $param.Enabled = $false
-        }
+            Write-Verbose "Read existing SEPPmail Inbound Connector from Exchange Online"
+            $existingSMInboundConn = $allInboundConnectors | Where-Object Name -EQ $param.Name
 
-        Write-Verbose "Read existing SEPPmail Inbound Connector from Exchange Online"
-        $existingSMInboundConn = $allInboundConnectors | Where-Object Name -EQ $param.Name
-
-        # only $false if the user says so interactively
-        [bool]$createInbound = $true
-        if ($existingSMInboundConn)
-        {
-            Write-Warning "Found existing SEPPmail.cloud inbound connector with name: `"$($existingSMInboundConn.Name)`", created `"$($existingSMInboundConn.WhenCreated)`" incoming SEPPmail is `"$($existingSMInboundConn.TlsSenderCertificateName)`""
-
-            if (($InteractiveSession) -and (!($force)))
+            # only $false if the user says so interactively
+            [bool]$createInbound = $true
+            if ($existingSMInboundConn)
             {
-                [string] $tmp = $null
-                Do {
-                    try {
-                        [ValidateSet('y', 'Y', 'n', 'N')]$tmp = Read-Host -Prompt "Shall we delete and recreate the inbound connector (will only work if no rules use it)? (Y/N)"
-                        break
+                Write-Warning "Found existing SEPPmail.cloud inbound connector with name: `"$($existingSMInboundConn.Name)`", created `"$($existingSMInboundConn.WhenCreated)`" incoming SEPPmail is `"$($existingSMInboundConn.TlsSenderCertificateName)`""
+
+                if (($InteractiveSession) -and (!($force)))
+                {
+                    [string] $tmp = $null
+                    Do {
+                        try {
+                            [ValidateSet('y', 'Y', 'n', 'N')]$tmp = Read-Host -Prompt "Shall we delete and recreate the inbound connector (will only work if no rules use it)? (Y/N)"
+                            break
+                        }
+                        catch {}
                     }
-                    catch {}
-                }
-                until ($?)
+                    until ($?)
 
-                if ($tmp -eq 'y') {
-                    $createInbound = $true
+                    if ($tmp -eq 'y') {
+                        $createInbound = $true
 
-                    Write-Verbose "Removing existing SEPPmail.cloud Inbound Connector $($existingSMInboundConn.Name) !"
-                    if ($PSCmdLet.ShouldProcess($($existingSMInboundConn.Name), 'Removing existing SEPPmail.cloud inbound Connector')) {
-                        $existingSMInboundConn | Remove-InboundConnector -Confirm:$false # user already confirmed action
+                        Write-Verbose "Removing existing SEPPmail.cloud Inbound Connector $($existingSMInboundConn.Name) !"
+                        if ($PSCmdLet.ShouldProcess($($existingSMInboundConn.Name), 'Removing existing SEPPmail.cloud inbound Connector')) {
+                            $existingSMInboundConn | Remove-InboundConnector -Confirm:$false # user already confirmed action
 
-                        if (!$?)
-                        { throw $error[0] }
+                            if (!$?)
+                            { throw $error[0] }
+                        }
+                    }
+                    else {
+                        Write-Warning "Leaving existing SEPPmail.cloud Inbound Connector `"$($existingSMInboundConn.Name)`" untouched."
+                        $createInbound = $false
                     }
                 }
-                else {
-                    Write-Warning "Leaving existing SEPPmail.cloud Inbound Connector `"$($existingSMInboundConn.Name)`" untouched."
-                    $createInbound = $false
+                else
+                {
+                    if (!($force)) {
+                        throw [System.Exception] "Inbound connector $($param.Name) already exists"
+                    }
+                    else {
+                        $existingSMInboundConn | Remove-InboundConnector -Confirm:$false # due to -force
+                    }
+                
                 }
             }
             else
+            {Write-Verbose "No existing Inbound Connector found"}
+
+            if($createInbound)
             {
-                if (!($force)) {
-                    throw [System.Exception] "Inbound connector $($param.Name) already exists"
-                }
-                else {
-                    $existingSMInboundConn | Remove-InboundConnector -Confirm:$false # due to -force
-                }
- 
-            }
-        }
-        else
-        {Write-Verbose "No existing Inbound Connector found"}
+                Write-Verbose "Setting $TlscertificateName as TLSSendercertificate and IP addresses to region $region"
+                $param.RestrictDomainsToIPAddresses = $false
+                $param.RestrictDomainsToCertificate = $true
+                $param.SenderIPAddresses = $SEPPmailIPv4Range
+                $param.TlsSenderCertificateName = $TlsCertificateName
 
-        if($createInbound)
-        {
-            Write-Verbose "Setting $TlscertificateName as TLSSendercertificate and IP addresses to region $region"
-            $param.RestrictDomainsToIPAddresses = $false
-            $param.RestrictDomainsToCertificate = $true
-            $param.SenderIPAddresses = $SEPPmailIPv4Range
-            $param.TlsSenderCertificateName = $TlsCertificateName
-
-            #region EFSkipIP in inbound connector
-            if ($NoInboundEFSkipIPs) {
-                Write-Warning "Inbound Connector $param.Name will be build WITHOUT IP-addresses in EFSkipIPs. This will increase SPAM false-positives."
-            } else {
-                [String[]]$EfSkipIPArray = $cloudConfig.GeoRegion.($region.Tolower()).IPv4AllowList + $cloudConfig.GeoRegion.($region.Tolower()).IPv6AllowList
-                $param.EFSkipIPs = $EfSkipIPArray
-            }
-
-            Write-Verbose "Creating SEPPmail.cloud Inbound Connector $($param.Name)!"
-            if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Inbound Connector'))
-            {
-
-                $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-                #[void](New-InboundConnector @param)
-                $nibc = New-InboundConnector @param
-                $SC365ConnectorsHash += [ordered]@{
-                    IBName                           = $nibc.Identity
-                    IBEnabled                        = $nibc.Enabled
-                    IBTLSCertificate                 = $nibc.TlsSenderCertificateName
-                    IBSenderIPAddresses              = $nibc.SenderIPAddresses
-                    IBEFSkipIPs                      = $nibc.EFSkipIPs
-                    IBOriginatingServer              = $nibc.OriginatingServer
-                    IBOrganizationalUnitRootInternal = $nibc.OrganizationalUnitRootInternal
-                }
-                if(!$?) {
-                    throw $error[0]
+                #region EFSkipIP in inbound connector
+                if ($NoInboundEFSkipIPs) {
+                    Write-Warning "Inbound Connector $param.Name will be build WITHOUT IP-addresses in EFSkipIPs. This will increase SPAM false-positives."
                 } else {
-                    #region - Add Region-based IP-range to hosted Connection Filter Policy AllowList
-                    if (!($option -eq 'NoAntiSpamAllowListing'))
-                    {
-                        Write-Verbose "Adding SEPPmail.cloud to AllowList in 'Hosted Connection Filter Policy'"
-                        Write-Verbose "Collecting existing AllowList"
-                        $hcfp = Get-HostedConnectionFilterPolicy
-                        [string[]]$existingAllowList = $hcfp.IPAllowList
-                        Write-verbose "Adding SEPPmail.cloud IP ranges to HostedConnectionFilterPolicy $($hcfp.Id)"
-                        if ($existingAllowList) {
-                            $FinalIPList = ($existingAllowList + $SEPPmailIPv4Range)|sort-object -Unique
-                        }
-                        else {
-                            $FinalIPList = $SEPPmailIPv4Range
-                        }
-                        Write-verbose "Adding IPaddress list with content $finalIPList to hosted connection filter policy $($hcfp.Id)"
-                        if ($FinalIPList) {
-                            [void](Set-HostedConnectionFilterPolicy -Identity $hcfp.Id -IPAllowList $finalIPList)
-                        }
+                    [String[]]$EfSkipIPArray = $cloudConfig.GeoRegion.($region.Tolower()).IPv4AllowList + $cloudConfig.GeoRegion.($region.Tolower()).IPv6AllowList
+                    $param.EFSkipIPs = $EfSkipIPArray
+                }
+
+                Write-Verbose "Creating SEPPmail.cloud Inbound Connector $($param.Name)!"
+                if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Inbound Connector'))
+                {
+
+                    $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
+                    #[void](New-InboundConnector @param)
+                    New-InboundConnector @param | select-object Name,enabled,OriginatingServer
+
+                    <#$SC365ConnectorsHash += [ordered]@{
+                        IBName                           = $nibc.Identity
+                        IBEnabled                        = $nibc.Enabled
+                        IBTLSCertificate                 = $nibc.TlsSenderCertificateName
+                        IBSenderIPAddresses              = $nibc.SenderIPAddresses
+                        IBEFSkipIPs                      = $nibc.EFSkipIPs
+                        IBOriginatingServer              = $nibc.OriginatingServer
+                        IBOrganizationalUnitRootInternal = $nibc.OrganizationalUnitRootInternal
                     }
-                    #endRegion - Hosted Connection Filter Policy AllowList
+                    #>
+                    if(!$?) {
+                        throw $error[0]
+                    } else {
+                        #region - Add Region-based IP-range to hosted Connection Filter Policy AllowList
+                        if (!($option -eq 'NoAntiSpamAllowListing'))
+                        {
+                            Write-Verbose "Adding SEPPmail.cloud to AllowList in 'Hosted Connection Filter Policy'"
+                            Write-Verbose "Collecting existing AllowList"
+                            $hcfp = Get-HostedConnectionFilterPolicy
+                            [string[]]$existingAllowList = $hcfp.IPAllowList
+                            Write-verbose "Adding SEPPmail.cloud IP ranges to HostedConnectionFilterPolicy $($hcfp.Id)"
+                            if ($existingAllowList) {
+                                $FinalIPList = ($existingAllowList + $SEPPmailIPv4Range)|sort-object -Unique
+                            }
+                            else {
+                                $FinalIPList = $SEPPmailIPv4Range
+                            }
+                            Write-verbose "Adding IPaddress list with content $finalIPList to hosted connection filter policy $($hcfp.Id)"
+                            if ($FinalIPList) {
+                                [void](Set-HostedConnectionFilterPolicy -Identity $hcfp.Id -IPAllowList $finalIPList)
+                            }
+                        }
+                        #endRegion - Hosted Connection Filter Policy AllowList
+                    }
                 }
             }
+            #endRegion - InboundConnector
         }
-        #endRegion - InboundConnector
+
+        if (($existingsc365rules) -and ($routing -eq 'parallel')) {
+            Write-Warning "Found existing SEPPmail.cloud rules. Remove the rules with 'Remove-SC365Rules' before recreating connectors"
+        }
     }
 
     end
     {
-        $SC365Connectors = New-Object -TypeName PSobject -property $SC365ConnectorsHash
-        $SC365Connectors
+        #$SC365Connectors = New-Object -TypeName PSobject -property $SC365ConnectorsHash
+        #$SC365Connectors
     }
 }
 
@@ -570,20 +565,13 @@ function Remove-SC365Connectors
 
     Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
-    Write-Verbose "re-write pre-1.0.0 routing-modes of parametervalue $routing"
-    if ($routing -eq 'seppmail') {
-        $routing = 'inline'
-    } else {
-        $routing = 'parallel'
-    }
-
     $inbound = Get-SC365InboundConnectorSettings -routing $routing 
     $outbound = Get-SC365OutboundConnectorSettings -routing $routing
     $hcfp = Get-HostedConnectionFilterPolicy
 
     if($PSCmdlet.ShouldProcess($outbound.Name, "Remove SEPPmail outbound connector $($Outbound.Name)"))
     {
-        if (Get-OutboundConnector -WarningAction SilentlyContinue | Where-Object Identity -eq $($outbound.Name))
+        if (Get-OutboundConnector -WarningAction SilentlyContinue | Where-Object {$_.Name -eq $($outbound.Name)})
         {
             Remove-OutboundConnector $outbound.Name -confirm:$false
         }
@@ -594,7 +582,7 @@ function Remove-SC365Connectors
 
     if($PSCmdlet.ShouldProcess($inbound.Name, "Remove SEPPmail inbound connector $($inbound.Name)"))
     {
-        $InboundConnector = Get-InboundConnector | Where-Object Identity -eq $($inbound.Name)
+        $InboundConnector = Get-InboundConnector | Where-Object {$_.Name -eq $($inbound.Name)}
         if ($inboundConnector)
             {
             Write-Verbose 'Collect Inbound Connector IP for later AllowListremoval'
