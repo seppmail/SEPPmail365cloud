@@ -97,13 +97,18 @@ function New-SC365ExOReport {
                     HelpMessage = 'Enter Cmdlte to ')]
                 [string]$ExoCmd
             )
-            $rawData = Invoke-Expression -Command $exoCmd
-            if ($null -eq $rawData) {
-                $ExoHTMLData = New-object -type PSobject -property @{Result = '--- no information available ---'}|Convertto-HTML -Fragment
-            } else {
-                $ExoHTMLData = $rawData|Convertto-HTML -Fragment
-            } 
-            return $ExoHTMLData    
+            try {
+                $rawData = Invoke-Expression -Command $exoCmd
+                if ($null -eq $rawData) {
+                    $ExoHTMLData = New-object -type PSobject -property @{Result = '--- no information available ---'}|Convertto-HTML -Fragment
+                } else {
+                    $ExoHTMLData = $rawData|Convertto-HTML -Fragment
+                } 
+                return $ExoHTMLData
+            }
+            catch {
+                Write-Warning "Could not fetch data from command '$exoCmd'"
+            }    
         }
     }
 
@@ -145,9 +150,9 @@ function New-SC365ExOReport {
             $P = Get-ExoHTMLData -ExoCmd  'Get-TransportConfig |Select-Object MaxSendSize,MaxReceiveSize'
 
             # Find out possible Office Message Encryption Settings
-            Write-Verbose "Collecting Office Message Encryption Settings"
-            $hP = '<p><h3>Office Message Encryption Settings</h3><p>'
-            $P = Get-ExoHTMLData -ExoCmd 'Get-OMEConfiguration|Select-Object PSComputerName,TemplateName,OTPEnabled,SocialIdSignIn,ExternalMailExpiryInterval,Identity,IsValid'
+            #Write-Verbose "Collecting Office Message Encryption Settings"
+            #$hP = '<p><h3>Office Message Encryption Settings</h3><p>'
+            #$P = Get-ExoHTMLData -ExoCmd 'Get-OMEConfiguration|Select-Object PSComputerName,TemplateName,OTPEnabled,SocialIdSignIn,ExternalMailExpiryInterval,Identity,IsValid'
             
             # Get MX Record Report for each domain
             $hO = '<p><h3>MX Record for each Domain</h3><p>'
@@ -173,9 +178,9 @@ function New-SC365ExOReport {
             $hk = '<p><h3>Content Filter Policy</h3><p>'
             $k= Get-ExoHTMLData -ExoCmd 'Get-HostedContentFilterPolicy|Select-Object QuarantineRetentionPeriod,EndUserSpamNotificationFrequency,TestModeAction,IsValid,BulkSpamAction,PhishSpamAction,OriginatingServer'
 
-            Write-Verbose "Blocked Sender Addresses"
-            $hH = '<p><h3>Show Senders which are locked due to outbound SPAM</h3><p>'
-            $h = Get-ExoHTMLData -ExoCmd 'Get-BlockedSenderAddress'
+            #Write-Verbose "Blocked Sender Addresses"
+            #$hH = '<p><h3>Show Senders which are locked due to outbound SPAM</h3><p>'
+            #$h = Get-ExoHTMLData -ExoCmd 'Get-BlockedSenderAddress'
             
             Write-Verbose "Get Outbound SPAM Filter Policy"
             $hJ = '<p><h3>Outbound SPAM Filter Policy</h3><p>'
@@ -225,8 +230,8 @@ function New-SC365ExOReport {
             $hEndOfReport = '<p><h2>--- End of Report ---</h2><p>'
             $style = Get-Content -Path $PSScriptRoot\..\HTML\SEPPmailReport.css
             Convertto-HTML -Body "$LogoHTML $Top $RepCreationDatetime $RepCreatedBy $moduleVersion $TenantInfo`
-                   $hSplitLine $hGeneral $hSplitLine $hA $a $hB $b $hP $P $hO $o`
-                  $hSplitLine $hSecurity $hSplitLine $hC $c $hd $d $hE $e $hK $k $hH $h $hJ $j $hJ1 $J1 `
+                   $hSplitLine $hGeneral $hSplitLine $hA $a $hB $b $hO $o`
+                  $hSplitLine $hSecurity $hSplitLine $hC $c $hd $d $hE $e $hK $k $hJ $j $hJ1 $J1 `
                  $hSplitLine $hOtherConn $hSplitLine $hG $g $hI $i `
                 $hSplitLine $hConnectors $hSplitLine $hL $l $hM $m `
             $hSplitLine $hTransPortRules $hSplitLine $hN $n $hEndofReport " -Title "SEPPmail365 Exo Report" -Head $style|Out-File -FilePath $FinalPath -Force
@@ -316,6 +321,9 @@ Function Get-SC365TenantID {
 .EXAMPLE
     PS C:\> Test-SC365ConnectionStatus -showDefaultDomain
     ShowDefaultdomain will also emit the current default e-mail domain 
+.EXAMPLE
+    PS C:\> Test-SC365ConnectionStatus -Connect
+    Connnect will try to connect via the standard method (web-browser) 
 .INPUTS
     Inputs (if any)
 .OUTPUTS
@@ -338,7 +346,7 @@ function Test-SC365ConnectionStatus
 
         [Parameter(
             Mandatory=$false,
-            HelpMessage = 'If turned on, the CmdLet will try to connect to Exchange Online'
+            HelpMessage = 'If turned on, the CmdLet will try to connect to Exchange Online is disconnected'
         )]
         [switch]$Connect
 
