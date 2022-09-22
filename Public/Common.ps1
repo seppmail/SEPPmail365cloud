@@ -143,7 +143,7 @@ function New-SC365ExOReport {
             # Find out Office Configuration
             Write-Verbose "Collecting M365 Configuration"
             $hB = '<p><h3>ExO Configuration Details</h3><p>'
-            $B = Get-ExoHTMLData -ExoCmd 'Get-OrganizationConfig |Select-Object DisplayName,ExchangeVersion,AllowedMailboxRegions,DefaultMailboxRegion'
+            $B = Get-ExoHTMLData -ExoCmd 'Get-OrganizationConfig |Select-Object DisplayName,ExchangeVersion,AllowedMailboxRegions,DefaultMailboxRegion,DisablePlusAddressInRecipients'
 
             # Find out possible Sending Limits for LFT
             Write-Verbose "Collecting Send and Receive limits for SEPPmail LFT configuration"
