@@ -18,7 +18,7 @@ __Maintenance__
 - Renamed rules.json files to 3 digit numbers to reflect rule names
 - Prettify output of rules-commands (name,state,prio)
 - Prettify output of connector-commands (name,state,originatingserver)
-- New-SC365ExoReport checks if directory is writeable and uses alternatives if not (Win & Mac)
+- New-SC365ExoReport checks if directory is writeable and uses alternatives if not (Windows & Mac)
 
 ## 1.1.0 ARC Signing update (22-08-2022)
 

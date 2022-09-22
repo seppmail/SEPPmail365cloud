@@ -249,9 +249,9 @@ function New-SC365ExOReport {
                 if ($IsMacOs) {
                     $Finalpath = Join-Path -Path $env:HOME -ChildPath $ReportFilename
                 }
-                Write-Information "Writing report to $finalPath"
+                Write-Verbose "Writing report to $finalPath"
                 try {
-                    $finalReport|Out-File -FilePath $FinalPath -Force
+                    $finalReport|Out-File -FilePath $finalPath -Force
                 }
                 catch {
                     $error[0]
@@ -259,6 +259,7 @@ function New-SC365ExOReport {
             }
 
             if ($IsWindows) {
+                Write-Information -MessageData "Opening $finalPath with default browser"
                 Invoke-Expression "& '$finalpath'"
             }
             if ($IsMacOs) {
