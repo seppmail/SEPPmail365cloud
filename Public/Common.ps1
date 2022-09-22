@@ -334,7 +334,13 @@ function Test-SC365ConnectionStatus
             Mandatory=$false,
             HelpMessage = 'If turned on, the CmdLet will emit the current default domain'
         )]
-        [switch]$showDefaultDomain
+        [switch]$showDefaultDomain,
+
+        [Parameter(
+            Mandatory=$false,
+            HelpMessage = 'If turned on, the CmdLet will try to connect to Exchange Online'
+        )]
+        [switch]$Connect
 
     )
 
@@ -344,9 +350,8 @@ function Test-SC365ConnectionStatus
     if(!(Get-Module ExchangeOnlineManagement -ErrorAction SilentlyContinue))
     {
         Write-Warning "ExchangeOnlineManagement module not yet imported, importing ..."
-        $m = Import-Module ExchangeOnlineManagement -PassThru -ErrorAction SilentlyContinue
 
-        if(!$m)
+        if(!(Import-Module ExchangeOnlineManagement -PassThru -ErrorAction SilentlyContinue))
         {throw [System.Exception] "ExchangeOnlineManagement module does not seem to be installed! Use 'Install-Module ExchangeOnlineManagement' to install.'"}
     }
     else
@@ -363,18 +368,21 @@ function Test-SC365ConnectionStatus
             {
                 $isconnected = $false
                 Write-Warning "You're not actively connected to your Exchange Online organization. TOKEN is EXPIRED"
-                if($InteractiveSession) # defined in public/Functions.ps1
+                if(($InteractiveSession) -and ($Connect))# defined in public/Functions.ps1
                 {
                     try
                     {
                         # throws an exception if authentication fails
                         Write-Verbose "Reconnecting to Exchange Online"
                         Connect-ExchangeOnline -SkipLoadingFormatData
-                        #$isConnected = $true
+                        $isConnected = $true
                     }
                     catch
                     {
                         throw [System.Exception] "Could not connect to Exchange Online, please retry."}
+                }
+                else {
+                    $isConnected = $false
                 }
                 
             }
@@ -389,14 +397,11 @@ function Test-SC365ConnectionStatus
                     
                 [string] $Script:ExODefaultDomain = Get-AcceptedDomain | Where-Object{$_.Default} | Select-Object -ExpandProperty DomainName -First 1
                 if ($showDefaultDomain) {"$Script:ExoDefaultdomain"}
-        
-                return $isConnected
-
             }
             } 
             else # No Connection 
             {
-                if($InteractiveSession) # defined in public/Functions.ps1
+                if(($InteractiveSession) -and ($connect)) # defined in public/Functions.ps1
                 {
                     try
                     {
@@ -408,8 +413,12 @@ function Test-SC365ConnectionStatus
                     {
                         throw [System.Exception] "Could not connect to Exchange Online, please retry."}
                 }
+                else {
+                    $isConnected = $false
+                }
             }
-        }
+    }
+    return $isConnected
 }
 
 

@@ -5,6 +5,8 @@
 __Enhancements__
 
 - Add Support for ExchangeOnlineManagement 3.0.0. Support for older Versions is disabled.
+- Get-SC365Rules now emits only name,priority and status of the rule
+- New-SC365Connectors stops and raises a warning message if there are still transport rules pointing to the connector
 
 __BugFixes__
 
@@ -13,6 +15,8 @@ __Maintenance__
 
 - Removes old routing modes "seppmail" and "microsoft". Now only 'inline' and 'parallel' is allowed.
 - Renamed rules.json files to 3 digit numbers to reflect rule names
+- Prettify output of rules-commands (name,state,prio)
+- Prettify output of connector-commands (name,state,originatingserver)
 
 ## 1.1.0 ARC Signing update (22-08-2022)
 
