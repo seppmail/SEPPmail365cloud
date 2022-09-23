@@ -56,16 +56,13 @@ function Get-SC365Rules {
 .DESCRIPTION
 	Creates all necessary transport rules in Exchange Online to send E-Mails through seppmail.cloud for cryptographic processing.
 .EXAMPLE
-	PS C:\> New-SC365Rules
-	Thats the one-solves-all-problem CmdLet to generate rules for routingmode 'parallel'.
+		PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu'
+		Creates the rules for specific domains. Excludes all other e-mail domains from processing by SEPPmail.cloud
 .EXAMPLE
-	PS C:\> New-SC365Rules -PlacementPriority Top
+	PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu' -PlacementPriority Top
 	Places the transport rules BEFORE all other rules. This is unusual and against the default. It may make sense in some situations.
 .EXAMPLE
-	PS C:\> New-SC365Rules -ExcludeEMailDomain 'contosoeu.onmicrosoft.com','contosotest.ch'
-	Creates the rules, and creates a denylist for specific domains. Use -excludeEMailDomain if you want to avoid E-mails to be sent to SEPPmail for cryptographic processing for specific domains.
-.EXAMPLE
-	PS C:\> New-SC365Rules -disabled
+	PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu' -disabled
 	Sets the transport rules up, but keeps them inactive. Useful for a smoother integration.
 .INPUTS
 	none
@@ -94,9 +91,9 @@ function New-SC365Rules
 		[ValidateSet('parallel')]
 		[String]$routing = 'parallel',
 
-		[Parameter(Mandatory=$false,
-				   HelpMessage='E-Mail domains you want to exclude from beeing routed through the SEPPmail.cloud')]
-		[String[]]$excludeEmailDomain,
+		[Parameter(Mandatory=$true,
+				   HelpMessage='E-Mail domains you have registered in the SEPmail.Cloud')]
+		[String[]]$SEPPmailCloudDomain,
 
 		[Parameter(
 			Mandatory = $false,
@@ -169,6 +166,9 @@ function New-SC365Rules
 			   
 				$transportRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExoConfig\Rules\"
 
+				[System.Collections.ArrayList]$ExcludeEmailDomain = (Get-Accepteddomain).DomainName
+				$SEPPmailCloudDomain|foreach-object {$ExcludeEmailDomain.Remove($_)}
+
 				foreach($file in $transportRuleFiles) {
 				
 					$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
@@ -178,8 +178,9 @@ function New-SC365Rules
 					$setting.Remove('SMPriority')
 					if ($Disabled -eq $true) {$setting.Enabled = $false}
 
-					if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail')) {
-						Write-Verbose "Excluding Inbound E-Mails domains $ExcludeEmailDomain"
+					if ($Setting.Name -eq '[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail') {
+						Write-Verbose "Excluding all other domains than $SEPPmailCloudDomain"
+						
 						$Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
 					}
 
@@ -316,7 +317,7 @@ if (!(Get-Alias 'Set-SC365rules' -ErrorAction SilentlyContinue)) {
 	New-Alias -Name Set-SC365Rules -Value New-SC365Rules
 }
 
-Register-ArgumentCompleter -CommandName New-SC365Rules -ParameterName ExcludeEmailDomain -ScriptBlock $paramDomSB
+Register-ArgumentCompleter -CommandName New-SC365Rules -ParameterName SEPPmailCloudDomain -ScriptBlock $paramDomSB
 
 # SIG # Begin signature block
 # MIIL1wYJKoZIhvcNAQcCoIILyDCCC8QCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

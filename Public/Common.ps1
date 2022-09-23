@@ -4,8 +4,14 @@
 .DESCRIPTION
     The report will write all needed information of Exchange Online into an HTML file. This is useful for documentation and decisions for the integration. It also makes sense as some sort of snapshot documentation before and after an integration into seppmail.cloud
 .EXAMPLE
+    PS C:\> New-SC365ExoReport
+    This reads relevant information of Exchange Online and writes a summary report in an HTML in the current directory
+.EXAMPLE
     PS C:\> New-SC365ExoReport -FilePath '~/Desktop'
-    This reads relevant information of Exchange Online and writes a summary report in an HTML file on the desktop
+    -Filepath requires a relative path and may be used with or without filename (auto-generated filename)
+.EXAMPLE
+    PS C:\> New-SC365ExoReport -LiteralPath c:\temp\expreport.html
+    Literalpath requires a full and valid path
 .INPUTS
     FilePath
 .OUTPUTS

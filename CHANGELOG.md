@@ -8,7 +8,7 @@ __Enhancements__
 - Get-SC365Rules now emits only name,priority and status of the rule
 - New-SC365Connectors stops and raises a warning message if there are still transport rules pointing to the connector
 - Test-SC365Connection has now a -Connect parameter to connect within processing (via webbrowser)
-
+- New-SC365Rules now has a mandatory -SEPPmailCloudDomains parameter
 __BugFixes__
 
 
