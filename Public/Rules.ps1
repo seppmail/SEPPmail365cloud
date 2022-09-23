@@ -25,7 +25,7 @@ function Get-SC365Rules {
 	}
 	else 
 	{
-		Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+		Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
 		if ($routing -eq 'parallel') {
 
@@ -40,7 +40,7 @@ function Get-SC365Rules {
 				}
 				else
 				{
-					Write-Warning "Missing transport rule '$($setting.Name)'"
+					Write-Warning "No transport rule '$($setting.Name)'"
 				}
 			}    
 		}
@@ -108,7 +108,7 @@ function New-SC365Rules
 		if (!(Test-SC365ConnectionStatus))
 		{ throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
 
-		Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+	 	Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
 		$outboundConnectors = Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
 		if(!($outboundConnectors))
@@ -180,12 +180,11 @@ function New-SC365Rules
 
 					if ($Setting.Name -eq '[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail') {
 						Write-Verbose "Excluding all other domains than $SEPPmailCloudDomain"
-						
 						$Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
 					}
 
-					if (($ExcludeEmailDomain.count -ne 0) -and ($Setting.Name -eq '[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail')) {
-						Write-Verbose "Excluding Outbound E-Mail domains $ExcludeEmailDomain"
+					if ($Setting.Name -eq '[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail') {
+						Write-Verbose "Excluding Outbound E-Mail domains $SEPPmailCloudDomain"
 						$Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
 					}
 
@@ -195,7 +194,7 @@ function New-SC365Rules
 						$moduleVersion = $myInvocation.MyCommand.Version
 						Write-Verbose "Adding Timestamp $now to Comment"
 						$setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-						New-TransportRule @setting |Select-Object Name,Priority,State,ExceptIfRecipientDomainIs
+						New-TransportRule @setting |Select-Object Name,Priority,State
 					}
 				}
 			}
@@ -239,7 +238,7 @@ function Remove-SC365Rules {
 		{ 
 			throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" 
 		}
-		Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+		Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 	}
 
 	process {
@@ -294,7 +293,7 @@ function Backup-SC365Rules
 		if (!(Test-SC365ConnectionStatus))
 		{ throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
 
-		Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+		Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 	}
 
 	process
