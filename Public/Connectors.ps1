@@ -37,14 +37,14 @@ function Get-SC365Connectors
 
         if ($obc | Where-Object Identity -eq $($outbound.Name))
         {
-            $obc|select-object Name,enabled,OriginatingServer
+            $obc|select-object Name,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsDomain.Split('.')[1])}}
         }
         else {
             Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found (Wrong routing mode ?). Try Get-OutBoundConnector to get a current list of all connectors."
         }
         if ($ibc | Where-Object Identity -eq $($inbound.Name))
         {
-            $ibc|select-object Name,enabled,OriginatingServer
+            $ibc|select-object Name,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsSenderCertificateName.Split('.')[1])}}
         }
         else 
         {
@@ -376,18 +376,8 @@ function New-SC365Connectors
                 {
 
                     $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-                    New-OutboundConnector @param | select-object Name,enabled,OriginatingServer
+                    New-OutboundConnector @param | Select-Object Name,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsDomain.Split('.')[1])}}
 
-                    <#$SC365ConnectorsHash = [ordered]@{
-                        OBName                           = $nobc.Identity
-                        OBEnabled                        = $nobc.Enabled
-                        OBTlsDomain                      = $nobc.TlsDomain
-                        OBTlsSettings                    = $nobc.TlsSettings
-                        OBSmartHosts                     = $nobc.SmartHosts
-                        OBOriginatingServer              = $nobc.OriginatingServer
-                        OBOrganizationalUnitRootInternal = $nobc.OrganizationalUnitRootInternal
-                    }
-                    #>
                     if(!$?)
                     {throw $error[0]}
                 }
@@ -477,18 +467,8 @@ function New-SC365Connectors
 
                     $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
                     #[void](New-InboundConnector @param)
-                    New-InboundConnector @param | select-object Name,enabled,OriginatingServer
+                    New-InboundConnector @param |Select-Object Name,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsSenderCertificateName.Split('.')[1])}}
 
-                    <#$SC365ConnectorsHash += [ordered]@{
-                        IBName                           = $nibc.Identity
-                        IBEnabled                        = $nibc.Enabled
-                        IBTLSCertificate                 = $nibc.TlsSenderCertificateName
-                        IBSenderIPAddresses              = $nibc.SenderIPAddresses
-                        IBEFSkipIPs                      = $nibc.EFSkipIPs
-                        IBOriginatingServer              = $nibc.OriginatingServer
-                        IBOrganizationalUnitRootInternal = $nibc.OrganizationalUnitRootInternal
-                    }
-                    #>
                     if(!$?) {
                         throw $error[0]
                     } else {
@@ -612,7 +592,7 @@ function Remove-SC365Connectors
         }
         else 
         {
-            Write-Warning 'No SEPPmail.cloud Inbound Connector found'
+            Write-Warning 'No SEPPmail.Cloud Inbound Connector found'
         }
     }
 }

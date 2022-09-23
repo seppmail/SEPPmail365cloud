@@ -9,6 +9,7 @@ __Enhancements__
 - New-SC365Connectors stops and raises a warning message if there are still transport rules pointing to the connector
 - Test-SC365Connection has now a -Connect parameter to connect within processing (via webbrowser)
 - New-SC365Rules now has a mandatory -SEPPmailCloudDomains parameter
+
 __BugFixes__
 
 
@@ -17,7 +18,7 @@ __Maintenance__
 - Removes old routing modes "seppmail" and "microsoft". Now only 'inline' and 'parallel' is allowed.
 - Renamed rules.json files to 3 digit numbers to reflect rule names
 - Prettify output of rules-commands (name,state,prio)
-- Prettify output of connector-commands (name,state,originatingserver)
+- Prettify output of connector-commands (Name,Enabled,Whencreated,Region)
 - New-SC365ExoReport checks if directory is writeable and uses alternatives if not (Windows & Mac)
 
 ## 1.1.0 ARC Signing update (22-08-2022)
