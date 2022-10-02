@@ -116,6 +116,7 @@ PrivateData = @{
 
         # Tags applied to this module. These help with module discovery in online galleries.
         Tags = @(
+                'SEPPmail'
                 'SEPPmail.cloud',
                 'ExchangeOnline',
                 'Microsoft365',
@@ -135,7 +136,7 @@ PrivateData = @{
         ReleaseNotes = 'See https://github.com/seppmail/SEPPmail365cloud/blob/main/CHANGELOG.md'
 
         # Prerelease string of this module
-        Prerelease = 'preview1'
+        #Prerelease = ''
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
