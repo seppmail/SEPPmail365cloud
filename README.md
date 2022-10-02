@@ -19,14 +19,10 @@
   - [Test your mailflow](#test-your-mailflow)
   - [Advanced Setup](#advanced-setup)
     - [Creating Connectors and disabled Rules for time-controlled integration](#creating-connectors-and-disabled-rules-for-time-controlled-integration)
-    - [Exclude e-Mail domains from the mailflow](#exclude-e-mail-domains-from-the-mailflow)
     - [Place TransportRules at the top of the rule-list](#place-transportrules-at-the-top-of-the-rule-list)
-
+  - [Issues and solutions](#issues-and-solutions)
+    - [Computer has User home directory on a fileshare (execution policy error)](#computer-has-user-home-directory-on-a-fileshare-execution-policy-error)
 # The SEPPmail365cloud PowerShell Module README.MD
-
-## Sometest
-
-I did install the azure preview predictor
 
 ## Introduction
 
