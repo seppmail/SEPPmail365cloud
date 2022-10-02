@@ -93,7 +93,7 @@ function New-SC365Rules
 
 		[Parameter(Mandatory=$true,
 				   HelpMessage='E-Mail domains you have registered in the SEPmail.Cloud')]
-		[String[]]$SEPPmailCloudDomain,
+	   [String[]]$SEPPmailCloudDomain,
 
 		[Parameter(
 			Mandatory = $false,
