@@ -36,7 +36,7 @@ function Get-SC365Rules {
 				$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
 				$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
 				if ($rule) {
-					$rule|Select-Object Name,Priority,State,ExceptIfRecipientDomainIs
+					$rule|Select-Object Identity,Priority,State,ExceptIfRecipientDomainIs
 				}
 				else
 				{
@@ -194,7 +194,7 @@ function New-SC365Rules
 						$moduleVersion = $myInvocation.MyCommand.Version
 						Write-Verbose "Adding Timestamp $now to Comment"
 						$setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-						New-TransportRule @setting |Select-Object Name,Priority,State
+						New-TransportRule @setting |Select-Object Identity,Priority,State
 					}
 				}
 			}
