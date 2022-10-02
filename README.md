@@ -39,11 +39,7 @@ Changes in the module versions are documented in ![CHANGELOG.md](./CHANGELOG.md)
 
 ## Prerequisites
 
-The module requires *PowerShell Core*, mimimum version 7.2.1 and was tested on Windows and macOS. The module code wraps around the *ExchangeOnline* Powershell Commandlets, so the Exchange Online Module version 2.0.5 is a requirement as well.
-
->Note: Microsoft promotes to install the preview version of the ExchangeOnline PowerShell Module 2.0.6-preview5 or so. DO NOT INSTALL THE PREVIEW VERSION, as our module WILL NOT WORK.
-
-__Use Version 2.0.5 of ExchangeOnlineManagement, and you will be fine.__
+The module requires *PowerShell Core*, mimimum version 7.2.1 and was tested on Windows and macOS. The module code wraps around the *ExchangeOnline* Powershell Commandlets, so the Exchange Online Module version minimum 3.0.0 is a requirement as well.
 
 PowerShell Core on Linux should work as well, but has not been intensively tested so far.
 
@@ -153,10 +149,20 @@ New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'inline' -region 'c
 New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'parallel' -region 'ch'
 
 # Important: Rules can only be created if the connectors are enabled. They are enabled by default, so if you use the example above it will work.
-New-SC365Rules
+New-SC365Rules -routing parallel -SEPPmailCloudDomain 'contoso.eu'
 ```
 
 ## Review the changes
+
+```powershell
+Get-SC365Connectors -routing parallel
+
+Get-SC365Rules
+
+# Important: Those 2 commands will show the current connectors and rules.
+```
+
+You can use also the native Exchange Online Commandlets.
 
 ```Get-Inboundconnector``` and ```Get-OutboundConnector``` will show the installed connectors, and ```Get-Transportrule``` CmdLet will give you all information about transport rules.
 
@@ -189,14 +195,6 @@ Get-TransportRule -Identity '[SEPPmail.cloud]*'|Disable-TransportRule
 
 ```
 
-### Exclude e-Mail domains from the mailflow
-
-By default, out transport rules allow e-mails from any accepted domain of the ExchangeOnline tenant to be sent through SEPPmail.cloud. If you want to limit the e-mail domains by excluding them use the -ExcludeEmailDomain parameter.
-
-```powershell
-New-SC365Rules -ExcludeEmailDomain 'contoso.onmicrosoft.com','contosotest.ch'
-```
-
 ### Place TransportRules at the top of the rule-list
 
 By default out transport rules will be placed at the bottom of all other transport rules. If you want to change this use:
@@ -204,5 +202,17 @@ By default out transport rules will be placed at the bottom of all other transpo
 ```powershell
 New-SC365Rules -PlacementPriority Top
 ```
+
+## Issues and solutions
+
+### Computer has User home directory on a fileshare (execution policy error)
+
+If your computer has the users directory on a fileshare, Powershell still installs the Module in the $currentuser scope in your homedirectory. This sill raise issues with execution policy settings. To avoid this you can.
+
+1.) Start PowerShell with no execution policy, by opening a terminal (cmd.exe) and run pwsh -executionpolicy unrestricted.
+
+2.) Install the modue to a local drive by:
+- Save-module seppmail365cloud -Path c:\temp
+- import-modue c:\temp\seppmail365cloud
 
 <p style="text-align: center;">--- End of document ---</p>
