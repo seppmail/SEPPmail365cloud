@@ -69,7 +69,7 @@ function Get-SC365InboundConnectorSettings
 
     Set-SC365PropertiesFromConfigJson $ret -Json $json -Route $Route -Region $Region -Option $Option
     #>
-    $inBoundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Inbound.json" -Raw|Convertfrom-Json -AsHashtable)
+    $inBoundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\InBound.json" -Raw|Convertfrom-Json -AsHashtable)
     $ret = $inBoundRaw.routing.($routing.Tolower())
 
     return $ret
@@ -96,7 +96,7 @@ function Get-SC365OutboundConnectorSettings
 
     Set-SC365PropertiesFromConfigJson $ret -Json $json -Routing $Routing -Option $Option
     #>
-    $outBoundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\Outbound.json" -Raw|Convertfrom-Json -AsHashtable)
+    $outBoundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\OutBound.json" -Raw|Convertfrom-Json -AsHashtable)
     $ret= $outBoundRaw.routing.($routing.ToLower())
     return $ret
 }
