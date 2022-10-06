@@ -29,7 +29,7 @@ function Get-SC365Rules {
 
 		if ($routing -eq 'parallel') {
 
-			$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
+			$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
 
 			foreach ($file in $transportRuleFiles) {
 			

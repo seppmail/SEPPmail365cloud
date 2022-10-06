@@ -51,24 +51,12 @@ function Get-SC365InboundConnectorSettings
     [CmdletBinding()]
     Param
     (
-        <#[Parameter(Mandatory=$true)]
-        [SC365.MailRouting] $Route,
-        [Parameter(Mandatory=$true)]
-        [SC365.Region] $Region,
-        [SC365.ConfigOption[]] $Option#>
         [Parameter(Mandatory=$true)]
         $routing,
         $option
     )
 
     Write-Verbose "Loading inbound connector settings for routingtype $Routing"
-    <#
-    $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\Connectors\Inbound.json" -Raw)
-
-    $ret = [SC365.InboundConnectorSettings]::new($json.Name, $Route)
-
-    Set-SC365PropertiesFromConfigJson $ret -Json $json -Route $Route -Region $Region -Option $Option
-    #>
     $inBoundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\InBound.json" -Raw|Convertfrom-Json -AsHashtable)
     $ret = $inBoundRaw.routing.($routing.Tolower())
 
@@ -80,22 +68,12 @@ function Get-SC365OutboundConnectorSettings
     [CmdletBinding()]
     Param
     (
-        <#[Parameter(Mandatory=$true)]
-        [SC365.MailRouting] $Routing,
-        [SC365.ConfigOption[]] $Option#>
         [Parameter(Mandatory=$true)]
         $routing,
         $option
     )
 
     Write-Verbose "Loading outbound connector settings"
-    <#
-    $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\Connectors\Outbound.json" -Raw)
-
-    $ret = [SC365.OutboundConnectorSettings]::new($json.Name, $Routing)
-
-    Set-SC365PropertiesFromConfigJson $ret -Json $json -Routing $Routing -Option $Option
-    #>
     $outBoundRaw = (Get-Content "$PSScriptRoot\..\ExOConfig\Connectors\OutBound.json" -Raw|Convertfrom-Json -AsHashtable)
     $ret= $outBoundRaw.routing.($routing.ToLower())
     return $ret
@@ -106,14 +84,6 @@ function Get-SC365TransportRuleSettings
     [CmdLetBinding()]
     Param
     (
-        <#[Parameter(Mandatory=$true)]
-        [SC365.MailRouting] $Route,
-        [Parameter(Mandatory=$true)]
-        [SC365.Region] $Region,
-        [SC365.ConfigOption[]] $Option,
-        [SC365.AvailableTransportRuleSettings[]] $Settings =[SC365.AvailableTransportRuleSettings]::All,
-        [switch] $IncludeSkipped
-        #>
         [Parameter(Mandatory = $true)]
         [string] $routing,
         [Parameter(Mandatory = $true)]
@@ -133,62 +103,6 @@ function Get-SC365TransportRuleSettings
         return $ret    
     }
 }
-    <#Write-Verbose "Loading transport rule settings for routingtype $Region"
-
-    $settingsToFetch = 0
-    foreach($set in $Settings)
-    {$settingsToFetch = $settingsToFetch -bor $set}
-
-    $configs = array string
-    $ret = array SC365.TransportRuleSettings -Capacity $configs.Count
-    $addSetting = {
-        Param
-        (
-            [string] $FileName,
-            [SC365.AvailableTransportRuleSettings] $Type
-        )
-        $json = ConvertFrom-Json (Get-Content "$PSScriptRoot\..\ExOConfig\Rules\$FileName" -Raw)
-
-        $settings = [SC365.TransportRuleSettings]::new($json.Name, $Region, $Route, $Type)
-
-        Set-SC365PropertiesFromConfigJson $settings -Json $json -Region $Region -Route $Route -Option $Option
-
-        if(!$settings.Skip -or ($settings.Skip -and $IncludeSkipped))
-        {$ret.Add($settings)}
-    }
-
-    if([SC365.AvailableTransportRuleSettings]::OutgoingHeaderCleaning -band $settingsToFetch)
-    {& $addSetting "X-SM-outgoing-header-cleaning.json" "OutgoingHeaderCleaning"}
-
-    if([SC365.AvailableTransportRuleSettings]::DecryptedHeaderCleaning -band $settingsToFetch)
-    {& $addSetting "X-SM-decrypted-header-cleaning.json" "DecryptedHeaderCleaning"}
-
-    if([SC365.AvailableTransportRuleSettings]::EncryptedHeaderCleaning -band $settingsToFetch)
-    {& $addSetting "X-SM-encrypted-header-cleaning.json" "EncryptedHeaderCleaning"}
-
-    if([SC365.AvailableTransportRuleSettings]::SkipSpfIncoming -band $settingsToFetch)
-    {& $addSetting "Skip-SPF-incoming.json" "SkipSpfIncoming"}
-
-    if([SC365.AvailableTransportRuleSettings]::SkipSpfInternal -band $settingsToFetch)
-    {& $addSetting "Skip-SPF-internal.json" "SkipSpfInternal"}
-
-    if([SC365.AvailableTransportRuleSettings]::Inbound -band $settingsToFetch)
-    {& $addSetting "Inbound.json" "Inbound"}
-
-    if([SC365.AvailableTransportRuleSettings]::Outbound -band $settingsToFetch)
-    {& $addSetting "Outbound.json" "Outbound"}
-
-    # Deactivated, because it seems unnecessary
-    # if([SC365.AvailableTransportRuleSettings]::Internal -band $settingsToFetch)
-    # {& $addSetting "Internal.json" "Internal"}
-
-    # Return the array in reverse SMPriority order, so that they can be created with the
-    # same priority, i.e.:
-    # New-TransportRule @param -Priority 3
-    # But via this sorting, an SMPriority 0 rule will actually be at the top (but at priority 3).
-    $ret | Sort-Object -Property SMPriority -Descending
-    #>
-
 function Get-SC365CloudConfig
 {
     [CmdletBinding()]
