@@ -453,7 +453,7 @@ function New-SC365Connectors
                 Write-Verbose "Setting $TlscertificateName as TLSSendercertificate and IP addresses to region $region"
                 $param.RestrictDomainsToIPAddresses = $false
                 $param.RestrictDomainsToCertificate = $true
-                $param.SenderIPAddresses = $SEPPmailIPv4Range
+                $param.SenderIPAddresses = $SEPPmailIPv4Range 
                 $param.TlsSenderCertificateName = $TlsCertificateName
 
                 #region EFSkipIP in inbound connector

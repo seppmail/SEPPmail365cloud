@@ -22,13 +22,10 @@
             "Comment"                      : "Accept E-Mails from SEPPmail.cloud host.",
             "CloudServicesMailEnabled"     : false,
             "ConnectorSource"              : "Default",
-            "ConnectorType"                : "OnPremises",
+            "ConnectorType"                : "OnPremise",
             "Enabled"                      : true,
             "RequireTls"                   : true,
-            "RestrictDomainsToIPAddresses" : "---Parameter input---",
-            "RestrictDomainsToCertificate" : "---Parameter input---",
             "SenderDomains"                : "*",
-            "SenderIPAddresses"            : "---Parameter input---",
             "TlsSenderCertificateName"     : "---Parameter input---"
         }
     },
