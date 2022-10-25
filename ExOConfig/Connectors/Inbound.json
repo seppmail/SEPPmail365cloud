@@ -20,9 +20,9 @@
         {
             "Name"                         : "[SEPPmail.cloud] Inbound-Parallel",
             "Comment"                      : "Accept E-Mails from SEPPmail.cloud host.",
-            "CloudServicesMailEnabled"     : false,
+            "CloudServicesMailEnabled"     : true,
             "ConnectorSource"              : "Default",
-            "ConnectorType"                : "OnPremise",
+            "ConnectorType"                : "OnPremises",
             "Enabled"                      : true,
             "RequireTls"                   : true,
             "SenderDomains"                : "*",
