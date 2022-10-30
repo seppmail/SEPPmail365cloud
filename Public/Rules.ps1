@@ -95,6 +95,11 @@ function New-SC365Rules
 				   HelpMessage='E-Mail domains you have registered in the SEPmail.Cloud')]
 	   [String[]]$SEPPmailCloudDomain,
 
+	   [Parameter(Mandatory=$false,
+	   				HelpMessage='SCL Value for inbound Mails which should NOT be processed by SEPPmail.Cloud. Default is 5')]
+	   [ValidateSet('-1','0','5','6','8','9')]
+	   [int]$SCLInboundValue=5,
+
 		[Parameter(
 			Mandatory = $false,
 			HelpMessage = 'Add rules if you provisioned internal e-mail signature in the SEPPmail.cloud Service'
@@ -183,6 +188,12 @@ function New-SC365Rules
 						$Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
 					}
 
+					if (($Setting.Name -eq '[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail') -and ($SCLInboundValue -ne 5)){
+						Write-Verbose "Setting Value $SCLInboundValue to Inbound flowing to SEPPmail.cloud"
+						$Setting.ExceptIfSCLOver = $SCLInboundValue
+					}
+
+					
 					if ($Setting.Name -eq '[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail') {
 						Write-Verbose "Excluding Outbound E-Mail domains $SEPPmailCloudDomain"
 						$Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
