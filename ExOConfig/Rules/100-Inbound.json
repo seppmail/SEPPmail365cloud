@@ -19,6 +19,7 @@
           "ExceptIfHeaderMatchesPatterns"           : "yes",
           "ExceptIfHeaderContainsMessageHeader"     : "X-SM-incoming",
           "ExceptIfHeaderContainsWords"             : "yes",
+          "ExceptIfSCLOver"                         : 5,
           "Priority"                                : 0,
           "SetAuditSeverity"                        : "DoNotAudit",
           "Mode"                                    : "Enforce",
