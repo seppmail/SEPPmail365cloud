@@ -218,12 +218,14 @@ function New-SC365Connectors
         if ($routing -eq 'parallel') {
             $OutboundSmartHost = ($primaryMailDomain.Replace('.','-')) + '.mail.seppmail.cloud'
         }
-        
+        Write-Verbose "Outbound SmartHost is: $OutboundSmartHost"
+
         Write-Verbose "Prepare GeoRegion configuration for region: $region"
         $CloudConfig = Get-Content "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -raw|Convertfrom-Json -AsHashtable
         $regionConfig = $cloudConfig.GeoRegion.($region.Tolower())
         $SEPPmailIPv4Range = $regionConfig.IPv4AllowList
         $TlsCertificateName = $regionConfig.TlsCertificate
+        Write-Verbose "TLS Certificate is $TlsCertificateName"
 
         Write-Verbose "Set timestamp and Moduleversion for Comments"
         $Now = Get-Date
