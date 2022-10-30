@@ -21,7 +21,7 @@
             "Comment"                  : "Route outgoing E-Mails based on transport rules to SEPPmail.cloud",
             "ConnectorSource"          : "Default",
             "ConnectorType"            : "OnPremises",
-            "CloudServicesMailEnabled" : true,
+            "CloudServicesMailEnabled" : false,
             "IsTransportRuleScoped"    : true,
             "SmartHosts"               : "---Parameter input---",
             "TlsSettings"              : "DomainValidation",
