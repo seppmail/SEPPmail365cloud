@@ -1,0 +1,29 @@
+{
+    "routing":
+    {
+        "inline" :
+        {
+            
+        },
+        "parallel" :
+        {
+          "Name"                                    : "[SEPPmail.cloud] - 050 on SPF fail - no SEPPmail.Cloud processing",
+          "Comments"                                : "E-mails sent from outside the organization and SPF failed are NOT routed to the SEPPmail.cloud for crypto-processing.",
+          "SMPriority"                              : 0,
+          "FromScope"                               : "NotInOrganization",
+          "SentToScope"                             : "InOrganization",
+          "SetHeaderName"                           : "X-SM-internal",
+          "SetHeaderValue"                          : "yes",
+          "HeaderContainsMessageHeader"             : "Authentication-Results",
+          "HeaderContainsWords"                     : "spf=fail",
+          "Priority"                                : 0,
+          "SetAuditSeverity"                        : "DoNotAudit",
+          "Mode"                                    : "Enforce",
+          "SenderAddressLocation"                   : "Header"
+        }
+    },
+    "Option":
+        {
+            
+        }
+}
