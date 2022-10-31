@@ -459,7 +459,7 @@ function New-SC365Connectors
                 $param.TlsSenderCertificateName = $TlsCertificateName
 
                 #region EFSkipIP in inbound connector
-                if ($NoInboundEFSkipIPs) {
+                if (($NoInboundEFSkipIPs) -or ($routing -eq 'inline')){
                     Write-Warning "Inbound Connector $param.Name will be build WITHOUT IP-addresses in EFSkipIPs. This will increase SPAM false-positives."
                 } else {
                     [String[]]$EfSkipIPArray = $cloudConfig.GeoRegion.($region.Tolower()).IPv4AllowList + $cloudConfig.GeoRegion.($region.Tolower()).IPv6AllowList
@@ -478,7 +478,7 @@ function New-SC365Connectors
                         throw $error[0]
                     } else {
                         #region - Add Region-based IP-range to hosted Connection Filter Policy AllowList
-                        if (!($option -eq 'NoAntiSpamAllowListing'))
+                        if ((!($option -eq 'NoAntiSpamAllowListing')) -or ($routing -eq 'inline'))
                         {
                             Write-Verbose "Adding SEPPmail.cloud to AllowList in 'Hosted Connection Filter Policy'"
                             Write-Verbose "Collecting existing AllowList"
