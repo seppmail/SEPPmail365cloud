@@ -14,7 +14,7 @@
             "SentToScope"           : "NotInOrganization",
             "RemoveHeader"          : "X-SM-encrypted",
             "Priority"              : 0,
-            "SetAuditSeverity"      : "Low",
+            "SetAuditSeverity"      : "DoNotAudit",
             "Mode"                  : "Enforce",
             "SenderAddressLocation" : "Header"
         }
