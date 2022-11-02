@@ -169,7 +169,7 @@ function New-SC365Rules
 
 			if($createRules){
 			   
-				$transportRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExoConfig\Rules\"
+				$transportRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExOConfig\Rules\"
 
 				[System.Collections.ArrayList]$ExcludeEmailDomain = (Get-Accepteddomain).DomainName
 				$SEPPmailCloudDomain|foreach-object {$ExcludeEmailDomain.Remove($_)}
@@ -244,7 +244,7 @@ function Remove-SC365Rules {
 	)
 
 	begin {
-		$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExoConfig\Rules\"
+		$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
 		if (!(Test-SC365ConnectionStatus))
 		{ 
 			throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" 
