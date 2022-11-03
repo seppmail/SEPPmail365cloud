@@ -209,9 +209,9 @@ function New-SC365Connectors
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
  
         #region Preparing common setup
-        Write-Verbose "Preparing values for Cloud configuration"
+        Write-Debug "Preparing values for Cloud configuration"
 
-        Write-Verbose "Prepare smarthosts for e-Mail domain $primaryMailDomain"
+        Write-debug "Prepare smarthosts for e-Mail domain $primaryMailDomain"
         if ($routing -eq 'inline') {
             $OutboundSmartHost = ($primaryMailDomain.Replace('.','-')) + '.relay.seppmail.cloud'
         }
@@ -220,20 +220,20 @@ function New-SC365Connectors
         }
         Write-Verbose "Outbound SmartHost is: $OutboundSmartHost"
 
-        Write-Verbose "Prepare GeoRegion configuration for region: $region"
+        Write-Debug "Prepare GeoRegion configuration for region: $region"
         $CloudConfig = Get-Content "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -raw|Convertfrom-Json -AsHashtable
         $regionConfig = $cloudConfig.GeoRegion.($region.Tolower())
         $SEPPmailIPv4Range = $regionConfig.IPv4AllowList
         $TlsCertificateName = $regionConfig.TlsCertificate
         Write-Verbose "TLS Certificate is $TlsCertificateName"
 
-        Write-Verbose "Set timestamp and Moduleversion for Comments"
+        Write-Debug "Set timestamp and Moduleversion for Comments"
         $Now = Get-Date
         $moduleVersion = $myInvocation.MyCommand.Version
         #endregion commonsetup
 
         #region collecting existing connectors and test for hybrid Setup
-        Write-Verbose "Collecting existing connectors"
+        Write-Debug "Collecting existing connectors"
         $allInboundConnectors = Get-InboundConnector
         $allOutboundConnectors = Get-OutboundConnector -WarningAction SilentlyContinue
 
@@ -268,12 +268,12 @@ function New-SC365Connectors
             Write-Verbose "No Hybrid Connectors detected, seems to be a clean cloud-only environment" -InformationAction Continue
         }
 
-        Write-Verbose "Checking for existing SEPPmail.cloud rules"
+        Write-Debug "Checking for existing SEPPmail.cloud rules"
         $existingSc365Rules = Get-TransportRule -Identity '[SEPPmail.Cloud]*' -WarningAction SilentlyContinue -erroraction SilentlyContinue
 
         #endregion
 
-        Write-Verbose "Look for ARC-Signature for seppmail.cloud and add if missing"
+        Write-Debug "Look for ARC-Signature for seppmail.cloud and add if missing"
         try {
             [string]$ath = (Get-ArcConfig).ArctrustedSealers
             if ($ath) {
@@ -298,18 +298,20 @@ function New-SC365Connectors
     process
     {
             #region - OutboundConnector
-            Write-Verbose "Building Outbound parameters based on smarthost $outboundtlsdomain"
+            Write-Debug "Building Outbound parameters based on smarthost $outboundtlsdomain"
             #$outbound = Get-SC365OutboundConnectorSettings -routing $routing -Option $Option
             $param = Get-SC365OutboundConnectorSettings -Routing $routing -Option $option
-            $param.SmartHosts = $OutboundSmartHost            
+            $param.SmartHosts = $OutboundSmartHost
+            Write-Verbose "Outbound Connector Smarthosts are $($param.SmartHosts)"
             $param.TlsDomain = $TlsCertificateName
+            Write-Verbose "Outbound Connector TLS certificate name is $($param.TlsDomain)"
             
             Write-verbose "if -disabled switch is used, the connector stays deactivated"
             if ($Disabled) {
                 $param.Enabled = $false
             }
 
-            Write-Verbose "Read existing SEPPmail.cloud outbound connector"
+            Write-Debug "Read existing SEPPmail.cloud outbound connector"
             $existingSMOutboundConn = $allOutboundConnectors | Where-Object Name -eq $param.Name
             # only $false if the user says so interactively
 
@@ -375,7 +377,7 @@ function New-SC365Connectors
 
             if($createOutbound -and (!($inboundonly)))
             {
-                Write-Verbose "Creating SEPPmail.cloud Outbound Connector $($param.Name)!"
+                Write-Debug "Creating SEPPmail.cloud Outbound Connector $($param.Name)!"
                 if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Outbound Connector'))
                 {
 
@@ -389,7 +391,7 @@ function New-SC365Connectors
             #endregion - OutboundConnector
 
             #region - InboundConnector
-            Write-Verbose "Read Inbound Connector Settings"
+            Write-Debug "Read Inbound Connector Settings"
             $param = $null
             $param = Get-SC365InboundConnectorSettings -routing $routing -option $option
         
