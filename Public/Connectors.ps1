@@ -79,9 +79,9 @@ function Get-SC365Connectors
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
     In addition the IP-Addresses of SEPPmail.cloud are listed in the "Enhanced Filter Skip list". This should not be neeed with Version 1.2.0+ as we do ARC-signing!
 .EXAMPLE
-    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'de' -option NoAntiSpamAllowListing
+    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'de' -option AntiSpamAllowListing
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
-    In addition the IP-addresses of SEPPmail.cloud are not listed in the Default Hosted Connection Filter Policy. This will impact SPAM of detection of MS Defender, USE WITH CARE!
+    In addition the IP-addresses of SEPPmail.cloud are listed in the Default Hosted Connection Filter Policy. This will impact SPAM of detection of MS Defender, USE WITH CARE!
 .INPUTS
     
 .OUTPUTS
@@ -174,7 +174,7 @@ function New-SC365Connectors
             ParameterSetName = 'InBoundOnly',
             HelpMessage = 'Which configuration option to use'
         )]
-        [ValidateSet('NoAntiSpamAllowListing')]
+        [ValidateSet('AntiSpamAllowListing')]
         [String[]]$option,
 
         [Parameter(
@@ -480,7 +480,7 @@ function New-SC365Connectors
                         throw $error[0]
                     } else {
                         #region - Add Region-based IP-range to hosted Connection Filter Policy AllowList
-                        if ((!($option -eq 'NoAntiSpamAllowListing')) -or ($routing -eq 'inline'))
+                        if ($option -eq 'AntiSpamAllowListing')
                         {
                             Write-Verbose "Adding SEPPmail.cloud to AllowList in 'Hosted Connection Filter Policy'"
                             Write-Verbose "Collecting existing AllowList"
