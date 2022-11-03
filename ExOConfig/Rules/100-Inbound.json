@@ -21,7 +21,7 @@
           "ExceptIfHeaderContainsWords"             : "yes",
           "ExceptIfSCLOver"                         : 5,
           "Priority"                                : 0,
-          "SetAuditSeverity"                        : "Low",
+          "SetAuditSeverity"                        : "DoNotAudit",
           "Mode"                                    : "Enforce",
           "SenderAddressLocation"                   : "Header"
         }

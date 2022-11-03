@@ -21,7 +21,7 @@
             "ExceptIfMessageTypeMatches"          : "OOF",
             "ExceptIfSCLOver"                     : 9,
             "Priority"                            : 0,
-            "SetAuditSeverity"                    : "Low",
+            "SetAuditSeverity"                    : "DoNotAudit",
             "Mode"                                : "Enforce",
             "SenderAddressLocation"               : "Header"
         }

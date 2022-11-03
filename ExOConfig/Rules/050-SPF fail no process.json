@@ -17,7 +17,7 @@
           "HeaderContainsMessageHeader"             : "Authentication-Results",
           "HeaderContainsWords"                     : "spf=fail",
           "Priority"                                : 0,
-          "SetAuditSeverity"                        : "Low",
+          "SetAuditSeverity"                        : "DoNotAudit",
           "Mode"                                    : "Enforce",
           "SenderAddressLocation"                   : "Header"
         }
