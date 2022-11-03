@@ -48,7 +48,7 @@ PowerShellVersion = '7.2.0'
 # ClrVersion = ''
 
 # Processor architecture (None, X86, Amd64) required by this module
-ProcessorArchitecture = 'Amd64'
+# ProcessorArchitecture = 'Amd64'
 
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
@@ -136,7 +136,7 @@ PrivateData = @{
         ReleaseNotes = 'See https://github.com/seppmail/SEPPmail365cloud/blob/main/CHANGELOG.md'
 
         # Prerelease string of this module
-        #Prerelease = ''
+        Prerelease = 'preview'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false

@@ -61,25 +61,25 @@ function Get-SC365Connectors
     SEPPmail.cloud uses 2 Connectors to transfer messages between SEPPmail.cloud and Exchange Online
     This commandlet will create the connectors for you, depending on the routing mode.
 .EXAMPLE
-    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -region 'ch' -routing 'inline'
+    PS C:\> New-SC365Connectors -primarymaildomain 'contoso.eu' -region 'ch' -routing 'inline'
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud
 .EXAMPLE
-    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -region 'ch' -routing 'inline' -disabled
+    PS C:\> New-SC365Connectors -primarymaildomain 'contoso.eu' -region 'ch' -routing 'inline' -disabled
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud.
     Connectors will be created in "disabled"-mode. You need to enable them manually.
 .EXAMPLE
-    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -region 'ch' -routing 'inline' -Confirm:$false -Force
+    PS C:\> New-SC365Connectors -primarymaildomain 'contoso.eu' -region 'ch' -routing 'inline' -Confirm:$false -Force
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud.
     Connectors will be created and existing connectors will be deleted without any further interaction.
 .EXAMPLE
-    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'de'
+    PS C:\> New-SC365Connectors -primarymaildomain 'contoso.eu' -routing 'parallel' -region 'de'
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
 .EXAMPLE
-    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'de' -InboundEFSkipIPs
+    PS C:\> New-SC365Connectors -primarymaildomain 'contoso.eu' -routing 'parallel' -region 'de' -InboundEFSkipIPs
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
     In addition the IP-Addresses of SEPPmail.cloud are listed in the "Enhanced Filter Skip list". This should not be neeed with Version 1.2.0+ as we do ARC-signing!
 .EXAMPLE
-    PS C:\> New-SC365Connectors -maildomain 'contoso.eu' -routing 'parallel' -region 'de' -option AntiSpamAllowListing
+    PS C:\> New-SC365Connectors -primarymaildomain 'contoso.eu' -routing 'parallel' -region 'de' -option AntiSpamAllowListing
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
     In addition the IP-addresses of SEPPmail.cloud are listed in the Default Hosted Connection Filter Policy. This will impact SPAM of detection of MS Defender, USE WITH CARE!
 .INPUTS
@@ -520,8 +520,8 @@ function New-SC365Connectors
 .DESCRIPTION
     Convenience function to remove the SEPPmail connectors
 .EXAMPLE
-    PS C:\> Remove-SC365Connectors
-    Removes all SEPPmail Connectors from the exchange online environment.
+    PS C:\> Remove-SC365Connectors -routing parallel
+    Removes all SEPPmail Connectors from the exchange online environment in parallel mode.
 .NOTES
     See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
@@ -540,7 +540,7 @@ function Remove-SC365Connectors
         [ValidateSet('inline','parallel')]
         [String]$routing,
         
-        [ValidateSet('NoAntiSpamAllowListing')]
+        [ValidateSet('AntiSpamAllowListing')]
         [String]$option
     )
 
@@ -578,7 +578,7 @@ function Remove-SC365Connectors
             Remove-InboundConnector $inbound.Name -confirm:$false
 
             Write-Verbose "If Inbound Connector has been removed, remove also AllowListed IPs"
-            if ((!($Option -like 'NoAntiSpamAllowListing')) -and (!(Get-InboundConnector | Where-Object Identity -eq $($inbound.Name))))
+            if ((!($Option -like 'AntiSpamAllowListing')) -and (!(Get-InboundConnector | Where-Object Identity -eq $($inbound.Name))))
             {
                     Write-Verbose "Remove SEPPmail Appliance IP from AllowList in 'Hosted Connection Filter Policy'"
                     

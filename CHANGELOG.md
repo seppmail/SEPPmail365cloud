@@ -1,5 +1,21 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 1.2.5 Exchange Online adaption and Tenant2Tenant Signature  Update
+
+__Enhancements__
+
+- New transport "050" rule to avoid failed SPF-check E-mails to be routed to SEPPmail.cloud (parallel mode only)
+- Adapted Inbound transport rule to avoid SPAM with SCL Level 5 (parameterized) to be routed to SEPPmail.cloud (parallel mode only)
+- Connector type for Inline-Mode is changed to "Partner"
+- Debian(Linux) compatibility. Module has been tested on Debian
+- Slim connector configuration for parallel mode connectors (No SenderIpAdresses, HostedConnectionFilterPolicy, EFSkipIPs)
+- New transport rule "600" to remove S-SM-Smarthost header on outgoing mails to force obfuscation of leveraged technology
+
+__Maintenance__
+
+- Avoid mailloops between ExO-Tenants in the same region
+
+
 ## 1.2.0 ExchangeOnlineManagement Module Version 3.0.0 Update
 
 __Enhancements__
