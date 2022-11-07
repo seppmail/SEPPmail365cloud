@@ -82,13 +82,13 @@ Now lets look into the 2 different modes.
 
 Routing mode "inline" allows you to use the full power of the SEPPmail.cloud! In this scenario, the __mx-record of the e-mail domain is set to the SEPPmail cloud hosts__. Inbound e-mails flow to the SEPPmail.cloud, are scanned, treated cryptographically and then flow to Microsoft via connectors. Same is outbound, the mails simply pass the SEPPmail.cloud before leaving to the internet.
 
-![seppmail](./Visuals/seppmail365cloud-visuals-inline.png)
+![inline](./Visuals/seppmail365cloud-visuals-inline.png)
 
 ### Routing mode "parallel"
 
 This routing mode is similar to the way you would integrate any SEPPmail Appliance (self hosted or MSP) with ExchangeOnline. E-mails flow to Microsoft, and are looped through SEPPmail.cloud, based on the need for cryptographic treatment. Unfortunately, no SEPPmail Virus or SPAM filter is possible in this configuration.
 
-![microsoft](./Visuals/seppmail365cloud-visuals-parallel.png)
+![parallel](./Visuals/seppmail365cloud-visuals-parallel.png)
 
 ## Using the seppmail365cloud PowerShell module
 
@@ -114,7 +114,7 @@ The report will give you valued information about existing connectors, rules and
 
 ### Clean up before installing
 
-If your Exchange Online environment was originally integrated with a SEPPmail already, you need to backup, remove (or disable) the existing SEPPmail365 connectors and rules before integrating into seppmail.cloud.
+If your Exchange Online environment was originally integrated with a SEPPmail Appliance, you need to backup, remove (or disable) the existing SEPPmail365 connectors and rules before integrating into seppmail.cloud.
 To do this use our OTHER PS-Module **SEPPmail365**. Find info on [backup and removal SEPPmail connectors and rules here.](https://github.com/seppmail/SEPPmail365#cleanup-environment)
 
 >Note: *If you do not remove existing __[SEPPmail]__ rules and connectors, the mailflow will be a mess and the integration will not work.*
@@ -134,7 +134,7 @@ You need to setup inbound and outbound-connectors and transport rules, so run th
 ### Example for routingmode: inline
 
 ```powershell
-New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'inline' -region 'ch'
+New-SC365Connectors -SEPPmailCloudDomain 'contoso.ch' -routing 'inline' -region 'ch'
 
 # Currently no rules are needed for routingtype SEPPmail, so you are done after setting up the connectors!
 ```
@@ -142,7 +142,7 @@ New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'inline' -region 'c
 ### Example for routingmode: parallel
 
 ```powershell
-New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'parallel' -region 'ch'
+New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'parallel' -region 'de'
 
 # Important: Rules can only be created if the connectors are enabled. They are enabled by default, so if you use the example above it will work.
 New-SC365Rules -routing parallel -SEPPmailCloudDomain 'contoso.eu'
@@ -175,7 +175,7 @@ The module allows some extra-tweaks for advanced configurations
 For sensitive environments, where mailflow may only be changed in specific time frames, it is possible to create rules and connectors "disabled". Both CmdLets New-SC365Connectors and New-SC365Rules have a -disabled switch. See examples below:
 
 ```powershell
-New-SC365Connectors -PrimaryMailDomain 'contoso.eu' -routing 'parallel' -region 'ch'
+New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'parallel' -region 'de'
 New-SC365Rules -disabled
 ```
 
