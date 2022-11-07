@@ -36,7 +36,16 @@ function Get-SC365Rules {
 				$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
 				$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
 				if ($rule) {
-					$rule|Select-Object Identity,Priority,State,ExceptIfRecipientDomainIs
+					
+					if ($rule.Identity -like '*100*') {
+						$rule|Select-Object Identity,Priority,State,@{Name = 'ExcludedDomains'; Expression={$_.ExceptIfRecipientDomainIs}}
+					}
+					elseif ($rule.Identity -like '*200*') {
+						$rule|Select-Object Identity,Priority,State,@{Name = 'ExcludedDomains'; Expression={$_.ExceptIfSenderDomainIs}}
+					}
+					else {
+						$rule|Select-Object Identity,Priority,State,ExcludedDomains
+					}
 				}
 				else
 				{
@@ -186,13 +195,11 @@ function New-SC365Rules
 					if ($Setting.Name -eq '[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail') {
 						Write-Verbose "Excluding all other domains than $SEPPmailCloudDomain"
 						$Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
-					}
-
-					if (($Setting.Name -eq '[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail') -and ($SCLInboundValue -ne 5)){
-						Write-Verbose "Setting Value $SCLInboundValue to Inbound flowing to SEPPmail.cloud"
+						if ($SCLInboundValue -ne 5) {
+							Write-Verbose "Setting Value $SCLInboundValue to Inbound flowing to SEPPmail.cloud"
 						$Setting.ExceptIfSCLOver = $SCLInboundValue
+						}
 					}
-
 					
 					if ($Setting.Name -eq '[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail') {
 						Write-Verbose "Excluding Outbound E-Mail domains $SEPPmailCloudDomain"

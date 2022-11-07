@@ -5,7 +5,11 @@
     SEPPmail.cloud uses 2 Connectors to transfer messages between SEPPmail.cloud and Exchange Online
     This commandlet will show existing connectors.
 .EXAMPLE
-    Get-SC365Connectors
+    Get-SC365Connectors -routing -parallel
+    Shows Connectors in parallel mode
+.EXAMPLE
+    Get-SC365Connectors -routing -inline
+    Shows Connectors in inline mode
 .NOTES
     See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
@@ -40,7 +44,7 @@ function Get-SC365Connectors
             $obc|select-object Name,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsDomain.Split('.')[1])}}
         }
         else {
-            Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found (Wrong routing mode ?). Try Get-OutBoundConnector to get a current list of all connectors."
+            Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found. Wrong routing mode ?"
         }
         if ($ibc | Where-Object Identity -eq $($inbound.Name))
         {
@@ -48,7 +52,7 @@ function Get-SC365Connectors
         }
         else 
         {
-            Write-Warning "No SEPPmail.cloud Inbound Connector with Name `"$($inbound.Name)`" found (Wrong routing mode ?). Try Get-InBoundConnector to get a current list of all connectors."
+            Write-Warning "No SEPPmail.cloud Inbound Connector with Name `"$($inbound.Name)`" found - Wrong routing mode ?"
         }
 
     }
@@ -56,30 +60,30 @@ function Get-SC365Connectors
 
 <#
 .SYNOPSIS
-    Adds SEPPmail.cloud Exchange Online connectors
+    Adds/Renews SEPPmail.cloud Exchange Online connectors
 .DESCRIPTION
     SEPPmail.cloud uses 2 Connectors to transfer messages between SEPPmail.cloud and Exchange Online
-    This commandlet will create the connectors for you, depending on the routing mode.
+    This commandlet will create the connectors for you, depending on routing mode and the region.  
 .EXAMPLE
-    PS C:\> New-SC365Connectors -primarymaildomain 'contoso.eu' -region 'ch' -routing 'inline'
-    Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud
+    PS C:\> New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -region 'ch' -routing 'inline'
+    Creates Connectors for the maildomain contoso.eu. seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud
 .EXAMPLE
-    PS C:\> New-SC365Connectors -primarymaildomain 'contoso.eu' -region 'ch' -routing 'inline' -disabled
-    Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud.
+    PS C:\> New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -region 'ch' -routing 'inline' -disabled
+    Creates Connectors for the maildomain contoso.eu, the seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud.
     Connectors will be created in "disabled"-mode. You need to enable them manually.
 .EXAMPLE
-    PS C:\> New-SC365Connectors -primarymaildomain 'contoso.eu' -region 'ch' -routing 'inline' -Confirm:$false -Force
-    Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud.
+    PS C:\> New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -region 'ch' -routing 'inline' -Confirm:$false -Force
+    Creates Connectors for the maildomain contoso.eu, the seppmail.cloud environment ist Switzerland and customers uses seppmail.cloud mailfilter. MX points to seppmail.cloud.
     Connectors will be created and existing connectors will be deleted without any further interaction.
 .EXAMPLE
-    PS C:\> New-SC365Connectors -primarymaildomain 'contoso.eu' -routing 'parallel' -region 'de'
+    PS C:\> New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'parallel' -region 'de'
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
 .EXAMPLE
-    PS C:\> New-SC365Connectors -primarymaildomain 'contoso.eu' -routing 'parallel' -region 'de' -InboundEFSkipIPs
+    PS C:\> New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'parallel' -region 'de' -InboundEFSkipIPs
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
     In addition the IP-Addresses of SEPPmail.cloud are listed in the "Enhanced Filter Skip list". This should not be neeed with Version 1.2.0+ as we do ARC-signing!
 .EXAMPLE
-    PS C:\> New-SC365Connectors -primarymaildomain 'contoso.eu' -routing 'parallel' -region 'de' -option AntiSpamAllowListing
+    PS C:\> New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'parallel' -region 'de' -option AntiSpamAllowListing
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
     In addition the IP-addresses of SEPPmail.cloud are listed in the Default Hosted Connection Filter Policy. This will impact SPAM of detection of MS Defender, USE WITH CARE!
 .INPUTS
@@ -113,7 +117,7 @@ function New-SC365Connectors
             Position = 0
             )]
         [Alias('domain','maildomain')]
-        [String] $primaryMailDomain,
+        [String] $SEPPmailCloudDomain,
 
         [Parameter(
             Mandatory = $false,
@@ -211,12 +215,12 @@ function New-SC365Connectors
         #region Preparing common setup
         Write-Debug "Preparing values for Cloud configuration"
 
-        Write-debug "Prepare smarthosts for e-Mail domain $primaryMailDomain"
+        Write-debug "Prepare smarthosts for e-Mail domain $SEPPmailCloudDomain"
         if ($routing -eq 'inline') {
-            $OutboundSmartHost = ($primaryMailDomain.Replace('.','-')) + '.relay.seppmail.cloud'
+            $OutboundSmartHost = ($SEPPmailCloudDomain.Replace('.','-')) + '.relay.seppmail.cloud'
         }
         if ($routing -eq 'parallel') {
-            $OutboundSmartHost = ($primaryMailDomain.Replace('.','-')) + '.mail.seppmail.cloud'
+            $OutboundSmartHost = ($SEPPmailCloudDomain.Replace('.','-')) + '.mail.seppmail.cloud'
         }
         Write-Verbose "Outbound SmartHost is: $OutboundSmartHost"
 
@@ -662,9 +666,9 @@ if (!(Get-Alias 'Set-SC365Connectors' -ErrorAction SilentlyContinue)) {
     New-Alias -Name Set-SC365Connectors -Value New-SC365Connectors
 }
 
-Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName PrimaryMailDomain -ScriptBlock $paramDomSB
-#Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName region -ScriptBlock $paramRegionSB
-#Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName routing -ScriptBlock $paramRoutingModeSB
+Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName SEPPmailCloudDomain -ScriptBlock $paramDomSB
+Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName region -ScriptBlock $paramRegionSB
+Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName routing -ScriptBlock $paramRoutingModeSB
 
 
 # SIG # Begin signature block

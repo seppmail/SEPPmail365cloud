@@ -1,6 +1,6 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
-## 1.2.5 Exchange Online adaption and Tenant2Tenant Signature  Update
+## 1.2.5 Exchange Online adaption and Tenant2Tenant Signature Update
 
 __Enhancements__
 
@@ -14,6 +14,8 @@ __Enhancements__
 __Maintenance__
 
 - Avoid mailloops between ExO-Tenants in the same region
+- Optimized output of Get-SC365rules - Excluded DOmains are now seen.
+- Domain selection in New-SC365Connectors and New-SC365Rules parameter is now called SEPPmailCloudDomain
 
 
 ## 1.2.0 ExchangeOnlineManagement Module Version 3.0.0 Update
