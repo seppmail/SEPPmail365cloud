@@ -119,8 +119,8 @@ PrivateData = @{
                 'SEPPmail'
                 'SEPPmail.cloud',
                 'ExchangeOnline',
-                'Microsoft365',
                 'PSEdition_Core',
+                'Microsoft365',
                 'Office365')
 
         # A URL to the license for this module.
@@ -136,7 +136,7 @@ PrivateData = @{
         ReleaseNotes = 'See https://github.com/seppmail/SEPPmail365cloud/blob/main/CHANGELOG.md'
 
         # Prerelease string of this module
-        Prerelease = 'preview'
+        #Prerelease = 'preview'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
@@ -158,8 +158,8 @@ HelpInfoURI = 'https://github.com/seppmail/SEPPmail365cloud#readme'
 # SIG # Begin signature block
 # MIIL1wYJKoZIhvcNAQcCoIILyDCCC8QCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUmh8rA2Slu3dpmKmkEplQImC2
-# 4jaggglAMIIEmTCCA4GgAwIBAgIQcaC3NpXdsa/COyuaGO5UyzANBgkqhkiG9w0B
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUlLwmj+mGYd5TJtZWdIuF9byB
+# LImggglAMIIEmTCCA4GgAwIBAgIQcaC3NpXdsa/COyuaGO5UyzANBgkqhkiG9w0B
 # AQsFADCBqTELMAkGA1UEBhMCVVMxFTATBgNVBAoTDHRoYXd0ZSwgSW5jLjEoMCYG
 # A1UECxMfQ2VydGlmaWNhdGlvbiBTZXJ2aWNlcyBEaXZpc2lvbjE4MDYGA1UECxMv
 # KGMpIDIwMDYgdGhhd3RlLCBJbmMuIC0gRm9yIGF1dGhvcml6ZWQgdXNlIG9ubHkx
@@ -213,11 +213,11 @@ HelpInfoURI = 'https://github.com/seppmail/SEPPmail365cloud#readme'
 # NiBDb2RlIFNpZ25pbmcgQ0ECEF0xOuf5lHR9Mf0X/F6tAjYwCQYFKw4DAhoFAKB4
 # MBgGCisGAQQBgjcCAQwxCjAIoAKAAKECgAAwGQYJKoZIhvcNAQkDMQwGCisGAQQB
 # gjcCAQQwHAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkE
-# MRYEFFeMZSqG1leScoi+pb8OBsU0BWM/MA0GCSqGSIb3DQEBAQUABIIBADotm3m4
-# ByHM/IVuJFA9ABdoXNnLKukqLP6aPcEf+vs3T8ZGfQKSQQvnDrtgDR0zf4NNWMsK
-# 9swIRMEAxINClF7yGJMT1TO/CrfEIXJPX13VGP0RxZPGitAjTysc4aeC/aZ2B5ia
-# iJQs9MmyulHtqkDKjVwvgliOPVggfoM8mVAwKf9xddiNDIMF+bqCtTBqcjN8yo7P
-# agWGLZt1ePiIrU0CrGxe8uLnpLxlXB+GfrWl5E0/Lk42bYZOOzHfz4Lfk4m1MdWj
-# B4xRyTpMjBEFdEwYhVZZNfHG4rg+PTWdxlHy/lfZoXn9uGGLcdT/Cuq8yHUgQYQz
-# w3h8+bGu3pcKZJo=
+# MRYEFG47XFjjNJDXRmjU8rO+mrb/3pWcMA0GCSqGSIb3DQEBAQUABIIBADYi/Q68
+# urYGwJmta+QPwaTVK0e1LgznZRQEAPHSMS7w1Cz9ox+UWlkgSJTr6j/hFY3F0jed
+# KMYs+Cjxs5ekTk2a5KXVAxuFu1SnzthTypgh7oWPckH3b8H/YAuR7VdPbhLHWToP
+# qTEz2tKJsP6XTc2dMnJ7OLm8bLHk8TcWcoDY4aOF78cPvHVSzBrG71HYHyqyYakm
+# vvx/D0dgJlkoyX5RUsmdn4nDUq8NnSndLV6rf5LyxgFfSvSUJMNun+Lk0uaF0qbr
+# Qnu5ntMnx/qM7CiDPQ3qOWhInZvbMHEMx4bUUINI3klvxGtNFnmqKGgr6/eyWrt2
+# A5ylMlw46FhUfig=
 # SIG # End signature block
