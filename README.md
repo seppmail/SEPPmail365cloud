@@ -20,6 +20,10 @@
   - [Advanced Setup](#advanced-setup)
     - [Creating Connectors and disabled Rules for time-controlled integration](#creating-connectors-and-disabled-rules-for-time-controlled-integration)
     - [Place TransportRules at the top of the rule-list](#place-transportrules-at-the-top-of-the-rule-list)
+    - [Use AllowLists for specific customer situations](#use-allowlists-for-specific-customer-situations)
+      - [Inbound-Only (Inline Mode)](#inbound-only-inline-mode)
+      - [Allowlisting SEPPmail.cloud in the Defender Enhanced Filtering List (Parallel Mode)](#allowlisting-seppmailcloud-in-the-defender-enhanced-filtering-list-parallel-mode)
+      - [Allowlisting SEPPmail.cloud in the Anti-SPAM filter list, aka HostedConnectionFilterPolicy (Parallel Mode)](#allowlisting-seppmailcloud-in-the-anti-spam-filter-list-aka-hostedconnectionfilterpolicy-parallel-mode)
   - [Issues and solutions](#issues-and-solutions)
     - [Computer has User home directory on a fileshare (execution policy error)](#computer-has-user-home-directory-on-a-fileshare-execution-policy-error)
 # The SEPPmail365cloud PowerShell Module README.MD
@@ -125,9 +129,11 @@ After you are sure that your Exchange Online environment is prepared, you have r
 
 You need to know 3 input values to run the CmdLets.
 
-- **maildomain** (the e-mail domain of your Exchange Online environnement that has been configured in the seppmail.cloud. Most of the time this is the default-domain in your Exchange Online Tenant.)
+- **SEPPMailCloudDomain** (the e-mail domain of your Exchange Online environnement that has been configured in the seppmail.cloud. Most of the time this is the default-domain in your Exchange Online Tenant.)
 - **routing** (either "inline" or "parallel", read above for details)
 - **region** (the geographical region of the SEPPmail.cloud infrastructure)
+
+>Note: All 3 parameters are automatically populating valid options if you press TAB after the prameter. This reduces typo errors.
 
 You need to setup inbound and outbound-connectors and transport rules, so run the two commands as explained below.
 
@@ -189,6 +195,10 @@ Get-TransportRule -Identity '[SEPPmail.cloud]*'|Enable-TransportRule
 # Disable SEPPmail.cloud TransportRules
 Get-TransportRule -Identity '[SEPPmail.cloud]*'|Disable-TransportRule
 
+# To avoid getting asked for every rule to confirm the change and run the command in "silent" mode use
+Get-TransportRule -Identity '[SEPPmail.cloud]*'|Disable-TransportRule -Confirm:$false -Verbose
+
+
 ```
 
 ### Place TransportRules at the top of the rule-list
@@ -197,6 +207,34 @@ By default out transport rules will be placed at the bottom of all other transpo
 
 ```powershell
 New-SC365Rules -PlacementPriority Top
+```
+
+### Use AllowLists for specific customer situations
+
+#### Inbound-Only (Inline Mode)
+
+In rare customer situations or for testing purposes, clients only want to use the inbound-filter. To create Inbound connectivity ONLY, use the -inBoundOnly parameter like in the example below.
+
+```powershell
+New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'inline' -region 'de' -inBoundOnly
+```
+
+#### Allowlisting SEPPmail.cloud in the Defender Enhanced Filtering List (Parallel Mode)
+
+We saw situations where the EnhancedFiltering Allowlist needed to be filled with SEPPmail.cloud IP addresses.
+Use the example below to deploy those IP addresses properly.
+
+```powershell
+New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'inline' -region 'de' -inboundEFSkipIPs
+```
+
+#### Allowlisting SEPPmail.cloud in the Anti-SPAM filter list, aka HostedConnectionFilterPolicy (Parallel Mode)
+
+We saw situations where the Hosted Connection Filter Policy needed to be filled with SEPPmail.cloud IP addresses.
+Use the example below to deploy those IP addresses properly.
+
+```powershell
+New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'inline' -region 'de' -option AntiSpamAllowListing
 ```
 
 ## Issues and solutions

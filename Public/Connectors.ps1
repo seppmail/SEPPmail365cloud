@@ -44,7 +44,7 @@ function Get-SC365Connectors
             $obc|select-object Name,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsDomain.Split('.')[1])}}
         }
         else {
-            Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found. Wrong routing mode ?"
+            Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found. Wrong routing mode or Inboundonly ?"
         }
         if ($ibc | Where-Object Identity -eq $($inbound.Name))
         {
@@ -116,7 +116,7 @@ function New-SC365Connectors
             Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
             Position = 0
             )]
-        [Alias('domain','maildomain')]
+        [Alias('domain','maildomain','primaryMailDomain')]
         [String] $SEPPmailCloudDomain,
 
         [Parameter(
@@ -323,7 +323,7 @@ function New-SC365Connectors
             #wait-debugger
             if ($existingSMOutboundConn)
             {
-                if ((!($existingsc365rules)) -and ($routing -eq 'parallel')) {
+                if (!($existingsc365rules)) {
 
                     Write-Warning "Found existing SEPPmail.cloud outbound connector with name: `"$($existingSMOutboundConn.Name)`" created on `"$($existingSMOutboundConn.WhenCreated)`" pointing to SEPPmail `"$($existingSMOutboundConn.TlsDomain)`" "
                     if (($InteractiveSession) -and (!($force)))
