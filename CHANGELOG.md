@@ -9,7 +9,7 @@ __Enhancements__
 - Connector type for Inline-Mode is changed to "Partner"
 - Debian(Linux) compatibility. Module has been tested on Debian
 - Slim connector configuration for parallel mode connectors (No SenderIpAdresses, HostedConnectionFilterPolicy, EFSkipIPs)
-- New transport rule "600" to remove S-SM-Smarthost header on outgoing mails to force obfuscation of leveraged technology
+- New transport rule "600" to remove X-SM-Smarthost header on outgoing mails to force obfuscation of leveraged technology
 
 __Maintenance__
 
