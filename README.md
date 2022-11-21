@@ -39,7 +39,7 @@ Changes in the module versions are documented in ![CHANGELOG.md](./CHANGELOG.md)
 
 ## Prerequisites
 
-The module requires *PowerShell Core*, mimimum version 7.2.1 and was tested on Windows and macOS. The module code wraps around the *ExchangeOnline* Powershell Commandlets, so the Exchange Online Module version minimum 3.0.0 is a requirement as well.
+The module requires *PowerShell Core*, mimimum version 7.2.1 and was tested on Windows and macOS. The module code wraps around the *ExchangeOnline* Powershell Commandlets, so the Exchange Online Module version minimum 3.0.0 is a requirement as well. How to connect to Exchange Online via Powershell is documented by Microsoft on learn [https://learn.microsoft.com](https://learn.microsoft.com/de-de/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps).
 
 PowerShell Core on Linux should work as well, but has not been intensively tested so far.
 
