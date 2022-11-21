@@ -461,7 +461,7 @@ function New-SC365Connectors
                 Write-Verbose "Setting $TlscertificateName as TLSSendercertificate and IP addresses to region $region"
                 if ($routing -eq 'parallel') {$param.RestrictDomainsToIPAddresses = $false}
                 #60 if ($routing -eq 'parallel') {$param.SenderIPAddresses = $SEPPmailIPv4Range}
-                if ($routing -eq 'inline') {$param.SenderDomains = 'smtp:' + $TlsCertificateName + ';1'}
+                if ($routing -eq 'inline') {$param.SenderDomains = 'smtp:' + '*' + ';1'} # smtp:*;1
                 $param.TlsSenderCertificateName = $TlsCertificateName
 
                 #region EFSkipIP in inbound connector

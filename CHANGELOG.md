@@ -1,5 +1,11 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 1.2.6 Correction Release
+
+__Maintenance__
+
+- Fix Inbound-Connector Inline mode to SenderDomains "smtp:*;1"
+
 ## 1.2.5 Exchange Online adaption and Tenant2Tenant Signature Update
 
 __Enhancements__
