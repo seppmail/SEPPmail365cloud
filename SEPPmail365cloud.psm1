@@ -25,10 +25,10 @@ if (!(Test-SC365ConnectionStatus)) {
     Write-Warning "You are not connected to Exchange Online. Use Connect-ExchangeOnline to connect to your tenant"
 }
 
-<#Write-Verbose 'Test new version available'
+Write-Verbose 'Test new version available'
 try {
     $onLineVersion = Find-Module -Name 'SEPPmail365cloud'|Select-Object -expandproperty Version
-    $offLineVersion = Test-ModuleManifest (Join-Path $ModulePath -ChildPath seppmail365.psd1) |Select-Object -ExpandProperty Version 
+    $offLineVersion = Test-ModuleManifest (Join-Path $ModulePath -ChildPath seppmail365cloud.psd1) |Select-Object -ExpandProperty Version 
     if ($onLineVersion -gt $offLineVersion) {
         Write-Warning "You have version $offlineVersion, but there is the new version $onLineVersion of the SEPPmail365Cloud module available on the PowerShell Gallery. Update the module as soon as possible. More info here https://www.powershellgallery.com/packages/SEPPMail365cloud"
     }   
@@ -36,7 +36,6 @@ try {
 catch {
     Write-Error "Could not determine newest module version due to exception $($_.Exception.Message)"
 }
-#>
 
 Export-ModuleMember -Alias * -Function *
 

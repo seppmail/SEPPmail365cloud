@@ -89,6 +89,8 @@ FunctionsToExport = @(
     #   'Get-SC365Setup'
     #'Remove-SC365Setup'
        'Get-SC365TenantId'
+       'Get-SC365MessageTrace'
+       #'List-SC365Messages' MessageID, Recipient
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

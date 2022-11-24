@@ -5,6 +5,8 @@
 __Maintenance__
 
 - Fix Inbound-Connector Inline mode to SenderDomains "smtp:*;1"
+- Bind Inbound-Connector to TLS certificate of Exo-Tenant-default-domain
+- BETA: Get-SC36MessageTrace -MessageID 'ABC123' -Recipient 'max@contoso.com'
 
 ## 1.2.5 Exchange Online adaption and Tenant2Tenant Signature Update
 

@@ -231,6 +231,10 @@ function New-SC365Connectors
         $TlsCertificateName = $regionConfig.TlsCertificate
         Write-Verbose "TLS Certificate is $TlsCertificateName"
 
+        Write-Verbose 'Crafting Inbound Certificate Name'
+        $ibTlsCertificateName = $SEPPmailCloudDomain.Split('.')[0] + '-' + $SEPPmailCloudDomain.Split('.')[1] + '.transport.seppmail.cloud'
+        Write-verbose "IBC certificate Name is $ibTlsCertificateName"
+
         Write-Debug "Set timestamp and Moduleversion for Comments"
         $Now = Get-Date
         $moduleVersion = $myInvocation.MyCommand.Version
@@ -462,9 +466,16 @@ function New-SC365Connectors
                 if ($routing -eq 'parallel') {$param.RestrictDomainsToIPAddresses = $false}
                 #60 if ($routing -eq 'parallel') {$param.SenderIPAddresses = $SEPPmailIPv4Range}
                 if ($routing -eq 'inline') {$param.SenderDomains = 'smtp:' + '*' + ';1'} # smtp:*;1
-                $param.TlsSenderCertificateName = $TlsCertificateName
+                
+                if ($routing -eq 'inline') 
+                    {
+                        $param.TlsSenderCertificateName = $IbTlsCertificateName
+                    }
+                else {
+                        $param.TlsSenderCertificateName = $IbTlsCertificateName
+                }
 
-                #region EFSkipIP in inbound connector
+               #region EFSkipIP in inbound connector
                 if ($InboundEFSkipIPs){
                     [String[]]$EfSkipIPArray = $cloudConfig.GeoRegion.($region.Tolower()).IPv4AllowList + $cloudConfig.GeoRegion.($region.Tolower()).IPv6AllowList
                     $param.EFSkipIPs = $EfSkipIPArray
@@ -478,7 +489,7 @@ function New-SC365Connectors
 
                     $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
                     #[void](New-InboundConnector @param)
-                    New-InboundConnector @param |Select-Object Identity,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsSenderCertificateName.Split('.')[1])}}
+                    New-InboundConnector @param |Select-Object Identity,Enabled,WhenCreated,@{Name = 'Region'; Expression = $region}
 
                     if(!$?) {
                         throw $error[0]
