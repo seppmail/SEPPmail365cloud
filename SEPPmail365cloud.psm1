@@ -28,9 +28,9 @@ if (!(Test-SC365ConnectionStatus)) {
 Write-Verbose 'Test new version available'
 try {
     $onLineVersion = Find-Module -Name 'SEPPmail365cloud'|Select-Object -expandproperty Version
-    $offLineVersion = Test-ModuleManifest (Join-Path $ModulePath -ChildPath seppmail365cloud.psd1) |Select-Object -ExpandProperty Version 
+    $offLineVersion = Test-ModuleManifest (Join-Path $ModulePath -ChildPath SEPPmail365cloud.psd1) |Select-Object -ExpandProperty Version 
     if ($onLineVersion -gt $offLineVersion) {
-        Write-Warning "You have version $offlineVersion, but there is the new version $onLineVersion of the SEPPmail365Cloud module available on the PowerShell Gallery. Update the module as soon as possible. More info here https://www.powershellgallery.com/packages/SEPPMail365cloud"
+        Write-Warning "You have version $offlineVersion, but there is the new version $onLineVersion of the SEPPmail365cloud module available on the PowerShell Gallery. Update the module as soon as possible. More info here https://www.powershellgallery.com/packages/SEPPMail365cloud"
     }   
 }
 catch {
