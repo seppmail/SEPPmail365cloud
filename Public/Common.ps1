@@ -325,14 +325,6 @@ Function Get-SC365TenantID {
     )]
     param (
         [Parameter(Mandatory=$true)]
-        <#[ValidateScript(
-            {   if (Get-AcceptedDomain -Identity $_ -Erroraction silentlycontinue) {
-                    $true
-                } else {
-                    Write-Error "Domain $_ could not get validated, please check accepted domains with 'Get-AcceptedDomains'"
-                }
-            }
-            )]#>           
         [string]$maildomain
     )
 
@@ -667,7 +659,6 @@ function Get-SC365MessageTrace {
         #$SC365MessageTraceHT
     }
 }
-
 
 
 
