@@ -616,62 +616,6 @@ function Remove-SC365Connectors
     }
 }
 
-<#
-.SYNOPSIS
-    Backs up all existing connectors to individual json files
-.DESCRIPTION
-    Convenience function to perform a backup of all existing connectors
-.EXAMPLE
-    Backup-SC365Connectors -OutFolder "C:\temp"
-.NOTES
-    See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
-#>
-function Backup-SC365Connectors
-{
-    [CmdletBinding()]
-    param
-    (
-        [Parameter(
-             Mandatory = $true,
-             HelpMessage = 'Folder in which the backed up configuration will be stored'
-         )]
-        [Alias('Folder','Path')]
-        [String] $OutFolder
-    )
-
-    begin
-    {
-        if (!(Test-SC365ConnectionStatus))
-        { throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
-
-        Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
-    }
-
-    process
-    {
-        if(!(Test-Path $OutFolder))
-        {New-Item $OutFolder -ItemType Directory}
-
-        Get-InboundConnector | foreach-object{
-            $n = $_.Name
-            $n = $n -replace "[\[\]*\\/?:><`"]"
-
-            $p = "$OutFolder\inbound_connector_$n.json"
-
-            Write-Verbose "Backing up $($_.Name) to $p"
-            ConvertTo-Json -InputObject $_ | Out-File $p
-        }
-
-        Get-OutboundConnector -WarningAction SilentlyContinue | foreach-object {
-            $n = $_.Name
-            $n = $n -replace "[\[\]*\\/?:><`"]"
-
-            $p = "$OutFolder\outbound_connector_$n.json"
-            Write-Verbose "Backing up $($_.Name) to $p"
-            ConvertTo-Json -InputObject $_ | Out-File $p
-        }
-    }
-}
 
 if (!(Get-Alias 'Set-SC365Connectors' -ErrorAction SilentlyContinue)) {
     New-Alias -Name Set-SC365Connectors -Value New-SC365Connectors

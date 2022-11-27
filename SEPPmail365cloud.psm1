@@ -1,7 +1,7 @@
 [CmdLetBinding()]
 
+$InformationPreference = $true
 $ModulePath = $PSScriptRoot
-
 $InteractiveSession = [System.Environment]::UserInteractive
 
 Write-Verbose 'Request terminating errors by default'
