@@ -183,6 +183,8 @@ function New-SC365Rules
 				[System.Collections.ArrayList]$ExcludeEmailDomain = (Get-Accepteddomain).DomainName
 				$SEPPmailCloudDomain|foreach-object {$ExcludeEmailDomain.Remove($_)}
 
+				$moduleVersion = $myInvocation.MyCommand.Version
+
 				foreach($file in $transportRuleFiles) {
 				
 					$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
@@ -192,7 +194,7 @@ function New-SC365Rules
 					$setting.Remove('SMPriority')
 					if ($Disabled -eq $true) {$setting.Enabled = $false}
 
-					if ($Setting.Name -eq '[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail') {
+					if ($Setting.Name -like '[SEPPmail.cloud] - 100*') {
 						Write-Verbose "Excluding all other domains than $SEPPmailCloudDomain"
 						$Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
 						if ($SCLInboundValue -ne 5) {
@@ -201,15 +203,20 @@ function New-SC365Rules
 						}
 					}
 					
-					if ($Setting.Name -eq '[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail') {
+					if ($Setting.Name -like '[SEPPmail.cloud] - 200*') {
 						Write-Verbose "Excluding Outbound E-Mail domains $SEPPmailCloudDomain"
 						$Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
+					}
+
+#					if ($Setting.Name -eq '[SEPPmail.cloud] - 800 Add outbound header X-SM-ruleversion') {
+					if ($Setting.Name -like '[SEPPmail.cloud] - 800*') {
+						Write-Verbose "Add rule version $Moduleversion"
+						$Setting.SetHeaderValue = $Moduleversion.ToString()
 					}
 
 					if ($PSCmdlet.ShouldProcess($setting.Name, "Create transport rule"))
 					{
 						$Now = Get-Date
-						$moduleVersion = $myInvocation.MyCommand.Version
 						Write-Verbose "Adding Timestamp $now to Comment"
 						$setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
 						New-TransportRule @setting |Select-Object Identity,Priority,State

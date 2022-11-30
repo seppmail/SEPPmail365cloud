@@ -1,0 +1,28 @@
+{
+    "routing":
+    {
+        "inline" :
+        {
+            
+        },
+        "parallel":
+        {
+            "Name"                  : "[SEPPmail.cloud] - 800 Add outbound header X-SM-ruleversion",
+            "Comments"              : "Adds a header to let SEPPmail.cloud know which rules version you are running.",
+            "SMPriority"            : 8,
+            "FromScope"             : "InOrganization",
+            "SentToScope"           : "NotInOrganization",
+            "SetHeaderName"         : "X-SM-ruleversion",
+            "SetHeaderValue"        : "",
+            "Priority"              : 0,
+            "SetAuditSeverity"      : "DoNotAudit",
+            "Mode"                  : "Enforce",
+            "SenderAddressLocation" : "Header"
+        }
+    },
+    "Option":
+        {
+            
+        }
+
+}
