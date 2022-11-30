@@ -1,0 +1,27 @@
+{
+    "routing":
+    {
+        "inline" :
+        {
+            
+        },
+        "parallel":
+        {
+            "Name"                  : "[SEPPmail.cloud] - 600 Clean outbound SEPPmail header smarthost",
+            "Comments"              : "Removes outgoing SEPPmail.cloud x-headers from E-Mail.",
+            "SMPriority"            : 6,
+            "FromScope"             : "NotInOrganization",
+            "SentToScope"           : "InOrganization",
+            "RemoveHeader"          : "X-sepp-smarthost",
+            "Priority"              : 0,
+            "SetAuditSeverity"      : "DoNotAudit",
+            "Mode"                  : "Enforce",
+            "SenderAddressLocation" : "Header"
+        }
+    },
+    "Option":
+        {
+            
+        }
+
+}
