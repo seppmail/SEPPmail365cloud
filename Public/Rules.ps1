@@ -194,24 +194,25 @@ function New-SC365Rules
 					$setting.Remove('SMPriority')
 					if ($Disabled -eq $true) {$setting.Enabled = $false}
 
-					if ($Setting.Name -like '[SEPPmail.cloud] - 100*') {
-						Write-Verbose "Excluding all other domains than $SEPPmailCloudDomain"
-						$Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
-						if ($SCLInboundValue -ne 5) {
-							Write-Verbose "Setting Value $SCLInboundValue to Inbound flowing to SEPPmail.cloud"
-						$Setting.ExceptIfSCLOver = $SCLInboundValue
+					switch ($setting.Name)
+					{
+						"[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail" {
+							Write-Verbose "Excluding all other domains than $SEPPmailCloudDomain"
+							$Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
+							if ($SCLInboundValue -ne 5) {
+								Write-Verbose "Setting Value $SCLInboundValue to Inbound flowing to SEPPmail.cloud"
+							$Setting.ExceptIfSCLOver = $SCLInboundValue
+							}
 						}
-					}
-					
-					if ($Setting.Name -like '[SEPPmail.cloud] - 200*') {
-						Write-Verbose "Excluding Outbound E-Mail domains $SEPPmailCloudDomain"
-						$Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain
-					}
-
-#					if ($Setting.Name -eq '[SEPPmail.cloud] - 800 Add outbound header X-SM-ruleversion') {
-					if ($Setting.Name -like '[SEPPmail.cloud] - 800*') {
-						Write-Verbose "Add rule version $Moduleversion"
-						$Setting.SetHeaderValue = $Moduleversion.ToString()
+						"[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail" {
+							Write-Verbose "Excluding Outbound E-Mail domains $SEPPmailCloudDomain"
+							$Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain	
+						}
+						"[SEPPmail.cloud] - 800 Add outbound header X-SM-ruleversion" {
+							"MODULEVERSION is" + $ModuleVesion
+							Write-Verbose "Add rule version $Moduleversion"
+							$Setting.SetHeaderValue = $Moduleversion.ToString()	
+						}
 					}
 
 					if ($PSCmdlet.ShouldProcess($setting.Name, "Create transport rule"))
