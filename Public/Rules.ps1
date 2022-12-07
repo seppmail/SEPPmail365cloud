@@ -188,7 +188,6 @@ function New-SC365Rules
 				foreach($file in $transportRuleFiles) {
 				
 					$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
-					# $setting = $_
 
 					$setting.Priority = $placementPrio + $setting.SMPriority
 					$setting.Remove('SMPriority')
@@ -196,6 +195,11 @@ function New-SC365Rules
 
 					switch ($setting.Name)
 					{
+						"[SEPPmail.cloud] - 060 Add outbound header X-SM-ruleversion" {
+							"MODULEVERSION is" + $ModuleVesion
+							Write-Verbose "Add rule version $Moduleversion"
+							$Setting.SetHeaderValue = $Moduleversion.ToString()	
+						}
 						"[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail" {
 							Write-Verbose "Excluding all other domains than $SEPPmailCloudDomain"
 							$Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
@@ -207,11 +211,6 @@ function New-SC365Rules
 						"[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail" {
 							Write-Verbose "Excluding Outbound E-Mail domains $SEPPmailCloudDomain"
 							$Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain	
-						}
-						"[SEPPmail.cloud] - 800 Add outbound header X-SM-ruleversion" {
-							"MODULEVERSION is" + $ModuleVesion
-							Write-Verbose "Add rule version $Moduleversion"
-							$Setting.SetHeaderValue = $Moduleversion.ToString()	
 						}
 					}
 
