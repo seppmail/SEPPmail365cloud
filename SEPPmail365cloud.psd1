@@ -12,7 +12,7 @@
 RootModule = 'SEPPmail365cloud.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.2.6'
+ModuleVersion = '1.3.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Core')
@@ -76,7 +76,6 @@ RequiredModules = @(
 
 # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
 FunctionsToExport = @(    
-    #'Backup-SC365Connectors'
        'Get-SC365Connectors'
        'New-SC365Connectors'
     'Remove-SC365Connectors'
@@ -87,7 +86,6 @@ FunctionsToExport = @(
       'Test-SC365ConnectionStatus'
        'Get-SC365TenantId'
        'Get-SC365MessageTrace'
-       #'List-SC365Messages' MessageID, Recipient
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
