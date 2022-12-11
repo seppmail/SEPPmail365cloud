@@ -228,12 +228,18 @@ function New-SC365Connectors
         $CloudConfig = Get-Content "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -raw|Convertfrom-Json -AsHashtable
         $regionConfig = $cloudConfig.GeoRegion.($region.Tolower())
         $SEPPmailIPv4Range = $regionConfig.IPv4AllowList
+        $TenantID = Get-SC365Tenantid -Maildomain $SEPPmailCloudDomain
         $TlsCertificateName = $regionConfig.TlsCertificate
         Write-Verbose "TLS Certificate is $TlsCertificateName"
 
+        <# NO NEED in 1.3.0
         Write-Verbose 'Crafting Inbound Certificate Name'
         $ibTlsCertificateName = $SEPPmailCloudDomain.Split('.')[0] + '-' + $SEPPmailCloudDomain.Split('.')[1] + '.transport.seppmail.cloud'
         Write-verbose "IBC certificate Name is $ibTlsCertificateName"
+        #>
+
+        $TenantIdCertificateName = $tenantId + ($regionConfig.TlsCertificate).Replace('*','')
+        Write-verbose "Tenant certificate Name is $TenantIdCertificateName"
 
         Write-Debug "Set timestamp and Moduleversion for Comments"
         $Now = Get-Date
@@ -279,7 +285,7 @@ function New-SC365Connectors
         Write-Debug "Checking for existing SEPPmail.cloud rules"
         $existingSc365Rules = Get-TransportRule -Identity '[SEPPmail.Cloud]*' -WarningAction SilentlyContinue -erroraction SilentlyContinue
 
-        #endregion
+        #endregion collecting existing connectors and test for hybrid Setup
 
         Write-Debug "Look for ARC-Signature for seppmail.cloud and add if missing"
         try {
@@ -459,7 +465,6 @@ function New-SC365Connectors
             else
             {Write-Verbose "No existing Inbound Connector found"}
 
-            #region ibc
             if($createInbound)
             {
                 Write-Verbose "Setting $TlscertificateName as TLSSendercertificate and IP addresses to region $region"
@@ -467,15 +472,11 @@ function New-SC365Connectors
                 #60 if ($routing -eq 'parallel') {$param.SenderIPAddresses = $SEPPmailIPv4Range}
                 if ($routing -eq 'inline') {$param.SenderDomains = 'smtp:' + '*' + ';1'} # smtp:*;1
                 
-                if ($routing -eq 'inline') 
-                    {
-                        $param.TlsSenderCertificateName = $IbTlsCertificateName
-                    }
-                else {
-                        $param.TlsSenderCertificateName = $IbTlsCertificateName
-                }
-
-               #region EFSkipIP in inbound connector
+                # Inline and parallel use same certificate
+                $param.TlsSenderCertificateName = $TenantIdCertificateName
+                Write-verbose "Inbound TlsSenderCertificateName is: $param.TLSSenderCertificatename"
+                
+                #region EFSkipIP in inbound connector
                 if ($InboundEFSkipIPs){
                     [String[]]$EfSkipIPArray = $cloudConfig.GeoRegion.($region.Tolower()).IPv4AllowList + $cloudConfig.GeoRegion.($region.Tolower()).IPv6AllowList
                     $param.EFSkipIPs = $EfSkipIPArray
@@ -483,6 +484,8 @@ function New-SC365Connectors
                     Write-verbose "Inbound Connector $param.Name will be build WITHOUT IP-addresses in EFSkipIPs."
                 }
                 #endregion EFSkip In ibc
+
+                #region Create Inbound Connector
                 Write-Verbose "Creating SEPPmail.cloud Inbound Connector $($param.Name)!"
                 if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Inbound Connector'))
                 {
@@ -516,6 +519,7 @@ function New-SC365Connectors
                         #endRegion - Hosted Connection Filter Policy AllowList
                     }
                 }
+                #endregion Create Inbound Connector
             }
             #endRegion - InboundConnector
         #}
