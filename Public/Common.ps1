@@ -470,10 +470,10 @@ function Get-SC365MessageTrace {
     begin {
         Write-Information "This CmdLet is still under development"
         try {
-            if (!($ibc = Get-Inboundconnector)) {
+            if (!($ibc = Get-Inboundconnector -Identity '[SEPPmail*')) {
                 Write-Error "Could not find SEPPmail.Cloud Inbound-Connecor"
             }
-            if (!($obc = Get-Outboundconnector)) {
+            if (!($obc = Get-Outboundconnector -Identity '[SEPPmail*')) {
                 Write-Error "Could not find SEPPmail.Cloud Outbound-Connecor"
             }
         }
@@ -486,7 +486,6 @@ function Get-SC365MessageTrace {
 
         Write-Verbose "Retrieving initial Message-Trace id MessageID $MessageId for recipient $Recipient"
         Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 0 -CurrentOperation "Start"
-        #try {
 
         Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 40 -CurrentOperation "Messages loaded"
         $MessageTrace = Get-MessageTrace -MessageId $MessageId -RecipientAddress $Recipient
@@ -496,6 +495,7 @@ function Get-SC365MessageTrace {
             break
         }
         try {
+            Write-verbose "test Maildirection, based on the fact that the $Recipient is part of TenantDoains"
             If ($TenantDomains.Contains(($Recipient -Split '@')[-1])) {
                 $MailDirection = 'InBound'
             }
@@ -510,32 +510,33 @@ function Get-SC365MessageTrace {
         }
 
         Write-Verbose "Crafting basic MessateTraceInfo"
+
         $OutPutObject = [PSCustomObject][ordered]@{
             Subject                = if ($MessageTrace.count -eq 1) {$MessageTrace.Subject} else {$MessageTrace[0].Subject}
             Size                   = if ($MessageTrace.count -eq 1) {$MessageTrace.Size} else {$MessageTrace[0].Size} #|{$_/1KB} | ToString('.0') + ' kB'
             SenderAddresses        = if ($MessageTrace.count -eq 1) {$MessageTrace.SenderAddress} else {$MessageTrace[0].SenderAddress}
             MailDirection          = $MailDirection
             RoutingMode            = if (($ibc.identity -eq "[SEPPmail.cloud] Inbound-Parallel") -or ($obc.identity -eq "[SEPPmail.cloud] Outbound-Parallel")) {'Parallel'} else {'Inline'}
-            MessageTraceId         = if ($MessageTrace.count -eq 1) {$MessageTrace.MessageTraceId.Guid} else {$MessageTrace[0].MessageTraceId.Guid}
-            ExternalFromIP         = if ($MessageTrace.count -eq 1) {$MessageTrace.FromIP} else {$MessageTrace[0].FromIP}
-            ExternalToIP           = if ($MessageTrace.count -eq 1) {$MessageTrace.ToIp} else {'BETA: needs brain'} ## Try in Parallel Modeelse {   $MessageTrace[0].MessageTraceId.Guid}
-        }
+            ExternalFromIP         = if ($MessageTrace.count -eq 1) {("$($MessageTrace.FromIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace.FromIP).HostName)} else {("$($MessageTrace[0].FromIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace[0].FromIP).HostName)}
+            ExternalToIP           = if ($MessageTrace.count -eq 1) {("$($MessageTrace.ToIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace.ToIP).HostName)} else {("$($MessageTrace[0].ToIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace[0].ToIP).HostName)}
+        } 
+        Write-Verbose "Add MessageTraceId´s"
+        foreach ($i in $Messagetrace) {Add-Member -InputObject $OutPutObject -MemberType NoteProperty -Name ('MessageTraceId' + ' Index-'+ $I.Index) -Value $i.MessagetraceId -force}
     }
     
     process {
-        #region Receive/Inbound
-        if ($Maildirection -eq 'inbound') {
-            if ($ibc.identity -eq "[SEPPmail.cloud] Inbound-Parallel") {
+        switch ($maildirection)
+        {
+            {($_ -eq 'InBound') -and ($ibc.identity -eq "[SEPPmail.cloud] Inbound-Parallel")} 
+            {
                 # Im Parallel Mode kommt die Mail 2x, einmal von externem Host und einmal von SEPpmail, Index 0 und 1
-            
+                
                 $MessageTraceDetailExternal = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient
                 $MTDExtReceived = $MessageTraceDetailExternal[0]
                 $MTDExtExtSend = $MessageTraceDetailExternal[1]
-
                 $MessageTraceDetailSEPPmail = Get-MessagetraceDetail -MessageTraceId $MessageTrace[0].MessageTraceId -Recipient $Recipient
                 $MTDSEPPReceived = $MessageTraceDetailSEPPmail[0]
                 $MTDSEPPDelivered = $MessageTraceDetailSEPPmail[1]
-
                 Write-Verbose "Crafting Inbound Connector Name"
                 try {
                     $ibcName = ((($MTDSEPPReceived).Data).Split(';') | Select-String 'S:InboundConnectorData=Name').ToString().Split('=')[-1]
@@ -545,7 +546,6 @@ function Get-SC365MessageTrace {
                     $ibcName = '--- E-Mail did not go over SEPPmail Connector ---'
                 }
                 Write-Verbose "Preparing Output (Receive)Inbound-Parallel"
-
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExternalReceivedTime -Value $messageTrace[1].Received
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExternalReceivedSize -Value $messageTrace[1].Size
                 $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToIP -Value $messageTrace[1].ToIP
@@ -558,22 +558,18 @@ function Get-SC365MessageTrace {
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExtSendDetail -Value $MTDExtExtSend.Detail
                 $Outputobject | Add-Member -MemberType NoteProperty -Name InboundConnectorName -Value $ibcName
             }
-            if ($ibc.identity -eq "[SEPPmail.cloud] Inbound-Inline") {
-                # Im Inline Mode kommt die Mail 1x 
-
+            {($_ -eq 'InBound') -and ($ibc.identity -eq "[SEPPmail.cloud] Inbound-Inline")} 
+            {
                 $MessageTraceDetail = Get-MessagetraceDetail -MessageTraceId $MessageTrace.MessageTraceId -Recipient $Recipient
                 $MTDReceived = $MessageTraceDetail|where-object {($_.Event -eq 'Received') -or ($_.Event -eq 'Empfangen')} 
                 $MTDDelivered = $MessageTraceDetail|where-object {($_.Event -eq 'Delivered') -or ($_.Event -eq 'Zustellen')}
-
                 Write-Verbose "Crafting Inbound Connector Name"
                 try {
                     $ibcName = ((($MTReceived).Data).Split(';') | Select-String 'S:InboundConnectorData=Name').ToString().Split('=')[-1]
                 } catch {
                     $ibcName = '--- E-Mail did not go over SEPPmail Connector ---'
                 }
-
                 Write-Verbose "Preparing Output (Receive)Inbound-Inline"
-
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExternalReceivedTime -Value $messageTrace.Received
                 #$Outputobject | Add-Member -MemberType NoteProperty -Name DeliveredDetail -Value $MTDDelivered.Detail # Boring Info
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ReceivedDetail -Value  $MTDReceived.Detail
@@ -583,62 +579,25 @@ function Get-SC365MessageTrace {
                     Add-Member -MemberType NoteProperty -Name 'ExoTransportTime (s)' -Value '---cannot determine transporttime in inline mode---'
                 }
                 $Outputobject | Add-Member -MemberType NoteProperty -Name InboundConnectorName -Value $ibcName
-
             }
-        }
-        #Endregion Receive/Inbound
-        
-        #Region Send/Outbound
-
-        if ($maildirection -eq 'outbound') {
-            if ($obc.identity -eq "[SEPPmail.cloud] Outbound-Inline") {
-                
-                Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 40 -CurrentOperation "Get-Messagetrace"
-                $MessageTraceDetail = Get-MessagetraceDetail -MessageTraceId $MessageTrace.MessageTraceId -Recipient $Recipient
-                # 1 = Empfangen/Receive
-                $MTDReceive = $MessageTraceDetail|Where-Object {(($_.Event -eq 'Empfangen') -or ($_.Event -eq 'Receive'))}
-                # 2 = Übermitteln/Submit
-                $MTDSubmit = $MessageTraceDetail|Where-Object {(($_.Event -eq 'Übermitteln') -or ($_.Event -eq 'Submit'))}
-                # 3 = Send external/Extern senden
-                $MTDExtSend = $MessageTraceDetail|Where-Object {(($_.Event -eq 'Send external') -or ($_.Event -eq 'Extern senden'))}
-
-                Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 80 -CurrentOperation "Preparing Output"
-                Write-Verbose "Crafting Oubound Connector Name" 
-                try {
-                    $obcName = (((($MTDExtSend.Data -Split '<') -replace ('>','')) -split (';') | select-String 'S:Microsoft.Exchange.Hygiene.TenantOutboundConnectorCustomData').ToString()).Split('=')[-1]
-                } catch {
-                    $obcName = '--- E-Mail did not go over SEPPmail Connector ---'
-                }
-
-                Write-verbose "Adding Specific Outbound-Inline Data to output"
-                $Outputobject | Add-Member -MemberType NoteProperty -Name 'ExoInternalTransportTime(s)' -Value (New-TimeSpan -Start $MTDReceive.Date -End $MTDExtSend.Date).Seconds
-                $Outputobject | Add-Member -MemberType NoteProperty -Name ReceiveDetail -Value $MTDReceive.Detail
-                #$Outputobject | Add-Member -MemberType NoteProperty -Name SubmitDetail -Value $MTDSubmit.Detail # Keine Relevante Info
-                $Outputobject | Add-Member -MemberType NoteProperty -Name ExtSendDetail -Value $MTDExtSend.Detail
-                $Outputobject | Add-Member -MemberType NoteProperty -Name OutboundConnectorName -Value $obcName
-                $Outputobject | Add-Member -MemberType NoteProperty -Name ExternalSendLatency -Value (((($MTDExtSend.Data -Split '<') -replace ('>','')) -split (';') | select-String 'S:ExternalSendLatency').ToString()).Split('=')[-1]
-
-                Write-Progress -Activity "Loading message data" -Status "StatusMessage" -PercentComplete 100 -CurrentOperation "Done"
-
-                }
-            if ($obc.identity -eq "[SEPPmail.cloud] Outbound-Parallel") {
-                
+            {($_ -eq 'OutBound') -and ($obc.identity -eq "[SEPPmail.cloud] Outbound-Parallel")}
+            {
+                # We take one of 2 Send/Receive Messagetraces from SEPPmail and get the details
                 $MessageTraceDetailSEPPmail = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient
                 
+                # Now this one has 3 Parts. 0= Recieve from Mailboxhost, 1 = SumbitMessage (Exo internal), 2 = Send to SEPPmail
                 $MTDSEPPReceive = $MessageTraceDetailSEPPmail[0]
-                $MTDSEPPSubmit = $MessageTraceDetailSEPPmail[1]
+                # $MTDSEPPSubmit = $MessageTraceDetailSEPPmail[1] Not interesting for us
                 $MTDSEPPExtSend = $MessageTraceDetailSEPPmail[2]
                 
                 $MessageTraceDetailExternal = Get-MessagetraceDetail -MessageTraceId $MessageTrace[0].MessageTraceId -Recipient $Recipient
                 $MTDExtReceive = $MessageTraceDetailExternal[0]
                 $MTDExtExtSend = $MessageTraceDetailExternal[1]
-
                 try {
                     $obcName = (((($MTDSEPPExtSend.Data -Split '<') -replace ('>','')) -split (';') | select-String 'S:Microsoft.Exchange.Hygiene.TenantOutboundConnectorCustomData').ToString()).Split('=')[-1]
                 }catch {
                     $obcName = "--- E-Mail did not go via a SEPPmail Connector ---"
                 }
-
                 $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToIP -Value $messageTrace[1].ToIP
                 $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromIP -Value $messageTrace[0].FromIP
                 $Outputobject | Add-Member -MemberType NoteProperty -Name 'ExoTransPortTime(s)' -Value (New-TimeSpan -Start $MTDExtReceive.Date -End $MTDExtExtSend.Date).Seconds
@@ -651,19 +610,45 @@ function Get-SC365MessageTrace {
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExtSendDetail -Value $MTDExtExtSend.Detail
                 $Outputobject | Add-Member -MemberType NoteProperty -Name OutboundConnectorName -Value $obcName
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExternalSendLatency -Value (((($MTDExtExtSend.Data -Split '<') -replace ('>','')) -split (';') | select-String 'S:ExternalSendLatency').ToString()).Split('=')[-1]
-
-                
             }
+            {($_ -eq 'OutBound') -and ($obc.identity -eq "[SEPPmail.cloud] Outbound-Inline")}
+            {
+                Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 40 -CurrentOperation "Get-Messagetrace"
+                $MessageTraceDetail = Get-MessagetraceDetail -MessageTraceId $MessageTrace.MessageTraceId -Recipient $Recipient
+                # 1 = Empfangen/Receive
+                $MTDReceive = $MessageTraceDetail|Where-Object {(($_.Event -eq 'Empfangen') -or ($_.Event -eq 'Receive'))}
+                # 2 = Übermitteln/Submit
+                $MTDSubmit = $MessageTraceDetail|Where-Object {(($_.Event -eq 'Übermitteln') -or ($_.Event -eq 'Submit'))}
+                # 3 = Send external/Extern senden
+                $MTDExtSend = $MessageTraceDetail|Where-Object {(($_.Event -eq 'Send external') -or ($_.Event -eq 'Extern senden'))}
+                Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 80 -CurrentOperation "Preparing Output"
+                Write-Verbose "Crafting Oubound Connector Name" 
+                try {
+                    $obcName = (((($MTDExtSend.Data -Split '<') -replace ('>','')) -split (';') | select-String 'S:Microsoft.Exchange.Hygiene.TenantOutboundConnectorCustomData').ToString()).Split('=')[-1]
+                } catch {
+                    $obcName = '--- E-Mail did not go over SEPPmail Connector ---'
+                }
+                Write-verbose "Adding Specific Outbound-Inline Data to output"
+                $Outputobject | Add-Member -MemberType NoteProperty -Name 'ExoInternalTransportTime(s)' -Value (New-TimeSpan -Start $MTDReceive.Date -End $MTDExtSend.Date).Seconds
+                $Outputobject | Add-Member -MemberType NoteProperty -Name ReceiveDetail -Value $MTDReceive.Detail
+                #$Outputobject | Add-Member -MemberType NoteProperty -Name SubmitDetail -Value $MTDSubmit.Detail # Keine Relevante Info
+                $Outputobject | Add-Member -MemberType NoteProperty -Name ExtSendDetail -Value $MTDExtSend.Detail
+                $Outputobject | Add-Member -MemberType NoteProperty -Name OutboundConnectorName -Value $obcName
+                $Outputobject | Add-Member -MemberType NoteProperty -Name ExternalSendLatency -Value (((($MTDExtSend.Data -Split '<') -replace ('>','')) -split (';') | select-String 'S:ExternalSendLatency').ToString()).Split('=')[-1]
+                Write-Progress -Activity "Loading message data" -Status "StatusMessage" -PercentComplete 100 -CurrentOperation "Done"
+            }
+
         }
-        #endregion Send/Outbound
+
+
     }
+        #endregion Send/Outbound
     end {
         #$SC365MessageTrace = New-Object -TypeName pscustomobject -ArgumentList $SC365MessageTraceHT
         return $OutPutObject
         #$SC365MessageTraceHT
     }
 }
-
 
 
 Register-ArgumentCompleter -CommandName Get-SC365TenantId -ParameterName MailDomain -ScriptBlock $paramDomSB
