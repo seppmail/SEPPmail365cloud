@@ -503,7 +503,6 @@ function Get-SC365MessageTrace {
             if ($EncMessageTrace.count -eq 2) {
                 $MessageTrace = Get-MessageTrace -RecipientAddress $Recipient  | Where-Object {($_.MessageId -like '*' + $PlainMessageId + '>')}
             }
-
         }
         if (!($MessageTrace)){
             Write-Error "Could not find Message with ID $MessageID and recipient $recipient. Look for typos. Message too old ? Try Search-MessageTrackingReport or Get-Messagetrace"
@@ -537,18 +536,23 @@ function Get-SC365MessageTrace {
         foreach ($i in $Messagetrace) {Add-Member -InputObject $OutPutObject -MemberType NoteProperty -Name ('MessageTraceId' + ' Index'+ $I.Index) -Value $i.MessagetraceId}
 
         if ($MessageTrace.count -eq 1) {
-            Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value ("$($MessageTrace.FromIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace.FromIP).HostName)
-            Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value ("$($MessageTrace.ToIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace.ToIP).HostName)
+            Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value $MessageTrace.FromIP
+            Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromDNS -Value ([System.Net.Dns]::GetHostByAddress($MessageTrace.FromIP).HostName)
+            Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value $MessageTrace.ToIP
+            Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToDNS -Value ([System.Net.Dns]::GetHostByAddress($MessageTrace.ToIP).HostName)
 
         } else {
             if ($Messagetrace[0].FromIP) {
-                Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value ("$($MessageTrace[0].FromIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace[0].FromIP).HostName)
+                Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value $MessageTrace[0].FromIP
+                Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromDNS -Value ([System.Net.Dns]::GetHostByAddress($MessageTrace[0].FromIP).HostName)
             }
             else {
                 Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value '---empty---'
+                Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromDNS -Value '---empty---'
             }
             if ($MessageTrace[0].ToIP) {
-                Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value ("$($MessageTrace[0].ToIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace[0].ToIP).HostName)
+                Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value $MessageTrace[0].ToIP
+                Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToDNS -Value ([System.Net.Dns]::GetHostByAddress($MessageTrace[0].ToIP).HostName)
             } else {
                 Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value '---empty---'
             }
@@ -635,8 +639,15 @@ function Get-SC365MessageTrace {
                 }catch {
                     $obcName = "--- E-Mail did not go via a SEPPmail Connector ---"
                 }
-                $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToIP -Value ("$($messageTrace[1].ToIP)" + ' - DNS:' + ([System.Net.Dns]::GetHostByAddress($messageTrace[1].ToIP)).HostName )
-                $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromIP -Value ("$($messageTrace[1].FromIP)" + ' - DNS:' + ([System.Net.Dns]::GetHostByAddress($messageTrace[1].FromIP)).HostName)
+                $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToIP -Value $messageTrace[1].ToIP
+                $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToDNS -Value ([System.Net.Dns]::GetHostByAddress($messageTrace[1].ToIP).HostName)
+                $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromIP -Value $messageTrace[1].FromIP
+                try { 
+                    $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromDNS -Value ([System.Net.Dns]::GetHostByAddress($messageTrace[1].FromIP)).HostName -ErrorAction SilentlyContinue
+                } 
+                catch {
+                    Write-Information "Cannot Resolve $($messageTrace[1].FromIP)"
+                }
                 $Outputobject | Add-Member -MemberType NoteProperty -Name 'ExoTransPortTime(s)' -Value (New-TimeSpan -Start $MTDExtReceive.Date -End $MTDExtExtSend.Date).Seconds
                 $Outputobject | Add-Member -MemberType NoteProperty -Name 'SEPPmailTransPortTime(s)' -Value (New-TimeSpan -Start $MTDSEPPReceive.Date -End $MTDSEPPExtSend.Date).Seconds
                 $Outputobject | Add-Member -MemberType NoteProperty -Name 'FullTransPortTime(s)' -Value (New-TimeSpan -Start $MTDSEPPReceive.Date -End $MTDExtExtSend.Date).Seconds
