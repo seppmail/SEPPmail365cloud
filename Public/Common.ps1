@@ -487,15 +487,30 @@ function Get-SC365MessageTrace {
         Write-Verbose "Retrieving initial Message-Trace id MessageID $MessageId for recipient $Recipient"
         Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 0 -CurrentOperation "Start"
 
+        $PlainMessageID = $MessageId.Trim('<','>')
+        Write-Verbose "Formatting Parameterinput Messageid:$MessageId - adding < and > at beginning and end to filter property"
+        if (!($MessageId.StartsWith('<'))) {$MessageId = "<" + $MessageId}
+        if (!($MessageId.EndsWith('<'))) {$MessageId = $MessageId + ">"}
+        Write-Verbose "MessageID after formatting is now $MessageId"
+
         Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 40 -CurrentOperation "Messages loaded"
         $MessageTrace = Get-MessageTrace -MessageId $MessageId -RecipientAddress $Recipient
         
-        if (!($MessageTrace)) {
-            Write-Error "Could not find Message with ID $MessageID and recipient $recipient. Look for typos. Message too old ? Try Search-MessageTrackingReport"
+        if ($MessageTrace.count -eq 1) {
+            Write-Verbose "Try to find modified encrypted message"
+            $EncMessageTrace = Get-MessageTrace -RecipientAddress $Recipient  | Where-Object {($_.MessageId -like '*' + $PlainMessageId + '>')}
+            Write-verbose "Found message with modified MessageID $Messagetrace.MessageID"
+            if ($EncMessageTrace.count -eq 2) {
+                $MessageTrace = Get-MessageTrace -RecipientAddress $Recipient  | Where-Object {($_.MessageId -like '*' + $PlainMessageId + '>')}
+            }
+
+        }
+        if (!($MessageTrace)){
+            Write-Error "Could not find Message with ID $MessageID and recipient $recipient. Look for typos. Message too old ? Try Search-MessageTrackingReport or Get-Messagetrace"
             break
         }
         try {
-            Write-verbose "test Maildirection, based on the fact that the $Recipient is part of TenantDoains"
+            Write-verbose "Test Maildirection, based on the fact that the $Recipient is part of TenantDomains"
             If ($TenantDomains.Contains(($Recipient -Split '@')[-1])) {
                 $MailDirection = 'InBound'
             }
@@ -517,11 +532,29 @@ function Get-SC365MessageTrace {
             SenderAddresses        = if ($MessageTrace.count -eq 1) {$MessageTrace.SenderAddress} else {$MessageTrace[0].SenderAddress}
             MailDirection          = $MailDirection
             RoutingMode            = if (($ibc.identity -eq "[SEPPmail.cloud] Inbound-Parallel") -or ($obc.identity -eq "[SEPPmail.cloud] Outbound-Parallel")) {'Parallel'} else {'Inline'}
-            ExternalFromIP         = if ($MessageTrace.count -eq 1) {("$($MessageTrace.FromIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace.FromIP).HostName)} else {("$($MessageTrace[0].FromIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace[0].FromIP).HostName)}
-            ExternalToIP           = if ($MessageTrace.count -eq 1) {("$($MessageTrace.ToIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace.ToIP).HostName)} else {("$($MessageTrace[0].ToIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace[0].ToIP).HostName)}
         } 
         Write-Verbose "Add MessageTraceId´s"
-        foreach ($i in $Messagetrace) {Add-Member -InputObject $OutPutObject -MemberType NoteProperty -Name ('MessageTraceId' + ' Index-'+ $I.Index) -Value $i.MessagetraceId -force}
+        foreach ($i in $Messagetrace) {Add-Member -InputObject $OutPutObject -MemberType NoteProperty -Name ('MessageTraceId' + ' Index'+ $I.Index) -Value $i.MessagetraceId}
+
+        if ($MessageTrace.count -eq 1) {
+            Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value ("$($MessageTrace.FromIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace.FromIP).HostName)
+            Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value ("$($MessageTrace.ToIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace.ToIP).HostName)
+
+        } else {
+            if ($Messagetrace[0].FromIP) {
+                Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value ("$($MessageTrace[0].FromIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace[0].FromIP).HostName)
+            }
+            else {
+                Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value '---empty---'
+            }
+            if ($MessageTrace[0].ToIP) {
+                Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value ("$($MessageTrace[0].ToIP)" + ' - DNS:' + [System.Net.Dns]::GetHostByAddress($MessageTrace[0].ToIP).HostName)
+            } else {
+                Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value '---empty---'
+            }
+        }
+        Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name 'SplitLine' -Value "-------------------- MessageTrace DETAIL Info Starts Here --------------------"
+
     }
     
     process {
@@ -583,7 +616,11 @@ function Get-SC365MessageTrace {
             {($_ -eq 'OutBound') -and ($obc.identity -eq "[SEPPmail.cloud] Outbound-Parallel")}
             {
                 # We take one of 2 Send/Receive Messagetraces from SEPPmail and get the details
-                $MessageTraceDetailSEPPmail = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient
+                #if ($MessageTrace.count -eq 1) {
+                 #   $MessageTraceDetailSEPPmail = Get-MessagetraceDetail -MessageTraceId $MessageTrace.MessageTraceId -Recipient $Recipient
+                #} else {
+                    $MessageTraceDetailSEPPmail = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient
+                #}
                 
                 # Now this one has 3 Parts. 0= Recieve from Mailboxhost, 1 = SumbitMessage (Exo internal), 2 = Send to SEPPmail
                 $MTDSEPPReceive = $MessageTraceDetailSEPPmail[0]
@@ -598,8 +635,8 @@ function Get-SC365MessageTrace {
                 }catch {
                     $obcName = "--- E-Mail did not go via a SEPPmail Connector ---"
                 }
-                $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToIP -Value $messageTrace[1].ToIP
-                $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromIP -Value $messageTrace[0].FromIP
+                $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToIP -Value ("$($messageTrace[1].ToIP)" + ' - DNS:' + ([System.Net.Dns]::GetHostByAddress($messageTrace[1].ToIP)).HostName )
+                $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromIP -Value ("$($messageTrace[1].FromIP)" + ' - DNS:' + ([System.Net.Dns]::GetHostByAddress($messageTrace[1].FromIP)).HostName)
                 $Outputobject | Add-Member -MemberType NoteProperty -Name 'ExoTransPortTime(s)' -Value (New-TimeSpan -Start $MTDExtReceive.Date -End $MTDExtExtSend.Date).Seconds
                 $Outputobject | Add-Member -MemberType NoteProperty -Name 'SEPPmailTransPortTime(s)' -Value (New-TimeSpan -Start $MTDSEPPReceive.Date -End $MTDSEPPExtSend.Date).Seconds
                 $Outputobject | Add-Member -MemberType NoteProperty -Name 'FullTransPortTime(s)' -Value (New-TimeSpan -Start $MTDSEPPReceive.Date -End $MTDExtExtSend.Date).Seconds
