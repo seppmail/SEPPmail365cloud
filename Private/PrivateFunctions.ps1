@@ -136,6 +136,45 @@ function Resolve-IPv4Address {
     return = $ret
 }
 
+function Resolve-IPv4Address {
+    param(
+        [Parameter(
+            Mandatory = $true,
+            HelpMessage = 'DNS Name'
+        )]
+        $fqdn
+    )
+
+    $ret = [System.Net.Dns]::GetHostAddresses($fqdn) |where-object AddressFamily -eq 'Internetwork'|select-object -expandproperty ipaddresstostring
+    return = $ret
+}
+
+function Resolve-SC365DNSName {
+    [CmdLetBinding()]
+    param(
+        [Parameter(
+            Mandatory = $true,
+            HelpMessage = 'IP4 or IPv6 IP address'
+        )]
+        [String]$ipAddress
+    )
+    $DnsName = $Null
+
+    <#
+    Determine Addressfamily with:
+    [System.Net.DNs]::GetHostAddresses($ipv6)
+    #>
+    try {
+        Write-Verbose "Resolving $iPAddress to HostName"
+        $DNSName = [System.Net.Dns]::GetHostEntry($ipaddress).Hostname
+     } 
+     catch {
+        $DnsName = "---IP could not be resolved---"
+    }
+    return $DNSName
+}
+
+
 # SIG # Begin signature block
 # MIIL1wYJKoZIhvcNAQcCoIILyDCCC8QCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
