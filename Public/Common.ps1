@@ -494,7 +494,7 @@ function Get-SC365MessageTrace {
         Write-Verbose "MessageID after formatting is now $MessageId"
 
         Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 40 -CurrentOperation "Messages loaded"
-        $MessageTrace = Get-MessageTrace -MessageId $MessageId -RecipientAddress $Recipient
+        $MessageTrace = Get-MessageTrace -MessageId $PlainMessageId -RecipientAddress $Recipient
         
         if ($MessageTrace.count -eq 1) {
             Write-Verbose "Try to find modified encrypted message"
@@ -537,14 +537,14 @@ function Get-SC365MessageTrace {
 
         if ($MessageTrace.count -eq 1) {
             Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value $MessageTrace.FromIP
-            Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromDNS -Value ([System.Net.Dns]::GetHostByAddress($MessageTrace.FromIP).HostName)
-            Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value $MessageTrace.ToIP
-            Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToDNS -Value ([System.Net.Dns]::GetHostByAddress($MessageTrace.ToIP).HostName)
+            Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromDNS -Value (Resolve-SC365DNSname -IPAddress $MessageTrace.FromIP)
+            if ($messagetrace.ToIp) {Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value $MessageTrace.ToIP}
+            if ($messagetrace.ToIp) {Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToDNS -Value (Resolve-SC365DNSname -IPAddress $MessageTrace.ToIP)}
 
         } else {
             if ($Messagetrace[0].FromIP) {
                 Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value $MessageTrace[0].FromIP
-                Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromDNS -Value ([System.Net.Dns]::GetHostByAddress($MessageTrace[0].FromIP).HostName)
+                Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromDNS -Value (Resolve-SC365DNSname -IPAddress $MessageTrace[0].FromIP)
             }
             else {
                 Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value '---empty---'
@@ -552,7 +552,7 @@ function Get-SC365MessageTrace {
             }
             if ($MessageTrace[0].ToIP) {
                 Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value $MessageTrace[0].ToIP
-                Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToDNS -Value ([System.Net.Dns]::GetHostByAddress($MessageTrace[0].ToIP).HostName)
+                Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToDNS -Value (Resolve-SC365DNSname -IPAddress $MessageTrace[0].ToIP)
             } else {
                 Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value '---empty---'
             }
@@ -576,7 +576,7 @@ function Get-SC365MessageTrace {
                 $MTDSEPPDelivered = $MessageTraceDetailSEPPmail[1]
                 Write-Verbose "Crafting Inbound Connector Name"
                 try {
-                    $ibcName = ((($MTDSEPPReceived).Data).Split(';') | Select-String 'S:InboundConnectorData=Name').ToString().Split('=')[-1]
+                    $ibcName = (($MTDSEPPReceived.Data).Split(';') | Select-String 'S:InboundConnectorData=Name').ToString().Split('=')[-1]
                 } 
                 catch 
                 {
@@ -586,6 +586,7 @@ function Get-SC365MessageTrace {
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExternalReceivedTime -Value $messageTrace[1].Received
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExternalReceivedSize -Value $messageTrace[1].Size
                 $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToIP -Value $messageTrace[1].ToIP
+                $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToDNS -Value (Resolve-SC365DNSName -IPAddress $messageTrace[1].ToIP)
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExtMessageTraceId -Value $MessageTrace[1].MessageTraceId.Guid
                 $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPMessageTraceId -Value $MessageTrace[0].MessageTraceId.Guid
                 $Outputobject | Add-Member -MemberType NoteProperty -Name 'FullTransportTime(s)' -Value (New-TimeSpan -Start $MTDExtReceived.Date -End $MTDSEPPDelivered.Date).Seconds
@@ -602,7 +603,7 @@ function Get-SC365MessageTrace {
                 $MTDDelivered = $MessageTraceDetail|where-object {($_.Event -eq 'Delivered') -or ($_.Event -eq 'Zustellen')}
                 Write-Verbose "Crafting Inbound Connector Name"
                 try {
-                    $ibcName = ((($MTReceived).Data).Split(';') | Select-String 'S:InboundConnectorData=Name').ToString().Split('=')[-1]
+                    $ibcName = (($MTDReceived.Data).Split(';')|select-string 'S:InboundConnectorData=Name').ToString().Split('=')[-1]
                 } catch {
                     $ibcName = '--- E-Mail did not go over SEPPmail Connector ---'
                 }
@@ -613,7 +614,7 @@ function Get-SC365MessageTrace {
                 if ($MTReceived) {
                     $Outputobject | Add-Member -MemberType NoteProperty -Name 'ExoTransportTime (s)' -Value (New-TimeSpan -Start $MTReceived.Date -End $MTDelivered.Date).Seconds
                 } else {
-                    Add-Member -MemberType NoteProperty -Name 'ExoTransportTime (s)' -Value '---cannot determine transporttime in inline mode---'
+                    $outPutObject | Add-Member -MemberType NoteProperty -Name 'ExoTransportTime (s)' -Value '---cannot determine transporttime in inline mode---'
                 }
                 $Outputobject | Add-Member -MemberType NoteProperty -Name InboundConnectorName -Value $ibcName
             }
@@ -640,10 +641,10 @@ function Get-SC365MessageTrace {
                     $obcName = "--- E-Mail did not go via a SEPPmail Connector ---"
                 }
                 $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToIP -Value $messageTrace[1].ToIP
-                $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToDNS -Value ([System.Net.Dns]::GetHostByAddress($messageTrace[1].ToIP).HostName)
+                $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToDNS -Value (Resolve-SC365DNSname -IPAddress $messageTrace[1].ToIP)
                 $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromIP -Value $messageTrace[1].FromIP
                 try { 
-                    $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromDNS -Value ([System.Net.Dns]::GetHostByAddress($messageTrace[1].FromIP)).HostName -ErrorAction SilentlyContinue
+                    $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromDNS -Value (Resolve-SC365DNSname -IPAddress $messageTrace[1].FromIP)
                 } 
                 catch {
                     Write-Information "Cannot Resolve $($messageTrace[1].FromIP)"
