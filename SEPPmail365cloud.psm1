@@ -35,7 +35,7 @@ if ($sc365notests -ne $true) {
     if ((Get-Module ExchangeOnlineManagement).Version -notlike '2.*') {
         Write-Host "+------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
-        Write-Host "+   WRONG Version of  ExchnageOnlineManagement Module  +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+   WRONG Version of  ExchangeOnlineManagement Module  +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+          Install Version 3.0.0+ of the               +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+         ExchangeOnlineManagement Module with:        +" -ForegroundColor Green -BackgroundColor DarkGray
@@ -48,12 +48,10 @@ if ($sc365notests -ne $true) {
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
     }
-
     Write-Verbose "Testing Exchange Online connectivity"
     if (!(Test-SC365ConnectionStatus)) {
         Write-Warning "You are not connected to Exchange Online. Use Connect-ExchangeOnline to connect to your tenant"
     }
-    
     Write-Verbose 'Test new version available'
     try {
         $onLineVersion = Find-Module -Name 'SEPPmail365cloud'|Select-Object -expandproperty Version
