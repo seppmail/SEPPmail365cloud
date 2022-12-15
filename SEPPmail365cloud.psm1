@@ -7,12 +7,6 @@ $InteractiveSession = [System.Environment]::UserInteractive
 Write-Verbose 'Request terminating errors by default'
 $PSDefaultParameterValues['*:ErrorAction'] = [System.Management.Automation.ActionPreference]::Stop
 
-Write-Verbose 'Initialize argument completer scriptblocks'
-$paramDomSB = {
-    # Read Accepted Domains for domain selection
-    Get-AcceptedDomain -Erroraction silentlycontinue|select-Object -ExpandProperty DomainName
-}
-
 Write-Verbose 'Loading Module Files'
 . $ModulePath\Private\PrivateFunctions.ps1
 . $ModulePath\Private\ConfigBundle.ps1
@@ -20,22 +14,65 @@ Write-Verbose 'Loading Module Files'
 . $ModulePath\Public\Rules.ps1
 . $ModulePath\Public\Connectors.ps1
 
-Write-Verbose "Testing Exchange Online connectivity"
-if (!(Test-SC365ConnectionStatus)) {
-    Write-Warning "You are not connected to Exchange Online. Use Connect-ExchangeOnline to connect to your tenant"
+
+if ($sc365notests -ne $true) {
+    #Check Environment
+    If ($psversiontable.PsVersion -notlike '7*') {
+        Write-Host "+------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+           ! WRONG POWERSHELL VERSION !               +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+          PLEASE Install PowerShell CORE              +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+          The module will not load on                 +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+           Windows Powershell 5.1  :-( :-(            +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
+        Break
+    }
+    # Check Exo Module Version 
+    if ((Get-Module ExchangeOnlineManagement).Version -notlike '2.*') {
+        Write-Host "+------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+   WRONG Version of  ExchnageOnlineManagement Module  +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+          Install Version 3.0.0+ of the               +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+         ExchangeOnlineManagement Module with:        +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+   Install-Module ExchangeOnlineManagement -Force     +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+          # RESTART THE POWERSHELL SESSION #          +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+        Import-Module ExchangeOnlineManagement        +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
+    }
+
+    Write-Verbose "Testing Exchange Online connectivity"
+    if (!(Test-SC365ConnectionStatus)) {
+        Write-Warning "You are not connected to Exchange Online. Use Connect-ExchangeOnline to connect to your tenant"
+    }
+    
+    Write-Verbose 'Test new version available'
+    try {
+        $onLineVersion = Find-Module -Name 'SEPPmail365cloud'|Select-Object -expandproperty Version
+        $offLineVersion = Test-ModuleManifest (Join-Path $ModulePath -ChildPath SEPPmail365cloud.psd1) |Select-Object -ExpandProperty Version 
+        if ($onLineVersion -gt $offLineVersion) {
+            Write-Warning "You have version $offlineVersion, but there is the new version $onLineVersion of the SEPPmail365cloud module available on the PowerShell Gallery. Update the module as soon as possible. More info here https://www.powershellgallery.com/packages/SEPPMail365cloud"
+        }   
+    }
+    catch {
+        Write-Error "Could not determine newest module version due to exception $($_.Exception.Message)"
+    }
 }
 
-Write-Verbose 'Test new version available'
-try {
-    $onLineVersion = Find-Module -Name 'SEPPmail365cloud'|Select-Object -expandproperty Version
-    $offLineVersion = Test-ModuleManifest (Join-Path $ModulePath -ChildPath SEPPmail365cloud.psd1) |Select-Object -ExpandProperty Version 
-    if ($onLineVersion -gt $offLineVersion) {
-        Write-Warning "You have version $offlineVersion, but there is the new version $onLineVersion of the SEPPmail365cloud module available on the PowerShell Gallery. Update the module as soon as possible. More info here https://www.powershellgallery.com/packages/SEPPMail365cloud"
-    }   
+Write-Verbose 'Initialize argument completer scriptblocks'
+$paramDomSB = {
+    # Read Accepted Domains for domain selection
+    Get-AcceptedDomain -Erroraction silentlycontinue|select-Object -ExpandProperty DomainName
 }
-catch {
-    Write-Error "Could not determine newest module version due to exception $($_.Exception.Message)"
-}
+
 
 Export-ModuleMember -Alias * -Function *
 
