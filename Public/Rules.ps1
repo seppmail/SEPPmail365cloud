@@ -124,6 +124,12 @@ function New-SC365Rules
 
 	 	Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 
+		 $TenantDomains = Get-AcceptedDomain
+		 If (!($TenantDomains.DomainName -contains $SEPPmailCloudDomain)) {
+			 Write-Error "$SEPPmailCloudDomain is not member of the connected tenant. Retry using one of the tenant-domains"
+			 break
+		 }
+ 
 		$outboundConnectors = Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
 		if(!($outboundConnectors))
 		{
