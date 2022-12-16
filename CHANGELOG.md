@@ -1,6 +1,24 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
-## 1.2.6 Correction Release
+## 1.3.0 Certificate-Based-Connectors Release
+
+__Enhancements__
+
+- Inbound-Connectors are now linking to a specific, TenantID-based certificate, which ensures highest delivery-trust by Microsoft
+- Domain-check: When entering a DNSDomain in the Parameter -SEPPmailCloudDomain which is not part of the tenants "AcceptedDomains", the commands New-SC365Rules and New-SC365Connectors will raise an error message, stop, and ask you to enter correct domain(s).
+- Big, ugly warning signs if wrong PowerShell version or wrong ExchangeOnlineManagement Module on module startup
+- Note at Module startup to read the Readme.md at Github.
+- New transport "050" rule to avoid failed SPF-check E-mails to be routed to SEPPmail.cloud (parallel mode only)
+- Adapted Inbound transport rule to avoid SPAM with SCL Level 5 (parameterized) to be routed to SEPPmail.cloud (parallel mode only)
+- Connector type for Inline-Mode is changed to "Partner"
+- Debian(Linux) compatibility. Module has been tested on Debian
+- Slim connector configuration for parallel mode connectors (No SenderIpAdresses, HostedConnectionFilterPolicy, EFSkipIPs)
+- New transport rule "600" to remove X-SM-Smarthost header on outgoing mails to force obfuscation of leveraged technology
+
+__Bugfixes__
+
+- Get-SC365Messagetrace now reads encrypted mails with changed messageids correctly
+- Get-SC365Messagetrace now reads connector information in inline mode correctly
 
 __Maintenance__
 
@@ -11,21 +29,11 @@ __Maintenance__
 
 ## 1.2.5 Exchange Online adaption and Tenant2Tenant Signature Update
 
-__Enhancements__
-
-- New transport "050" rule to avoid failed SPF-check E-mails to be routed to SEPPmail.cloud (parallel mode only)
-- Adapted Inbound transport rule to avoid SPAM with SCL Level 5 (parameterized) to be routed to SEPPmail.cloud (parallel mode only)
-- Connector type for Inline-Mode is changed to "Partner"
-- Debian(Linux) compatibility. Module has been tested on Debian
-- Slim connector configuration for parallel mode connectors (No SenderIpAdresses, HostedConnectionFilterPolicy, EFSkipIPs)
-- New transport rule "600" to remove X-SM-Smarthost header on outgoing mails to force obfuscation of leveraged technology
-
 __Maintenance__
 
-- Avoid mailloops between ExO-Tenants in the same region
-- Optimized output of Get-SC365rules - Excluded DOmains are now seen.
+- Avoid mail loops between ExO-Tenants in the same region
+- Optimized output of Get-SC365rules - Excluded Domains are now seen.
 - Domain selection in New-SC365Connectors and New-SC365Rules parameter is now called SEPPmailCloudDomain
-
 
 ## 1.2.0 ExchangeOnlineManagement Module Version 3.0.0 Update
 
@@ -37,7 +45,6 @@ __Enhancements__
 - New-SC365Rules now has a mandatory -SEPPmailCloudDomains parameter
 
 __BugFixes__
-
 
 __Maintenance__
 
