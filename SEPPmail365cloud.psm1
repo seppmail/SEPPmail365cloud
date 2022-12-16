@@ -17,12 +17,12 @@ Write-Verbose 'Loading Module Files'
 
 if ($sc365notests -ne $true) {
     #Check Environment
-    If ($psversiontable.PsVersion -notlike '7*') {
+    If ($psversiontable.PsVersion.ToString() -notlike '7.*') {
         Write-Host "+------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+           ! WRONG POWERSHELL VERSION !               +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
-        Write-Host "+          PLEASE Install PowerShell CORE              +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+          PLEASE Install PowerShell CORE 7.2+         +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+          The module will not load on                 +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
@@ -32,7 +32,7 @@ if ($sc365notests -ne $true) {
         Break
     }
     # Check Exo Module Version 
-    if ((Get-Module ExchangeOnlineManagement).Version -notlike '2.*') {
+    if ((Get-Module ExchangeOnlineManagement).Version -notlike '3.*') {
         Write-Host "+------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+   WRONG Version of  ExchangeOnlineManagement Module  +" -ForegroundColor Green -BackgroundColor DarkGray
