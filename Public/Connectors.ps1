@@ -212,6 +212,14 @@ function New-SC365Connectors
         {throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"}
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
  
+        $TenantDomains = Get-AcceptedDomain
+        If (!($TenantDomains.DomainName -contains $SEPPmailCloudDomain)) {
+           $PrimaryDomain = $TenantDomain|Where-Object 'Default' -eq $true|Select-Object -ExpandProperty DomainName
+           Write-Information "Typo ? Domain should be $PrimaryDomain" 
+           Write-Error "$SEPPmailCloudDomain is not member of the connected tenant. Retry using only tenant-domains"
+           break
+        }
+
         #region Preparing common setup
         Write-Debug "Preparing values for Cloud configuration"
 
@@ -232,11 +240,6 @@ function New-SC365Connectors
         $TlsCertificateName = $regionConfig.TlsCertificate
         Write-Verbose "TLS Certificate is $TlsCertificateName"
 
-        <# NO NEED in 1.3.0
-        Write-Verbose 'Crafting Inbound Certificate Name'
-        $ibTlsCertificateName = $SEPPmailCloudDomain.Split('.')[0] + '-' + $SEPPmailCloudDomain.Split('.')[1] + '.transport.seppmail.cloud'
-        Write-verbose "IBC certificate Name is $ibTlsCertificateName"
-        #>
 
         $TenantIdCertificateName = $tenantId + ($regionConfig.TlsCertificate).Replace('*','')
         Write-verbose "Tenant certificate Name is $TenantIdCertificateName"
@@ -522,14 +525,10 @@ function New-SC365Connectors
                 #endregion Create Inbound Connector
             }
             #endRegion - InboundConnector
-        #}
-
     }
-
     end
     {
-        #$SC365Connectors = New-Object -TypeName PSobject -property $SC365ConnectorsHash
-        #$SC365Connectors
+
     }
 }
 
