@@ -14,6 +14,11 @@ Write-Verbose 'Loading Module Files'
 . $ModulePath\Public\Rules.ps1
 . $ModulePath\Public\Connectors.ps1
 
+if ((Get-OrganizationConfig).IsDehydrated) {
+    Write-Verbose "Organisation is not enabled for customizations -- is 'Dehyrated'. Turning this on now"
+    Enable-OrganizationCustomization  #-confirm:$false
+}
+
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+ Please read the documentation on GitHub                             +" -ForegroundColor Green -BackgroundColor DarkGray

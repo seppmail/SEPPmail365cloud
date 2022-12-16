@@ -14,6 +14,7 @@ __Enhancements__
 - Debian(Linux) compatibility. Module has been tested on Debian
 - Slim connector configuration for parallel mode connectors (No SenderIpAdresses, HostedConnectionFilterPolicy, EFSkipIPs)
 - New transport rule "600" to remove X-SM-Smarthost header on outgoing mails to force obfuscation of leveraged technology
+- M365-Tenants, which are still "hydrated" are now prompted to "Enable-OrganizationCustomization"
 
 __Bugfixes__
 
