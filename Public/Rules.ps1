@@ -195,7 +195,7 @@ function New-SC365Rules
 
 					switch ($setting.Name)
 					{
-						"[SEPPmail.cloud] - 060 Add outbound header X-SM-ruleversion" {
+						"[SEPPmail.cloud] - 060 Add header X-SM-ruleversion" {
 							Write-Verbose "Add rule version $Moduleversion"
 							$Setting.SetHeaderValue = $Moduleversion.ToString()	
 						}
