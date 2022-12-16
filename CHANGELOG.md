@@ -19,12 +19,14 @@ __Bugfixes__
 
 - Get-SC365Messagetrace now reads encrypted mails with changed messageids correctly
 - Get-SC365Messagetrace now reads connector information in inline mode correctly
+- [SEPPmail.cloud] - 060 Add header X-SM-ruleversion - now adds the header also inbound
 
 __Maintenance__
 
 - Fix Inbound-Connector Inline mode to SenderDomains "smtp:*;1"
 - Bind Inbound-Connector to TLS certificate of Exo-Tenant-default-domain
 - Add rule for new X-Header X-SM-ruleversion with version number of PS-Modueversion
+- Incoming and outgoing rules have now a positive list of domains instead of an exclusion list
 - BETA: New Commendlet Get-SC36MessageTrace -MessageID 'ABC123' -Recipient 'max@contoso.com'
 
 ## 1.2.5 Exchange Online adaption and Tenant2Tenant Signature Update
