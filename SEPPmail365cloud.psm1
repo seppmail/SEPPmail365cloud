@@ -14,6 +14,15 @@ Write-Verbose 'Loading Module Files'
 . $ModulePath\Public\Rules.ps1
 . $ModulePath\Public\Connectors.ps1
 
+Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+ Please read the documentation on GitHub                             +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+ if you are unfamiliar with the Module before continuing !!!         +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+ https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md    +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+ Press <CTRL><Klick> to open the Link                                +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 
 if ($sc365notests -ne $true) {
     #Check Environment
