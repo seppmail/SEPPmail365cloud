@@ -208,16 +208,16 @@ function New-SC365Rules
 							$Setting.SetHeaderValue = $Moduleversion.ToString()	
 						}
 						"[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail" {
-							Write-Verbose "Excluding all other domains than $SEPPmailCloudDomain"
-							$Setting.ExceptIfRecipientDomainIs = $ExcludeEmailDomain
+							Write-Verbose "Including all managed domains $SEPPmailCloudDomain"
+							$Setting.RecipientDomainIs = $SEPPmailCloudDomain
 							if ($SCLInboundValue -ne 5) {
 								Write-Verbose "Setting Value $SCLInboundValue to Inbound flowing to SEPPmail.cloud"
 							$Setting.ExceptIfSCLOver = $SCLInboundValue
 							}
 						}
 						"[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail" {
-							Write-Verbose "Excluding Outbound E-Mail domains $SEPPmailCloudDomain"
-							$Setting.ExceptIfSenderDomainIs = $ExcludeEmailDomain	
+							Write-Verbose "Including only Outbound E-Mails from domains $SEPPmailCloudDomain"
+							$Setting.SenderDomainIs = $SEPPmailCloudDomain	
 						}
 					}
 
