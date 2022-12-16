@@ -126,8 +126,10 @@ function New-SC365Rules
 
 		 $TenantDomains = Get-AcceptedDomain
 		 If (!($TenantDomains.DomainName -contains $SEPPmailCloudDomain)) {
-			 Write-Error "$SEPPmailCloudDomain is not member of the connected tenant. Retry using one of the tenant-domains"
-			 break
+			$PrimaryDomain = $TenantDomain|Where-Object 'Default' -eq $true|Select-Object -ExpandProperty DomainName
+			Write-Information "Typo ? Domain should be $PrimaryDomain" 
+			Write-Error "$SEPPmailCloudDomain is not member of the connected tenant. Retry using only tenant-domains"
+			break
 		 }
  
 		$outboundConnectors = Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
