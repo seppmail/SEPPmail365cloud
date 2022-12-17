@@ -1,20 +1,30 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
-## 1.3.0 Certificate-Based-Connectors Release
+## 1.3.0-preview1 Certificate-Based-Connectors Release
 
 __Enhancements__
 
-- Inbound-Connectors are now linking to a specific, TenantID-based certificate, which ensures highest delivery-trust by Microsoft
+General
+
 - Domain-check: When entering a DNSDomain in the Parameter -SEPPmailCloudDomain which is not part of the tenants "AcceptedDomains", the commands New-SC365Rules and New-SC365Connectors will raise an error message, stop, and ask you to enter correct domain(s).
+- Big, ugly note at Module startup to read the Readme.md at Github.
 - Big, ugly warning signs if wrong PowerShell version or wrong ExchangeOnlineManagement Module on module startup
-- Note at Module startup to read the Readme.md at Github.
-- New transport "050" rule to avoid failed SPF-check E-mails to be routed to SEPPmail.cloud (parallel mode only)
-- Adapted Inbound transport rule to avoid SPAM with SCL Level 5 (parameterized) to be routed to SEPPmail.cloud (parallel mode only)
-- Connector type for Inline-Mode is changed to "Partner"
-- Debian(Linux) compatibility. Module has been tested on Debian
-- Slim connector configuration for parallel mode connectors (No SenderIpAdresses, HostedConnectionFilterPolicy, EFSkipIPs)
-- New transport rule "600" to remove X-SM-Smarthost header on outgoing mails to force obfuscation of leveraged technology
+- Linux(Debian) compatibility. Module has been tested intensively on Debian
+- macOS compatibility. Module has been tested intensively on macOS (Intel and Apple)
 - M365-Tenants, which are still "hydrated" are now prompted to "Enable-OrganizationCustomization"
+- BETA: New Commandlet Get-SC36MessageTrace to trace messages from ExO
+
+Connectors
+
+- Inbound-Connectors are now linking to a specific, TenantID-based certificate, which ensures highest delivery-trust by Microsoft
+- Connector type for Inline-Mode is changed to "Partner"
+- Slim connector configuration for parallel mode connectors (No SenderIpAdresses, HostedConnectionFilterPolicy, EFSkipIPs)
+
+Enhancements in Rules
+
+- New transport "050" rule to avoid failed SPF-check E-mails to be routed to SEPPmail.cloud (parallel mode only)
+- New transport rule "600" to remove X-SM-Smarthost header on outgoing mails to force obfuscation of leveraged technology
+- Adapted Inbound transport rule to avoid SPAM with SCL Level 5 (parameterized) to be routed to SEPPmail.cloud (parallel mode only)
 
 __Bugfixes__
 
@@ -28,7 +38,6 @@ __Maintenance__
 - Bind Inbound-Connector to TLS certificate of Exo-Tenant-default-domain
 - Add rule for new X-Header X-SM-ruleversion with version number of PS-Modueversion
 - Incoming and outgoing rules have now a positive list of domains instead of an exclusion list
-- BETA: New Commendlet Get-SC36MessageTrace -MessageID 'ABC123' -Recipient 'max@contoso.com'
 
 ## 1.2.5 Exchange Online adaption and Tenant2Tenant Signature Update
 
