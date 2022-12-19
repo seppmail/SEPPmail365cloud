@@ -1,6 +1,12 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## Plans for versions until 1.3.0 Public release
+
+There are still some features that we want to test more intensively to optimally support the mail flow, the stability and also more complex environments
+
 ## 1.3.0-preview1 Certificate-Based-Connectors Release
+
+** To use the new CBC functinality, please enable the functionality in the cloud-portal for your tenant. ** 
 
 __Enhancements__
 
@@ -22,6 +28,7 @@ Connectors
 
 Enhancements in Rules
 
+- Rules now use a positive list of domains. So if a customer adds domains, there is no need to reconfigure the rules until they are booked at SEPPmail.cloud
 - New transport "050" rule to avoid failed SPF-check E-mails to be routed to SEPPmail.cloud (parallel mode only)
 - New transport rule "600" to remove X-SM-Smarthost header on outgoing mails to force obfuscation of leveraged technology
 - Adapted Inbound transport rule to avoid SPAM with SCL Level 5 (parameterized) to be routed to SEPPmail.cloud (parallel mode only)
