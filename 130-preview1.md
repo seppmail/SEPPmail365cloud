@@ -13,7 +13,7 @@ To make the PowerShell module work, 4 prerequisites must be met.
 
 ```powershell
 Set-Location ~
-Install-Module seppmail365cloud -AllowPrerelease -AllowClobber
+Install-Module seppmail365cloud -AllowPrerelease -AllowClobber -Force
 Get-Module seppmail365cloud  # This must show the module version 1.3.0-preview1 loaded.
 ```
 
