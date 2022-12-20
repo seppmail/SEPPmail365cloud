@@ -6,7 +6,9 @@ There are still some features that we want to test more intensively to optimally
 
 ## 1.3.0-preview1 Certificate-Based-Connectors Release
 
-** To use the new CBC functinality, please enable the functionality in the cloud-portal for your tenant. ** 
+** To use the new CBC functinality, please enable the functionality in the cloud-portal for your tenant. **
+
+Guidance to use 1.3.0-preview1 can be found here. [Link](https://github.com/seppmail/SEPPmail365cloud/blob/main/130-preview1.md)
 
 __Enhancements__
 
