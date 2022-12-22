@@ -28,7 +28,7 @@ Make sure all old end existing SEPPmail rules and connectors are removed. This m
 Check final results with Get-TransportRule, Get-InboundConnector and Get-OutboundConnector.
 
 **Special Case : Connectors with "/" or "\\" in the name**
-We had a version of the seppmailcloud connectors in place which used slashes in the name. Microsoft somehow stopped to accept this. If you find such a connector do this:
+We had a version of the SEPPmail.cloud connectors in place which used slashes in the name. Microsoft somehow stopped to accept this. If you find such a connector do this:
 
 1. Rename connectors in the admin.microsoft.com portal
 2. Delete them after renaming in the admin portal.
@@ -39,11 +39,10 @@ Follow the guide in the [README](https://gitlab.seppmail.ch/internal/seppcloud/s
 
 ## Step 5/5 - Wait up to 10 Minutes
 
-Until all changes are saved in the MS Cloud it sometimes takes a few minutes. Send testmails in that time until te mailflow works and trust the solution.
+Until all changes are saved in the MS Cloud it sometimes takes a few minutes. Send test e-mails in that time until te mailflow works and trust the solution.
 
 ## Special Cases
 
-- Still mailloops after the changes: If you set up everything according to the description above, and still have maillops, check if the recipient is also in the SEPPmail.cloud. Recipient MUST also use newest connectors (CBC).
+- Still mail loops after the changes: If you set up everything according to the description above, and still have maillops, check if the recipient is also in the SEPPmail.cloud. Recipient MUST also use newest connectors (CBC).
 
-
-Follow instructions from [readme](https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md)
+Follow instructions from [readme](https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md).
