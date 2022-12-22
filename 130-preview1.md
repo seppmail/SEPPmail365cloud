@@ -1,5 +1,9 @@
 # Migration Guide from prior M365 Connectivity to Certificate-Based-Connectors with PS Module 1.3.0-preview1 in the SEPPmail.cloud
 
+With early Q1/2023 SEPPmail.cloud will change its connectivity to Exchange online to certificate-based-connectors (CBC). This will increase security and stability between Exchange Online and SEPPmail.cloud and avoid mail-loops in certain situations.
+
+!Important: With CBC, Inline-Mode customers (MX ==> SEPPmail) will have all e-mails routet through SEPPmail.cloud 
+
 ## Step 1/5 - Check [prerequisites](https://gitlab.seppmail.ch/internal/seppcloud/seppmail365cloud/-/blob/main/README.md#prerequisites)
 
 To make the PowerShell module work, 4 prerequisites must be met.
