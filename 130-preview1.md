@@ -2,13 +2,13 @@
 
 With early Q1/2023 SEPPmail.cloud will change its connectivity to Exchange online to certificate-based-connectors (CBC). This will increase security and stability between Exchange Online and SEPPmail.cloud and avoid mail-loops in certain situations.
 
-!Important: With CBC, Inline-Mode customers (MX ==> SEPPmail) will have all e-mails routet through SEPPmail.cloud 
+!Important: Inline customers require all domains of same tenant to be inline domains handled by  SEPPmail.cloud.
 
 ## Step 1/5 - Check [prerequisites](https://gitlab.seppmail.ch/internal/seppcloud/seppmail365cloud/-/blob/main/README.md#prerequisites)
 
 To make the PowerShell module work, 4 prerequisites must be met.
 
-1. PowerShell Core 7+ must be used - the Module doesnt work with Windows Powershell 5.1!
+1. PowerShell Core 7+ must be used - the Module does not work with Windows Powershell 5.1!
 2. The ExchangeOnLineManagement Module 3.0.0+ must be installed and loaded (Restart PowerShell session after "Install-Module ExchangeOnlineManagement -Force")
 3. The customer/partner needs to know the domains to be migrated, the cloud region and the routing mode for this tenant
 4. Check if MX Records are set properly (MX ==> SEPPMail in Inline mode, MX ==> Microsoft in Parallel Mode)
