@@ -21,11 +21,10 @@ if ((Get-OrganizationConfig).IsDehydrated) {
 
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+ Welcome to the SEPPmail.cloud PowerShell                            +" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+ Setup module seppmail365cloud                                       +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+ Welcome to the SEPPmail.cloud PowerShell setup module               +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+ Please read the documentation on GitHub if you are unfamiliar       +" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+ with the Module before continuing !                                 +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+ with the module and its CmdLets before continuing !                 +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+ https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md    +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray

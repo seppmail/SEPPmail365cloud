@@ -23,7 +23,7 @@ function Get-SC365Connectors
         [Parameter(
             Mandatory = $true
         )]
-        [ValidateSet('inline','parallel')]
+        [ValidateSet('parallel','inline','p','i')]
         $routing
     )
 
@@ -146,7 +146,7 @@ function New-SC365Connectors
             Helpmessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft',
             Position = 2
             )]
-        [ValidateSet('inline','parallel')]
+        [ValidateSet('parallel','inline','p','i')]
         [String] $routing,
 
         [Parameter(
@@ -555,69 +555,78 @@ function Remove-SC365Connectors
             Mandatory = $true,
             Helpmessage = 'The routing tyoe of the connector to you want to remove'
         )]
-        [ValidateSet('inline','parallel')]
+        [ValidateSet('parallel','inline','p','i')]
         [String]$routing,
         
         [ValidateSet('AntiSpamAllowListing')]
         [String]$option
     )
 
-    if (!(Test-SC365ConnectionStatus))
-    { throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
+    begin {
+        if (!(Test-SC365ConnectionStatus))
+        { throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
+    
+        Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+        
+        if ($routing -eq 'p') {$routing = 'parallel'}
+		if ($routing -eq 'i') {$routing = 'inline'}
 
-    Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
-
-    $inbound = Get-SC365InboundConnectorSettings -routing $routing 
-    $outbound = Get-SC365OutboundConnectorSettings -routing $routing
-    $hcfp = Get-HostedConnectionFilterPolicy
-
-    if($PSCmdlet.ShouldProcess($outbound.Name, "Remove SEPPmail outbound connector $($Outbound.Name)"))
-    {
-        if (Get-OutboundConnector -WarningAction SilentlyContinue | Where-Object {$_.Name -eq $($outbound.Name)})
-        {
-            Remove-OutboundConnector $outbound.Name -confirm:$false
-        }
-        else {
-            Write-Warning 'No SEPPmail Outbound Connector found'
-        }
     }
-
-    if($PSCmdlet.ShouldProcess($inbound.Name, "Remove SEPPmail inbound connector $($inbound.Name)"))
-    {
-        $InboundConnector = Get-InboundConnector | Where-Object {$_.Name -eq $($inbound.Name)}
-        if ($inboundConnector)
+    process {
+        $inbound = Get-SC365InboundConnectorSettings -routing $routing 
+        $outbound = Get-SC365OutboundConnectorSettings -routing $routing
+        $hcfp = Get-HostedConnectionFilterPolicy
+    
+        if($PSCmdlet.ShouldProcess($outbound.Name, "Remove SEPPmail outbound connector $($Outbound.Name)"))
+        {
+            if (Get-OutboundConnector -WarningAction SilentlyContinue | Where-Object {$_.Name -eq $($outbound.Name)})
             {
-            Write-Verbose 'Collect Inbound Connector IP for later AllowListremoval'
-            
-            [string]$InboundSEPPmailIP = $null
-            if ($inboundConnector.TlsSenderCertificateName) {
-                [array]$InboundSEPPmailIP = $inboundConnector.SenderIPAddresses -split ' '
+                Remove-OutboundConnector $outbound.Name -confirm:$false
             }
-            Remove-InboundConnector $inbound.Name -confirm:$false
-
-            Write-Verbose "If Inbound Connector has been removed, remove also AllowListed IPs"
-            if ((!($Option -like 'AntiSpamAllowListing')) -and (!(Get-InboundConnector | Where-Object Identity -eq $($inbound.Name))))
-            {
-                    Write-Verbose "Remove SEPPmail Appliance IP from AllowList in 'Hosted Connection Filter Policy'"
-                    
-                    Write-Verbose "Collecting existing AllowList"
-                    [System.Collections.ArrayList]$existingAllowList = $hcfp.IPAllowList
-                    Write-verbose "Removing SEPPmail Appliance IP $InboundSEPPmailIP from Policy $($hcfp.Id)"
-                    if ($existingAllowList) {
-                        foreach ($IP in $InboundSEPPmailIP) {
-                            $existingAllowList.Remove($IP)
-                        }
-                        Set-HostedConnectionFilterPolicy -Identity $hcfp.Id -IPAllowList $existingAllowList
-                        Write-Verbose "IP: $InboundSEPPmailIP removed from Hosted Connection Filter Policy $hcfp.Id"
+            else {
+                Write-Warning 'No SEPPmail Outbound Connector found'
+            }
+        }
+    
+        if($PSCmdlet.ShouldProcess($inbound.Name, "Remove SEPPmail inbound connector $($inbound.Name)"))
+        {
+            $InboundConnector = Get-InboundConnector | Where-Object {$_.Name -eq $($inbound.Name)}
+            if ($inboundConnector)
+                {
+                Write-Verbose 'Collect Inbound Connector IP for later AllowListremoval'
+                
+                [string]$InboundSEPPmailIP = $null
+                if ($inboundConnector.TlsSenderCertificateName) {
+                    [array]$InboundSEPPmailIP = $inboundConnector.SenderIPAddresses -split ' '
+                }
+                Remove-InboundConnector $inbound.Name -confirm:$false
+    
+                Write-Verbose "If Inbound Connector has been removed, remove also AllowListed IPs"
+                if ((!($Option -like 'AntiSpamAllowListing')) -and (!(Get-InboundConnector | Where-Object Identity -eq $($inbound.Name))))
+                {
+                        Write-Verbose "Remove SEPPmail Appliance IP from AllowList in 'Hosted Connection Filter Policy'"
+                        
+                        Write-Verbose "Collecting existing AllowList"
+                        [System.Collections.ArrayList]$existingAllowList = $hcfp.IPAllowList
+                        Write-verbose "Removing SEPPmail Appliance IP $InboundSEPPmailIP from Policy $($hcfp.Id)"
+                        if ($existingAllowList) {
+                            foreach ($IP in $InboundSEPPmailIP) {
+                                $existingAllowList.Remove($IP)
+                            }
+                            Set-HostedConnectionFilterPolicy -Identity $hcfp.Id -IPAllowList $existingAllowList
+                            Write-Verbose "IP: $InboundSEPPmailIP removed from Hosted Connection Filter Policy $hcfp.Id"
+                    }
                 }
             }
-        }
-        else 
-        {
-            Write-Warning 'No SEPPmail.Cloud Inbound Connector found'
-        }
+            else 
+            {
+                Write-Warning 'No SEPPmail.Cloud Inbound Connector found'
+            }
+    
+    }
     }
 }
+
 
 
 if (!(Get-Alias 'Set-SC365Connectors' -ErrorAction SilentlyContinue)) {
@@ -625,8 +634,6 @@ if (!(Get-Alias 'Set-SC365Connectors' -ErrorAction SilentlyContinue)) {
 }
 
 Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName SEPPmailCloudDomain -ScriptBlock $paramDomSB
-Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName region -ScriptBlock $paramRegionSB
-Register-ArgumentCompleter -CommandName New-SC365Connectors -ParameterName routing -ScriptBlock $paramRoutingModeSB
 
 
 # SIG # Begin signature block
