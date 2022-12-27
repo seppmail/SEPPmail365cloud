@@ -15,8 +15,9 @@ function Get-SC365Rules {
 	)]
 	param
 	(
-		[Parameter(Mandatory = $false)]
-		$routing = 'parallel'
+		[Parameter(Mandatory = $true)]
+		[ValidateSet('inline','parallel')]
+		$routing
 	)
 
 	if (!(Test-SC365ConnectionStatus))
@@ -26,13 +27,10 @@ function Get-SC365Rules {
 	else 
 	{
 		Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+		$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
 
 		if ($routing -eq 'parallel') {
-
-			$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
-
 			foreach ($file in $transportRuleFiles) {
-			
 				$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
 				$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
 				if ($rule) {
@@ -53,8 +51,28 @@ function Get-SC365Rules {
 				}
 			}    
 		}
-		else {
-			Write-Information "No transport rules needed for routingtype $routing"
+		else { # Inline
+			foreach ($file in $transportRuleFiles) {
+				$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
+				if ($setting.values) {
+					$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
+					if ($rule) {
+						if ($rule.Identity -like '*100*') {
+							$rule|Select-Object Identity,Priority,State,@{Name = 'ExcludedDomains'; Expression={$_.ExceptIfRecipientDomainIs}}
+						}
+						elseif ($rule.Identity -like '*200*') {
+							$rule|Select-Object Identity,Priority,State,@{Name = 'ExcludedDomains'; Expression={$_.ExceptIfSenderDomainIs}}
+						}
+						else {
+							$rule|Select-Object Identity,Priority,State,ExcludedDomains
+						}
+					}
+					else
+					{
+						Write-Warning "No transport rule '$($setting.Name)'"
+					}
+				}
+			}
 		}
 	}
 }
