@@ -3,7 +3,15 @@
     {
         "inline" :
         {
-            
+            "Name"                  : "[SEPPmail.cloud] - 060 Add header X-SM-ruleversion",
+            "Comments"              : "Adds a header to let SEPPmail.cloud know which rules version you are running.",
+            "SMPriority"            : 1,
+            "SetHeaderName"         : "X-SM-ruleversion",
+            "SetHeaderValue"        : "",
+            "Priority"              : 0,
+            "SetAuditSeverity"      : "DoNotAudit",
+            "Mode"                  : "Enforce",
+            "SenderAddressLocation" : "Header"
         },
         "parallel":
         {
