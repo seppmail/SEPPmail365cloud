@@ -1,4 +1,4 @@
-# Migration Guide from prior M365 Connectivity to Certificate-Based-Connectors with PS Module 1.3.0-preview1 in the SEPPmail.cloud
+# Migration Guide from prior M365 Connectivity to Certificate-Based-Connectors with PS Module 1.3.0-preview[1-n] in the SEPPmail.cloud
 
 With early Q1/2023 SEPPmail.cloud will change its connectivity to Exchange online to certificate-based-connectors (CBC). This will increase security and stability between Exchange Online and SEPPmail.cloud and avoid mail-loops in certain situations.
 
@@ -13,7 +13,7 @@ To make the PowerShell module work, 4 prerequisites must be met.
 3. The customer/partner needs to know the domains to be migrated, the cloud region and the routing mode for this tenant
 4. Check if MX Records are set properly (MX ==> SEPPMail in Inline mode, MX ==> Microsoft in Parallel Mode)
 
-## Step 2/5 - Install the preview release of seppmail365cloud
+## Step 2/5 - Install the current preview release of seppmail365cloud
 
 ```powershell
 Set-Location ~
@@ -43,6 +43,6 @@ Until all changes are saved in the MS Cloud it sometimes takes a few minutes. Se
 
 ## Special Cases
 
-- Still mail loops after the changes: If you set up everything according to the description above, and still have maillops, check if the recipient is also in the SEPPmail.cloud. Recipient MUST also use newest connectors (CBC).
+- Still mail loops after the changes: If you set up everything according to the description above, and still have mailloops, check if the recipient is also in the SEPPmail.cloud. Recipient MUST also use newest connectors (CBC).
 
 Follow instructions from [readme](https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md).

@@ -1,14 +1,19 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
-## Plans for versions until 1.3.0 Public release
+## 1.3.0-preview2
 
-There are still some features that we want to test more intensively to optimally support the mail flow, the stability and also more complex environments
+__Enhancements__
+
+General
+
+- New/Remove/Get-SC365rules have now a mandatory -routing parameter, as we add transportrules to the inline routing mode.
+
 
 ## 1.3.0-preview1 Certificate-Based-Connectors Release
 
 ** To use the new CBC functinality, please enable the functionality in the cloud-portal for your tenant. **
 
-Guidance to use 1.3.0-preview1 can be found here. [Link](https://github.com/seppmail/SEPPmail365cloud/blob/main/130-preview1.md)
+Guidance to use 1.3.0-preview editions can be found here. [Link](https://github.com/seppmail/SEPPmail365cloud/blob/main/130-preview.md)
 
 __Enhancements__
 
