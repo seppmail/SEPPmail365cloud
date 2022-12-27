@@ -38,13 +38,13 @@ function Get-SC365Rules {
 				$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
 				if ($rule) {
 					if ($rule.Identity -like '*100*') {
-						$rule|Select-Object Identity,Priority,State,@{Name = 'ExcludedDomains'; Expression={$_.ExceptIfRecipientDomainIs}}
+						$rule|Select-Object Identity,Priority,State,@{Name = 'IncludedDomains'; Expression={$_.RecipientDomainIs}}
 					}
 					elseif ($rule.Identity -like '*200*') {
-						$rule|Select-Object Identity,Priority,State,@{Name = 'ExcludedDomains'; Expression={$_.ExceptIfSenderDomainIs}}
+						$rule|Select-Object Identity,Priority,State,@{Name = 'IncludedDomains'; Expression={$_.SenderDomainIs}}
 					}
 					else {
-						$rule|Select-Object Identity,Priority,State,ExcludedDomains
+						$rule|Select-Object Identity,Priority,State,IncludedDomains
 					}
 				}
 				else
