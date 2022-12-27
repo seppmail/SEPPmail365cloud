@@ -16,7 +16,7 @@ function Get-SC365Rules {
 	param
 	(
 		[Parameter(Mandatory = $true)]
-		[ValidateSet('inline','parallel')]
+		[ValidateSet('parallel','inline','p','i')]
 		$routing
 	)
 
@@ -27,6 +27,9 @@ function Get-SC365Rules {
 		}
 		else 
 		{
+			if ($routing -eq 'p') {$routing = 'parallel'}
+			if ($routing -eq 'i') {$routing = 'inline'}
+	
 			Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 			$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
 		}
@@ -59,7 +62,6 @@ function Get-SC365Rules {
 	}
 }
 
-
 <#
 .SYNOPSIS
 	Create transport rules for routingmode "parallel"
@@ -83,10 +85,12 @@ function Get-SC365Rules {
 #>
 function New-SC365Rules
 {
-	[CmdletBinding(SupportsShouldProcess = $true,
-				   ConfirmImpact = 'Medium',
-				   HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
-				  )]
+	[CmdletBinding(
+		SupportsShouldProcess = $true,
+		ConfirmImpact = 'Medium',
+		HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
+		)
+	]
 	param
 	(
 		[Parameter(Mandatory=$false,
@@ -98,7 +102,7 @@ function New-SC365Rules
 			Mandatory = $true,
 			HelpMessage = 'MX record->SEPPmail means routingtype inline, MX->Microsoft means routingtype parallel'
 		)]
-		[ValidateSet('parallel','inline')]
+		[ValidateSet('parallel','inline','p','i')]
 		[String]$routing,
 
 		[Parameter(Mandatory=$true,
@@ -120,17 +124,20 @@ function New-SC365Rules
 
 	begin
 	{
-		if (!(Test-SC365ConnectionStatus))
-		{ throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
+		if (!(Test-SC365ConnectionStatus)) { 
+			throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" 
+		}
 
 	 	Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
-
+		 if ($routing -eq 'p') {$routing = 'parallel'}
+		 if ($routing -eq 'i') {$routing = 'inline'}
+ 
 		 $TenantDomains = Get-AcceptedDomain
-		 foreach ($namedDomain in $SEPPmailCloudDomaindomain) {
+		 foreach ($namedDomain in $SEPPmailCloudDomain) {
 			If (!($TenantDomains.DomainName -contains $namedDomain)) {
 				$PrimaryDomain = $TenantDomain|Where-Object 'Default' -eq $true|Select-Object -ExpandProperty DomainName
 				Write-Information "Typo ? Domain should be $PrimaryDomain" 
-				Write-Error "$SEPPmailCloudDomain is not member of the connected tenant. Retry using only tenant-domains"
+				Write-Error "$namedDomain is not member of the connected tenant. Retry using only e-mail domains hosted inside this tenant (Get-AcceptedDomain)"
 				break
 			 }	
 		 }
@@ -193,41 +200,46 @@ function New-SC365Rules
 
 				$moduleVersion = $myInvocation.MyCommand.Version
 				foreach($file in $transportRuleFiles) {
-				
 					$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
 					if ($setting.Values) {
 						$setting.Priority = $placementPrio + $setting.SMPriority
 						$setting.Remove('SMPriority')
 						if ($Disabled -eq $true) {$setting.Enabled = $false}
-	
-						switch ($setting.Name)
-						{
-							"[SEPPmail.cloud] - 060 Add header X-SM-ruleversion" {
-								Write-Verbose "Add rule version $Moduleversion"
-								$Setting.SetHeaderValue = $Moduleversion.ToString()	
-							}
-							"[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail" {
-								Write-Verbose "Including all managed domains $SEPPmailCloudDomain"
-								$Setting.RecipientDomainIs = $SEPPmailCloudDomain
-								if ($SCLInboundValue -ne 5) {
-									Write-Verbose "Setting Value $SCLInboundValue to Inbound flowing to SEPPmail.cloud"
-								$Setting.ExceptIfSCLOver = $SCLInboundValue
-								}
-							}
-							"[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail" {
-								Write-Verbose "Including only Outbound E-Mails from domains $SEPPmailCloudDomain"
-								$Setting.SenderDomainIs = $SEPPmailCloudDomain	
-							}
-						}
-	
+
+						$Now = Get-Date
+						Write-Verbose "Adding Timestamp $now to Comment"
+						$setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
+
 						if ($PSCmdlet.ShouldProcess($setting.Name, "Create transport rule"))
 						{
-							$Now = Get-Date
-							Write-Verbose "Adding Timestamp $now to Comment"
-							$setting.Comments += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-							New-TransportRule @setting |Select-Object Identity,Priority,State
+							switch ($setting.Name)
+							{
+								"[SEPPmail.cloud] - 060 Add header X-SM-ruleversion" {
+									Write-Verbose "Add rule version $Moduleversion"
+									$Setting.SetHeaderValue = $Moduleversion.ToString()
+									New-TransportRule @setting #|Out-Null
+								}
+								"[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail" {
+									Write-Verbose "Including all managed domains $SEPPmailCloudDomain"
+									$Setting.RecipientDomainIs = $SEPPmailCloudDomain
+									if ($SCLInboundValue -ne 5) {
+										Write-Verbose "Setting Value $SCLInboundValue to Inbound flowing to SEPPmail.cloud"
+									$Setting.ExceptIfSCLOver = $SCLInboundValue
+									}
+									New-TransportRule @setting #|Out-Null
+								}
+								"[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail" {
+									Write-Verbose "Including only Outbound E-Mails from domains $SEPPmailCloudDomain"
+									$Setting.SenderDomainIs = $SEPPmailCloudDomain
+									New-TransportRule @setting #|Out-Null
+								}
+								Default {
+									New-TransportRule @setting #|Out-Null
+								}
+							}						
 						}	
 					}
+				# Get-TransportRule -Identity $Setting.Name|Select-Object Identity,Priority,State ## Unfinished
 				}
 			}
 		}
@@ -260,7 +272,7 @@ function Remove-SC365Rules {
 			Mandatory = $true,
 			HelpMessage = 'Use seppmail if the MX record points to SEPPmail and microsoft if the MX record points to the Microsoft Inrastructure'
 		)]
-		[ValidateSet('parallel','inline')]
+		[ValidateSet('parallel','inline','p','i')]
 		[String]$routing
 	)
 
@@ -269,6 +281,8 @@ function Remove-SC365Rules {
 		{ 
 			throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" 
 		}
+		if ($routing -eq 'p') {$routing = 'parallel'}
+		if ($routing -eq 'i') {$routing = 'inline'}
 		Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 		$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
 	}
