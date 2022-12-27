@@ -32,12 +32,11 @@ function Get-SC365Rules {
 		}
 	}
 	process {
-		if ($routing -eq 'parallel') {
-			foreach ($file in $transportRuleFiles) {
-				$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
+		foreach ($file in $transportRuleFiles) {
+			$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
+			if ($setting.values) {
 				$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
 				if ($rule) {
-					
 					if ($rule.Identity -like '*100*') {
 						$rule|Select-Object Identity,Priority,State,@{Name = 'ExcludedDomains'; Expression={$_.ExceptIfRecipientDomainIs}}
 					}
@@ -51,29 +50,6 @@ function Get-SC365Rules {
 				else
 				{
 					Write-Warning "No transport rule '$($setting.Name)'"
-				}
-			}    
-		}
-		else { # Inline
-			foreach ($file in $transportRuleFiles) {
-				$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
-				if ($setting.values) {
-					$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
-					if ($rule) {
-						if ($rule.Identity -like '*100*') {
-							$rule|Select-Object Identity,Priority,State,@{Name = 'ExcludedDomains'; Expression={$_.ExceptIfRecipientDomainIs}}
-						}
-						elseif ($rule.Identity -like '*200*') {
-							$rule|Select-Object Identity,Priority,State,@{Name = 'ExcludedDomains'; Expression={$_.ExceptIfSenderDomainIs}}
-						}
-						else {
-							$rule|Select-Object Identity,Priority,State,ExcludedDomains
-						}
-					}
-					else
-					{
-						Write-Warning "No transport rule '$($setting.Name)'"
-					}
 				}
 			}
 		}
@@ -215,9 +191,6 @@ function New-SC365Rules
 			   
 				$transportRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExOConfig\Rules\"
 
-				# [System.Collections.ArrayList]$ExcludeEmailDomain = (Get-Accepteddomain).DomainName
-				# $SEPPmailCloudDomain|foreach-object {$ExcludeEmailDomain.Remove($_)}
-
 				$moduleVersion = $myInvocation.MyCommand.Version
 				foreach($file in $transportRuleFiles) {
 				
@@ -299,39 +272,18 @@ function Remove-SC365Rules {
 		Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 		$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
 	}
-
 	process {
 		Write-Verbose "Removing current version module rules"
-		
-		if ($routing -eq 'parallel') {
-			foreach ($file in $transportRuleFiles) {
-				$setting = Get-SC365TransportRuleSettings -routing $routing -file $file
+		foreach ($file in $transportRuleFiles) {
+			$setting = Get-SC365TransportRuleSettings -routing $routing -file $file
+			if ($setting.values) {
 				if($PSCmdlet.ShouldProcess($setting.Name, "Remove transport rule")) {
-					$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
-					if($rule -ne $null)
-						{$rule | Remove-TransportRule -Confirm:$false}
-					else {
-
-					}
+				$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
+				if($rule -ne $null)
+					{$rule | Remove-TransportRule -Confirm:$false}
 				}
-			}    
-		}
-		else { #Inline
-			foreach ($file in $transportRuleFiles) {
-				$setting = Get-SC365TransportRuleSettings -routing $routing -file $file
-				if ($setting.values) {
-					if($PSCmdlet.ShouldProcess($setting.Name, "Remove transport rule")) {
-					$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
-					if($rule -ne $null)
-						{$rule | Remove-TransportRule -Confirm:$false}
-					else {
-
-					}
-					}
-				}
-			}    
-		}
-
+			}
+		} 
 	}
 	end {
 
