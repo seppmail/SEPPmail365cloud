@@ -21,6 +21,9 @@ if ((Get-OrganizationConfig).IsDehydrated) {
 
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+ Welcome to the SEPPmail.cloud PowerShell                            +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+ Setup module seppmail365cloud                                       +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+ Please read the documentation on GitHub if you are unfamiliar       +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+ with the Module before continuing !                                 +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
@@ -36,10 +39,9 @@ if ($sc365notests -ne $true) {
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+           ! WRONG POWERSHELL VERSION !               +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
-        Write-Host "+          PLEASE Install PowerShell CORE 7.2+         +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+           PLEASE install PowerShell CORE 7.2+        +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
-        Write-Host "+          The module will not load on                 +" -ForegroundColor Green -BackgroundColor DarkGray
-        Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+           The module will not load on                +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+           Windows Powershell 5.1  :-( :-(            +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
@@ -82,9 +84,13 @@ if ($sc365notests -ne $true) {
 Write-Verbose 'Initialize argument completer scriptblocks'
 $paramDomSB = {
     # Read Accepted Domains for domain selection
-    Get-AcceptedDomain -Erroraction silentlycontinue|select-Object -ExpandProperty DomainName
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
+    (Get-AcceptedDomain -Erroraction silentlycontinue).DomainName | Where-Object {
+        $_ -like "$wordToComplete*"
+            } | ForEach-Object {
+                "'$_'"
+                }
 }
-
 
 Export-ModuleMember -Alias * -Function *
 
