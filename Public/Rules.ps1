@@ -7,7 +7,9 @@
 	If you want to be informed about all installed transport rules, use New-SC365ExoReport.
 
 .EXAMPLE
-	Get-SC365Rules
+	Get-SC365Rules -routing -parallel
+.EXAMPLE
+	Get-SC365Rules -routing -inline
 #>
 function Get-SC365Rules {
 	[CmdletBinding(
@@ -68,13 +70,13 @@ function Get-SC365Rules {
 .DESCRIPTION
 	Creates all necessary transport rules in Exchange Online to send E-Mails through seppmail.cloud for cryptographic processing.
 .EXAMPLE
-		PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu'
-		Creates the rules for specific domains. Excludes all other e-mail domains from processing by SEPPmail.cloud
+		PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu','contoso.com' -routing inline
+		Creates the rules for specific domains. Includes only defined e-mail domains from processing by SEPPmail.cloud
 .EXAMPLE
-	PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu' -PlacementPriority Top
+	PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu' -PlacementPriority Top -routing parallel
 	Places the transport rules BEFORE all other rules. This is unusual and against the default. It may make sense in some situations.
 .EXAMPLE
-	PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu' -disabled
+	PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu' -routing parallel -disabled
 	Sets the transport rules up, but keeps them inactive. Useful for a smoother integration.
 .INPUTS
 	none
@@ -259,7 +261,7 @@ function New-SC365Rules
 .DESCRIPTION
 	Convenience function to remove the SEPPmail.cloud rules in one CmdLet.
 .EXAMPLE
-	Remove-SC365Rules
+	Remove-SC365Rules -routing inline
 #>
 function Remove-SC365Rules {
 	[CmdletBinding(SupportsShouldProcess = $true,
