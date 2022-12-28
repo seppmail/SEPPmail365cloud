@@ -326,15 +326,33 @@ function New-SC365Setup {
     Begin {
         if ($routing -eq 'p') {$routing = 'parallel'}
         if ($routing -eq 'i') {$routing = 'inline'}
+
+        $TenantDefaultDomain = $null
+        foreach ($validationDomain in $SEPPmailCloudDomain) {
+			if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $validationDomain) -eq $true) {
+				Write-verbose "Domain is part of the tenant and the Default Domain"
+				$TenantDefaultDomain = $ValidationDomain
+			} else {
+				if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $validationDomain) -eq $false) {
+					Write-verbose "Domain is part of the tenant"
+				} else {
+					Write-Error "Domain is NOT Part of the tenant"
+					break
+				}
+			}
+		 }
+
     }
     Process {
         try {
-            New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region
+            Write-Information '--- Creating inbound and outbound connectors ---'
+            New-SC365Connectors -SEPPmailCloudDomain $TenantDefaultDomain -routing $routing -region $region
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
             break
         }
         try {
+            Write-Information '--- Creating transport rules ---'
             New-SC365Rules -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
@@ -346,7 +364,6 @@ function New-SC365Setup {
         Write-Information "Afterwards, start testing E-Mails in and out"
     }
 }
-
 
 <#
 .SYNOPSIS
@@ -368,10 +385,9 @@ Function Get-SC365TenantID {
         HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
     )]
     param (
-        [Parameter(
-            Mandatory=$true,
-            Alias = 'MailDomain')]
-        [string]$SEPPmailCloudDomain
+        [Parameter(Mandatory=$true)]
+        [Alias('SEPPmailCloudDomain')]
+        [string]$maildomain
     )
 
     $uri = 'https://login.windows.net/' + $maildomain + '/.well-known/openid-configuration'
@@ -499,6 +515,101 @@ function Test-SC365ConnectionStatus
             }
     }
     return $isConnected
+}
+
+function Resolve-SC365IPv4Address {
+    param(
+        [Parameter(
+            Mandatory = $true,
+            HelpMessage = 'DNS Name'
+        )]
+        $fqdn
+    )
+    try {
+        $ret = [System.Net.Dns]::GetHostAddresses($fqdn) |where-object AddressFamily -eq 'Internetwork'|select-object -expandproperty ipaddresstostring
+        return = $ret    
+    } catch {
+        '--- IP4 Address could not be resolved ---'
+    }
+}
+
+function Resolve-SC365IPv6Address {
+    param(
+        [Parameter(
+            Mandatory = $true,
+            HelpMessage = 'DNS Name'
+        )]
+        $fqdn
+    )
+    try {
+        $ret = [System.Net.Dns]::GetHostAddresses($fqdn) |where-object AddressFamily -eq 'InterNetworkV6'|select-object -expandproperty ipaddresstostring
+        return = $ret    
+    } catch {
+        '--- IP6 Address could not be resolved ---'
+    }
+}
+
+function Resolve-SC365DNSName {
+    [CmdLetBinding()]
+    param(
+        [Parameter(
+            Mandatory = $true,
+            HelpMessage = 'IP4 or IPv6 IP address'
+        )]
+        [String]$ipAddress
+    )
+    $DnsName = $Null
+
+    try {
+        Write-Verbose "Resolving $iPAddress to HostName"
+        $DNSName = [System.Net.Dns]::GetHostEntry($ipaddress).Hostname
+     } 
+     catch {
+        $DnsName = "---IP could not be resolved---"
+    }
+    return $DNSName
+}
+
+<#
+.SYNOPSIS
+    Validates if a given strig (domainname) is the tenant default maildomain
+.DESCRIPTION
+    It takes the string and prooves if the domain is a member of the tenant. If this fails, the function returns an error and stops.
+    If the domain is a tenant-member it returns true/false if its the domain default.
+.NOTES
+    - none -
+.LINK
+    - none -
+.EXAMPLE
+    Confirm-TenantDefaultDomain -Domain 'contoso.eu'
+    Returns either an error if the domain is NOT in the tenant, of true or false.
+#>
+function Confirm-SC365TenantDefaultDomain {
+    param (
+        [CmdLetBinding()]
+
+        [Parameter(Mandatory = $true)]
+        [String]$ValidationDomain
+    )
+
+    begin {
+        $TenantDomains = Get-AcceptedDomain
+        $TenantDefaultDomain = $TenantDomains.Where({$_.Default -eq $true}).DomainName     
+    }
+    process {
+        If (!($TenantDomains.DomainName -contains $ValidationDomain)) {
+            Write-Error "$ValidationDomain is not member of the connected tenant. Retry using only tenant-domains (Use CmdLet: Get-AcceptedDomain)"
+            break
+        } else {
+            if ($Validationdomain -eq $TenantDefaultDomain) {
+                return $true
+            } else {
+                return $false
+            }    
+        }
+    }
+    end {
+    }
 }
 
 function Get-SC365MessageTrace {

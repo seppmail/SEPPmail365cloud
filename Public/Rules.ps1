@@ -133,24 +133,19 @@ function New-SC365Rules
 	 	Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 		 if ($routing -eq 'p') {$routing = 'parallel'}
 		 if ($routing -eq 'i') {$routing = 'inline'}
- 
-		 foreach ($domain in $SEPPmailCloudDomain) {
-			if (Confirm-SC365TenantDefaultDomain) {
-				Write-verbose "Domain is part of the tenant"
-			 } else {
-				Write-Error "Domain is NOT Part of the tenant"
-				break
-			 }
+
+		 foreach ($validationDomain in $SEPPmailCloudDomain) {
+			if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $validationDomain) -eq $true) {
+				Write-verbose "Domain is part of the tenant and the Default Domain"
+			} else {
+				if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $validationDomain) -eq $false) {
+					Write-verbose "Domain is part of the tenant"
+				} else {
+					Write-Error "Domain is NOT Part of the tenant"
+					break
+				}
+			}
 		 }
-		 <#$TenantDomains = Get-AcceptedDomain
-		 foreach ($namedDomain in $SEPPmailCloudDomain) {
-			If (!($TenantDomains.DomainName -contains $namedDomain)) {
-				$PrimaryDomain = $TenantDomain|Where-Object 'Default' -eq $true|Select-Object -ExpandProperty DomainName
-				Write-Information "Typo ? Domain should be $PrimaryDomain" 
-				Write-Error "$namedDomain is not member of the connected tenant. Retry using only e-mail domains hosted inside this tenant (Get-AcceptedDomain)"
-				break
-			 }	
-		 }#>
  
 		$outboundConnectors = Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
 		if(!($outboundConnectors))
