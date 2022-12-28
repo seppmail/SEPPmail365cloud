@@ -6,8 +6,9 @@ __Enhancements__
 
 General
 
-- New/Remove/Get-SC365rules have now a mandatory -routing parameter, as we add transportrules to the inline routing mode.
-
+- New/Remove/Get-SC365rules have now a mandatory -routing parameter, as we add transport rules to the inline routing mode.
+- New-SC365Setup CmdLet combines all commands to setup an environment
+- 
 
 ## 1.3.0-preview1 Certificate-Based-Connectors Release
 

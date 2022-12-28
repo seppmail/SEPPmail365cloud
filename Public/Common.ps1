@@ -292,16 +292,49 @@ function Remove-SC365Setup {
     End{}
 }
 
-function Get-SC365Setup {
-    [CmdletBinding()]
-    param()
+function New-SC365Setup {
+    [CmdletBinding(
+        HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md'
+    )]
 
-    Begin {}
-    Process {
-        Get-SC365Connectors
-        Get-SC365Rules
+    # Specifies a path to one or more locations.
+    param(
+        [Parameter(
+            Mandatory=$true,
+            Position=0,
+            HelpMessage="All Domains included / booked in the SEPPmail.cloud")]
+            [Alias("domain")]
+            [ValidateNotNullOrEmpty()]
+        [String]$SEPPmailCloudDomain,
+
+        [Parameter(
+            Mandatory=$true,
+            Position=1,
+            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)")]
+            [ValidateNotNullOrEmpty()]
+            [ValidateSet('parallel','inline','p','i')]
+        [String]$routing,
+    
+        [Parameter(
+            Mandatory=$true,
+            Position=0,
+            HelpMessage="Physical location of your data")]
+            [ValidateSet('prv','de','ch')]
+        [String]$region
+        )
+
+    Begin {
+        if ($routing -eq 'p') {$routing = 'parallel'}
+        if ($routing -eq 'i') {$routing = 'inline'}
     }
-    End{}
+    Process {
+        New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region
+        New-SC365Rules -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing
+    }
+    End{
+        Write-Information "Wait a few minutes until changes are applied in the Microsoft cloud"
+        Write-Information "Afterwards, start testing E-Mails in and out"
+    }
 }
 
 <#
@@ -324,8 +357,10 @@ Function Get-SC365TenantID {
         HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
     )]
     param (
-        [Parameter(Mandatory=$true)]
-        [string]$maildomain
+        [Parameter(
+            Mandatory=$true,
+            Alias = 'MailDomain')]
+        [string]$SEPPmailCloudDomain
     )
 
     $uri = 'https://login.windows.net/' + $maildomain + '/.well-known/openid-configuration'
@@ -698,7 +733,6 @@ function Get-SC365MessageTrace {
         #$SC365MessageTraceHT
     }
 }
-
 
 Register-ArgumentCompleter -CommandName Get-SC365TenantId -ParameterName MailDomain -ScriptBlock $paramDomSB
 
