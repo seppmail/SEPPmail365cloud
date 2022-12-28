@@ -627,8 +627,6 @@ function Remove-SC365Connectors
     }
 }
 
-
-
 if (!(Get-Alias 'Set-SC365Connectors' -ErrorAction SilentlyContinue)) {
     New-Alias -Name Set-SC365Connectors -Value New-SC365Connectors
 }

@@ -8,7 +8,7 @@ General
 
 - New/Remove/Get-SC365rules have now a mandatory -routing parameter, as we add transport rules to the inline routing mode.
 - New-SC365Setup CmdLet combines all commands to setup an environment
-- 
+- Add Confirm-SC365TenantDefaultDomain. A CmdLet to check if a specific domain is the default mail domain of a tenant.
 
 ## 1.3.0-preview1 Certificate-Based-Connectors Release
 

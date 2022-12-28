@@ -87,6 +87,12 @@ FunctionsToExport = @(
        'Get-SC365TenantId'
        'Get-SC365MessageTrace'
    'Resolve-SC365DNSname'
+   'Resolve-SC365IP4Address'
+   'Resolve-SC365IP6Address'
+       'New-SC365Setup'
+    #'Remove-SC365Setup'
+   'Confirm-SC365TenantDefaultDomain'
+
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.

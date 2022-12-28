@@ -134,7 +134,15 @@ function New-SC365Rules
 		 if ($routing -eq 'p') {$routing = 'parallel'}
 		 if ($routing -eq 'i') {$routing = 'inline'}
  
-		 $TenantDomains = Get-AcceptedDomain
+		 foreach ($domain in $SEPPmailCloudDomain) {
+			if (Confirm-SC365TenantDefaultDomain) {
+				Write-verbose "Domain is part of the tenant"
+			 } else {
+				Write-Error "Domain is NOT Part of the tenant"
+				break
+			 }
+		 }
+		 <#$TenantDomains = Get-AcceptedDomain
 		 foreach ($namedDomain in $SEPPmailCloudDomain) {
 			If (!($TenantDomains.DomainName -contains $namedDomain)) {
 				$PrimaryDomain = $TenantDomain|Where-Object 'Default' -eq $true|Select-Object -ExpandProperty DomainName
@@ -142,7 +150,7 @@ function New-SC365Rules
 				Write-Error "$namedDomain is not member of the connected tenant. Retry using only e-mail domains hosted inside this tenant (Get-AcceptedDomain)"
 				break
 			 }	
-		 }
+		 }#>
  
 		$outboundConnectors = Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
 		if(!($outboundConnectors))

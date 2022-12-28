@@ -305,7 +305,7 @@ function New-SC365Setup {
             HelpMessage="All Domains included / booked in the SEPPmail.cloud")]
             [Alias("domain")]
             [ValidateNotNullOrEmpty()]
-        [String]$SEPPmailCloudDomain,
+        [String[]]$SEPPmailCloudDomain,
 
         [Parameter(
             Mandatory=$true,
@@ -328,14 +328,25 @@ function New-SC365Setup {
         if ($routing -eq 'i') {$routing = 'inline'}
     }
     Process {
-        New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region
-        New-SC365Rules -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing
+        try {
+            New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region
+        } catch {
+            throw [System.Exception] "Error: $($_.Exception.Message)"
+            break
+        }
+        try {
+            New-SC365Rules -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing
+        } catch {
+            throw [System.Exception] "Error: $($_.Exception.Message)"
+            break
+        }
     }
     End{
         Write-Information "Wait a few minutes until changes are applied in the Microsoft cloud"
         Write-Information "Afterwards, start testing E-Mails in and out"
     }
 }
+
 
 <#
 .SYNOPSIS
@@ -735,6 +746,8 @@ function Get-SC365MessageTrace {
 }
 
 Register-ArgumentCompleter -CommandName Get-SC365TenantId -ParameterName MailDomain -ScriptBlock $paramDomSB
+Register-ArgumentCompleter -CommandName New-SC365Setup -ParameterName SEPPmailCloudDomain -ScriptBlock $paramDomSB
+
 
 # SIG # Begin signature block
 # MIIL/AYJKoZIhvcNAQcCoIIL7TCCC+kCAQExDzANBglghkgBZQMEAgEFADB5Bgor
