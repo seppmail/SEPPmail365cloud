@@ -134,7 +134,7 @@ function New-SC365Rules
 		 if ($routing -eq 'p') {$routing = 'parallel'}
 		 if ($routing -eq 'i') {$routing = 'inline'}
 
-		 foreach ($validationDomain in $SEPPmailCloudDomain) {
+		foreach ($validationDomain in $SEPPmailCloudDomain) {
 			if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $validationDomain) -eq $true) {
 				Write-verbose "Domain is part of the tenant and the Default Domain"
 			} else {
@@ -145,7 +145,7 @@ function New-SC365Rules
 					break
 				}
 			}
-		 }
+		}
  
 		$outboundConnectors = Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
 		if(!($outboundConnectors))

@@ -212,13 +212,17 @@ function New-SC365Connectors
         {throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"}
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
  
-        $TenantDomains = Get-AcceptedDomain
-        If (!($TenantDomains.DomainName -contains $SEPPmailCloudDomain)) {
-           $PrimaryDomain = $TenantDomain|Where-Object 'Default' -eq $true|Select-Object -ExpandProperty DomainName
-           Write-Information "Typo ? Domain should be $PrimaryDomain" 
-           Write-Error "$SEPPmailCloudDomain is not member of the connected tenant. Retry using only tenant-domains"
-           break
-        }
+
+		if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $SEPPmailCloudDomain) -eq $true) {
+			Write-verbose "Domain is part of the tenant and the Default Domain"
+		} else {
+			if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $SEPPmailCloudDomain) -eq $false) {
+				Write-verbose "Domain is part of the tenant"
+			} else {
+				Write-Error "Domain is NOT Part of the tenant"
+				break
+			}
+		}
 
         #region Preparing common setup
         Write-Debug "Preparing values for Cloud configuration"
