@@ -129,10 +129,10 @@ function Convertto-SC365Numberformat
         [Int64]$rawnumber
     )
     $ConvertedNumber = switch ($rawNumber.ToString().Length) {
-                           {($_ -le 5)} {($_/1KB).ToString("N2") + " kB"} 
-         {(($_ -gt 5) -and ($_ -le 9))} {($_/1MB).ToString("N2") + " MB"} 
-        {(($_ -gt 9) -and ($_ -le 12))} {($_/1GB).ToString("N2") + " GB"} 
-                          {($_ -gt 12)} {($_/1TB).ToString("N2") + " TB"} 
+                           {($_ -le 5)} {($rawNumber/1KB).ToString("N2") + " kB"} 
+         {(($_ -gt 5) -and ($_ -le 9))} {($rawNumber/1MB).ToString("N2") + " MB"} 
+        {(($_ -gt 9) -and ($_ -le 12))} {($rawNumber/1GB).ToString("N2") + " GB"} 
+                          {($_ -gt 12)} {($rawNumber/1TB).ToString("N2") + " TB"} 
     }
     return $ConvertedNumber
 }
