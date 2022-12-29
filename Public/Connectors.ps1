@@ -26,14 +26,19 @@ function Get-SC365Connectors
         [ValidateSet('parallel','inline','p','i')]
         $routing
     )
+    begin {
+        if ($routing -eq 'p') {$routing = 'parallel'}
+		if ($routing -eq 'i') {$routing = 'inline'}
 
-    if (!(Test-SC365ConnectionStatus))
-    { 
-        throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"
+        if (!(Test-SC365ConnectionStatus))
+        { 
+            throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"
+        }
+        else {
+            Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+        }
     }
-    else {
-        Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
-
+    process {
         $inbound = Get-SC365InboundConnectorSettings -Routing $routing
         $outbound = Get-SC365OutboundConnectorSettings -Routing $routing
         $obc = Get-OutboundConnector $outbound.Name -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
@@ -54,7 +59,6 @@ function Get-SC365Connectors
         {
             Write-Warning "No SEPPmail.cloud Inbound Connector with Name `"$($inbound.Name)`" found - Wrong routing mode ?"
         }
-
     }
 }
 
@@ -207,7 +211,10 @@ function New-SC365Connectors
     )
 
     begin
-    {
+    {        
+        if ($routing -eq 'p') {$routing = 'parallel'}
+		if ($routing -eq 'i') {$routing = 'inline'}
+
         if(!(Test-SC365ConnectionStatus))
         {throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"}
         Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
@@ -499,7 +506,8 @@ function New-SC365Connectors
 
                     $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
                     #[void](New-InboundConnector @param)
-                    New-InboundConnector @param |Select-Object Identity,Enabled,WhenCreated,@{Name = 'Region'; Expression = $region}
+                    # @{Name = 'Region'; Expression = {($_.TlsSenderCertificateName.Split('.')[1])}}
+                    New-InboundConnector @param |Select-Object Identity,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsSenderCertificateName.Split('.')[1])}}
 
                     if(!$?) {
                         throw $error[0]

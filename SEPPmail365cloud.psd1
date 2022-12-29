@@ -90,7 +90,7 @@ FunctionsToExport = @(
    'Resolve-SC365IP4Address'
    'Resolve-SC365IP6Address'
        'New-SC365Setup'
-    #'Remove-SC365Setup'
+    'Remove-SC365Setup'
    'Confirm-SC365TenantDefaultDomain'
 
     )

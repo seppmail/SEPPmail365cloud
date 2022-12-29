@@ -282,12 +282,36 @@ function New-SC365ExOReport {
 
 function Remove-SC365Setup {
     [CmdletBinding()]
-    param()
+    param(
+        [Parameter(
+            Mandatory=$true,
+            Position=1,
+            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)")]
+            [ValidateNotNullOrEmpty()]
+            [ValidateSet('parallel','inline','p','i')]
+        [String]$routing
 
-    Begin {}
+    )
+
+    Begin {
+        if ($routing -eq 'p') {$routing = 'parallel'}
+        if ($routing -eq 'i') {$routing = 'inline'}
+    }
     Process {
-        Remove-SC365Rules
-        Remove-SC365Connectors
+        try {
+            Write-Information '--- Removing transport rules ---'
+            Remove-SC365Rules -routing $routing
+        } catch {
+            throw [System.Exception] "Error: $($_.Exception.Message)"
+            break
+        }
+        try {
+            Write-Information '--- Remove inbound and outbound connectors ---'
+            Remove-SC365Connectors -routing $routing
+        } catch {
+            throw [System.Exception] "Error: $($_.Exception.Message)"
+            break
+        }
     }
     End{}
 }

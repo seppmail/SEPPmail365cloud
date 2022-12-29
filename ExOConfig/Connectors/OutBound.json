@@ -9,7 +9,6 @@
             "ConnectorType"            : "Partner",
             "CloudServicesMailEnabled" : false,
             "IsTransportRuleScoped"    : true,
-            "RecipientDomains"         : "",
             "SmartHosts"               : "---Parameter input---",
             "TlsSettings"              : "DomainValidation",
             "TlsDomain"                : "---Parameter input---",
