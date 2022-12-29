@@ -35,7 +35,7 @@ function Get-SC365Connectors
             throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"
         }
         else {
-            Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+            Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`" " 
         }
     }
     process {
@@ -212,13 +212,14 @@ function New-SC365Connectors
 
     begin
     {        
+        if(!(Test-SC365ConnectionStatus)) {
+            throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"
+        } else {
+            Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+        }
+ 
         if ($routing -eq 'p') {$routing = 'parallel'}
 		if ($routing -eq 'i') {$routing = 'inline'}
-
-        if(!(Test-SC365ConnectionStatus))
-        {throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"}
-        Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
- 
 
 		if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $SEPPmailCloudDomain) -eq $true) {
 			Write-verbose "Domain is part of the tenant and the Default Domain"
@@ -575,11 +576,11 @@ function Remove-SC365Connectors
     )
 
     begin {
-        if (!(Test-SC365ConnectionStatus))
-        { throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
-    
-        Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
-        
+        if (!(Test-SC365ConnectionStatus)){ 
+            throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" 
+        } else {
+            Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`" " 
+        }
         if ($routing -eq 'p') {$routing = 'parallel'}
 		if ($routing -eq 'i') {$routing = 'inline'}
 

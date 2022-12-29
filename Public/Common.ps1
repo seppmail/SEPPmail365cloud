@@ -299,21 +299,24 @@ function Remove-SC365Setup {
     }
     Process {
         try {
-            Write-Information '--- Removing transport rules ---'
+            Write-Information '--- Removing transport rules ---' -InformationAction Continue
             Remove-SC365Rules -routing $routing
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
             break
         }
         try {
-            Write-Information '--- Remove inbound and outbound connectors ---'
+            Write-Information '--- Remove inbound and outbound connectors ---' -InformationAction Continue
             Remove-SC365Connectors -routing $routing
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
             break
         }
     }
-    End{}
+    End{
+        Write-Information "--- Successfully removed SEPPmail.cloud Setup in $routing mode ---" -InformationAction Continue
+
+    }
 }
 
 function New-SC365Setup {
@@ -351,6 +354,7 @@ function New-SC365Setup {
         if ($routing -eq 'p') {$routing = 'parallel'}
         if ($routing -eq 'i') {$routing = 'inline'}
 
+        Write-Verbose "Confirming if $SEPPmailCloudDomain is part or the tenant"
         $TenantDefaultDomain = $null
         foreach ($validationDomain in $SEPPmailCloudDomain) {
 			if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $validationDomain) -eq $true) {
@@ -369,14 +373,14 @@ function New-SC365Setup {
     }
     Process {
         try {
-            Write-Information '--- Creating inbound and outbound connectors ---'
+            Write-Information '--- Creating inbound and outbound connectors ---' -InformationAction Continue
             New-SC365Connectors -SEPPmailCloudDomain $TenantDefaultDomain -routing $routing -region $region
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
             break
         }
         try {
-            Write-Information '--- Creating transport rules ---'
+            Write-Information '--- Creating transport rules ---' -InformationAction Continue
             New-SC365Rules -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
@@ -384,8 +388,9 @@ function New-SC365Setup {
         }
     }
     End{
-        Write-Information "Wait a few minutes until changes are applied in the Microsoft cloud"
-        Write-Information "Afterwards, start testing E-Mails in and out"
+        Write-Information "--- Successfully created SEPPmail.cloud Setup for $seppmailclouddomain in region $region in $routing mode ---" -InformationAction Continue
+        Write-Information "--- Wait a few minutes until changes are applied in the Microsoft cloud ---" -InformationAction Continue
+        Write-Information "--- Afterwards, start testing E-Mails in and out ---" -InformationAction Continue
     }
 }
 

@@ -128,9 +128,10 @@ function New-SC365Rules
 	{
 		if (!(Test-SC365ConnectionStatus)) { 
 			throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" 
+		} else {
+			Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`" " 
 		}
 
-	 	Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 		 if ($routing -eq 'p') {$routing = 'parallel'}
 		 if ($routing -eq 'i') {$routing = 'inline'}
 
@@ -285,10 +286,11 @@ function Remove-SC365Rules {
 		if (!(Test-SC365ConnectionStatus))
 		{ 
 			throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" 
+		} else {
+			Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`" " 
 		}
 		if ($routing -eq 'p') {$routing = 'parallel'}
 		if ($routing -eq 'i') {$routing = 'inline'}
-		Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 		$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
 	}
 	process {
