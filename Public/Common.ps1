@@ -298,9 +298,22 @@ function Remove-SC365Setup {
         if ($routing -eq 'i') {$routing = 'inline'}
     }
     Process {
+        Write-Verbose "Creating Progress Bar"
+        $objectCount = $null
+        # Count Rules
+        foreach ($file in (Get-Childitem -Path "$psscriptroot\..\ExOConfig\Rules\")) {
+            $objectCount += if ((Get-SC365TransportRuleSettings -routing $routing -file $file).count -gt 0) {1}
+        }
+
+        # Count Connectors
+        #if ((Get-SC365InboundConnectorSettings -routing $routing -file $file).count -gt 0) {1}
+        $objectCount += 2
+
         try {
+            #Write-Progress -Activity "Removing SEPPmail.Cloud Setup" -Status "Removing Rules" -PercentComplete (0)
             Write-Information '--- Removing transport rules ---' -InformationAction Continue
             Remove-SC365Rules -routing $routing
+            Write-Progress -Activity "Removing SEPPmail.Cloud Setup" -Status "Removing Rules" -PercentComplete (2/8)
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
             break
@@ -308,6 +321,7 @@ function Remove-SC365Setup {
         try {
             Write-Information '--- Remove inbound and outbound connectors ---' -InformationAction Continue
             Remove-SC365Connectors -routing $routing
+            Write-Progress -Activity "Removing SEPPmail.Cloud Setup" -Status "Removing Connectors" -PercentComplete (8/8)
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
             break
@@ -713,7 +727,7 @@ function Get-SC365MessageTrace {
 
         $OutPutObject = [PSCustomObject][ordered]@{
             Subject                = if ($MessageTrace.count -eq 1) {$MessageTrace.Subject} else {$MessageTrace[0].Subject}
-            Size                   = if ($MessageTrace.count -eq 1) {$MessageTrace.Size} else {$MessageTrace[0].Size} #|{$_/1KB} | ToString('.0') + ' kB'
+            Size                   = if ($MessageTrace.count -eq 1) {Convertto-SC365Numberformat -rawnumber $($MessageTrace.Size)} else {Convertto-SC365Numberformat -rawnumber $($MessageTrace[0].Size)}
             SenderAddresses        = if ($MessageTrace.count -eq 1) {$MessageTrace.SenderAddress} else {$MessageTrace[0].SenderAddress}
             MailDirection          = $MailDirection
             RoutingMode            = if (($ibc.identity -eq "[SEPPmail.cloud] Inbound-Parallel") -or ($obc.identity -eq "[SEPPmail.cloud] Outbound-Parallel")) {'Parallel'} else {'Inline'}
