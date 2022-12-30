@@ -89,6 +89,7 @@ FunctionsToExport = @(
    'Resolve-SC365DNSname'
    'Resolve-SC365IP4Address'
    'Resolve-SC365IP6Address'
+       'Get-SC365Setup'
        'New-SC365Setup'
     'Remove-SC365Setup'
    'Confirm-SC365TenantDefaultDomain'

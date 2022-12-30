@@ -408,6 +408,32 @@ function New-SC365Setup {
     }
 }
 
+function Get-SC365Setup {
+    [CmdletBinding()]
+    param(
+        [Parameter(
+            Mandatory=$true,
+            Position=1,
+            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)")]
+            [ValidateNotNullOrEmpty()]
+            [ValidateSet('parallel','inline','p','i')]
+        [String]$routing
+    )
+
+    Begin {
+        if ($routing -eq 'p') {$routing = 'parallel'}
+        if ($routing -eq 'i') {$routing = 'inline'}
+    }
+    Process {
+        $smcConn = Get-SC365Connectors -Routing $routing
+        $smcTRules = Get-SC365Rules -Routing $routing
+    }
+    End{
+        Out-Host -InputObject $smcConn -Paging
+        Out-Host -InputObject $smcTRules -Paging
+     }
+}
+
 <#
 .SYNOPSIS
     Read Office/Microsoft365 Azure TenantID
