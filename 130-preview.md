@@ -18,14 +18,29 @@ To make the PowerShell module work, 4 prerequisites must be met.
 ```powershell
 Set-Location ~
 Install-Module seppmail365cloud -AllowPrerelease -AllowClobber -Force
-Get-Module seppmail365cloud  # This must show the module version 1.3.0-preview1 loaded.
+Get-Module seppmail365cloud  # This must show the module version 1.3.0-preview[1...] loaded.
 ```
 
 ## Step 3/5 - Cleanup the environment
 
-Make sure all old end existing SEPPmail rules and connectors are removed. This may be done in the [Exchange Admin GUI](https://admin.microsoft.com/exchange) or with PowerShell CmdLets Remove-SC365Rules and Remove-SC365Commandlets.
+Make sure all old end existing SEPPmail rules and connectors are removed. This may be done in the [Exchange Admin GUI](https://admin.microsoft.com/exchange) or with PowerShell CmdLets:
 
-Check final results with Get-TransportRule, Get-InboundConnector and Get-OutboundConnector.
+```powershell
+# ATTENTION - THIS WILL INFLUENCE THE MAILFLOW - No de/encryption without rules/connectors
+Remove-SC365Rules
+
+Remove-SC365Connector
+```
+
+Check final results with:
+
+```powershell
+Get-TransportRule
+Get-InboundConnector
+Get-OutboundConnector
+```
+
+No SEPPmail-rule or connector should show up!
 
 **Special Case : Connectors with "/" or "\\" in the name**
 We had a version of the SEPPmail.cloud connectors in place which used slashes in the name. Microsoft somehow stopped to accept this. If you find such a connector do this:
@@ -45,4 +60,4 @@ Until all changes are saved in the MS Cloud it sometimes takes a few minutes. Se
 
 - Still mail loops after the changes: If you set up everything according to the description above, and still have mailloops, check if the recipient is also in the SEPPmail.cloud. Recipient MUST also use newest connectors (CBC).
 
-Follow instructions from [readme](https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md).
+Follow instructions from [README](https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md).
