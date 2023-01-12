@@ -20,7 +20,7 @@ $PSVersiontable.PSVersion
 Get-Module ExchangeOnLineManagement -ListAvailable
 # if this shows a module below 3.0.0, run:
 
-Install-Module ExchangeOnlineManagement -Force"
+Install-Module ExchangeOnlineManagement -Force
 ```
 
 3. The customer/partner needs to know:
