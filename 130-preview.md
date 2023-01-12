@@ -8,22 +8,42 @@ With early Q1/2023 SEPPmail.cloud will change its connectivity to Exchange onlin
 
 To make the PowerShell module work, 4 prerequisites must be met.
 
-1. PowerShell Core 7+ must be used - the Module does not work with Windows Powershell 5.1!
+1. PowerShell Core 7+ must be used - the Module does not work with Windows Powershell 5.1! Check with:
+
+```powershell
+$PSVersiontable.PSVersion
+```
+
 2. The ExchangeOnLineManagement Module 3.0.0+ must be installed and loaded (Restart PowerShell session after).
 
-´´´powershell
-Install-Module ExchangeOnlineManagement -Force"
-´´´
+```powershell
+Get-Module ExchangeOnLineManagement -ListAvailable
+# if this shows a module below 3.0.0, run:
 
-3. The customer/partner needs to know the domains to be migrated, the cloud region and the routing mode for this tenant
+Install-Module ExchangeOnlineManagement -Force"
+```
+
+3. The customer/partner needs to know:
+   1.  the **domains** to be migrated
+   2.  the **cloud region** and 
+   3.  the **routing mode** for this tenant
 4. Check if MX Records are set properly (MX ==> SEPPMail in Inline mode, MX ==> Microsoft in Parallel Mode)
+
+```powershell
+# Windows:
+Resolve-DNSName yourdomain.com -type MX
+
+# Linux/macOS:
+dig yourdomain.com MX
+
+```
 
 ## Step 2/5 - Install the current preview release of seppmail365cloud
 
 ```powershell
-Set-Location ~
+Set-Location ~ 
 Install-Module seppmail365cloud -AllowPrerelease -AllowClobber -Force
-Get-Module seppmail365cloud  # This must show the module version 1.3.0-preview[1...] loaded.
+Get-Module seppmail365cloud -Listavailable # This must show the module version 1.3.0-preview[1...] loaded.
 ```
 
 ## Step 3/5 - Cleanup the environment
