@@ -4,7 +4,7 @@ With early Q1/2023 SEPPmail.cloud will change its connectivity to Exchange onlin
 
 !Important: Inline customers require all domains of same tenant to be inline domains handled by  SEPPmail.cloud.
 
-## Step 1/5 - Check [prerequisites](https://gitlab.seppmail.ch/internal/seppcloud/seppmail365cloud/-/blob/main/README.md#prerequisites)
+## Step 1/5 - Check [prerequisites](https://github.com/seppmail/SEPPmail365cloud#prerequisites)
 
 To make the PowerShell module work, 4 prerequisites must be met.
 
@@ -50,14 +50,14 @@ We had a version of the SEPPmail.cloud connectors in place which used slashes in
 
 ## Step 4/5 - Setup new mailflow to SEPPmail
 
-Follow the guide in the [README](https://gitlab.seppmail.ch/internal/seppcloud/seppmail365cloud/-/blob/main/README.md#setup-the-integration)
+Follow the guide in the [README](https://github.com/seppmail/SEPPmail365cloud#setup-the-integration)
 
 ## Step 5/5 - Wait up to 10 Minutes
 
-Until all changes are saved in the MS Cloud it sometimes takes a few minutes. Send test e-mails in that time until te mailflow works and trust the solution.
+Until all changes are saved in the MS Cloud it sometimes takes a few minutes. Send test e-mails in that time until the mailflow works and trust the solution.
 
 ## Special Cases
 
-- Still mail loops after the changes: If you set up everything according to the description above, and still have mailloops, check if the recipient is also in the SEPPmail.cloud. Recipient MUST also use newest connectors (CBC).
+- Still mail loops after the changes: If you set up everything according to the description above, and still have mail-loops, check if the recipient is also in the SEPPmail.cloud. Recipient MUST also use newest connectors (CBC).
 
 Follow instructions from [README](https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md).
