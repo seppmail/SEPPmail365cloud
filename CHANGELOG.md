@@ -1,5 +1,14 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 1.3.0-preview3
+
+__Enhancements__
+
+General
+
+- Rule [SEPPmail.cloud] - 050 on SPF fail - no SEPPmail.Cloud now stops after processing
+
+
 ## 1.3.0-preview2
 
 __Enhancements__
