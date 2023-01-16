@@ -19,7 +19,8 @@
           "Priority"                                : 0,
           "SetAuditSeverity"                        : "DoNotAudit",
           "Mode"                                    : "Enforce",
-          "SenderAddressLocation"                   : "Header"
+          "SenderAddressLocation"                   : "Header",
+          "StopRuleProcessing"                      : 1
         }
     },
     "Option":
