@@ -1,5 +1,17 @@
 # Migration Guide from prior M365 Connectivity to Certificate-Based-Connectors with PS Module 1.3.0-preview[1-n] in the SEPPmail.cloud
 
+## I * M * P * O * R * T * A * N * T
+
+Before you use the 1.3.0-preview-version of the PowerShell Module, you MUST contact support@seppmail.de, so we can prepare your SEPPmail-Tenant to use the new functionality..
+
+Experienced users may change the settings on their own.
+
+1. In login.seppmail.cloud > Setup > General > Customers domain the button "fetch ID" has to be clicked. This fetches customers tenant ID and issues the certificate for CBC
+
+2. still in login.seppmail.cloud > Setup > General > Customers domain enable "set named transport" switch under general settings
+
+## General info
+
 With early Q1/2023 SEPPmail.cloud will change its connectivity to Exchange online to certificate-based-connectors (CBC). This will increase security and stability between Exchange Online and SEPPmail.cloud and avoid mail-loops in certain situations.
 
 !Important: Inline customers require all domains of same tenant to be inline domains handled by  SEPPmail.cloud.
