@@ -13,11 +13,6 @@ Write-Verbose 'Loading Module Files'
 . $ModulePath\Public\Rules.ps1
 . $ModulePath\Public\Connectors.ps1
 
-if ((Get-OrganizationConfig).IsDehydrated) {
-    Write-Verbose "Organisation is not enabled for customizations -- is 'Dehyrated'. Turning this on now"
-    Enable-OrganizationCustomization  #-confirm:$false
-}
-
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+ Welcome to the SEPPmail.cloud PowerShell setup module               +" -ForegroundColor Green -BackgroundColor DarkGray
@@ -66,6 +61,17 @@ if ($sc365notests -ne $true) {
     if (!(Test-SC365ConnectionStatus)) {
         Write-Warning "You are not connected to Exchange Online. Use Connect-ExchangeOnline to connect to your tenant"
     }
+
+    try {
+        if ((Get-OrganizationConfig).IsDehydrated) {
+            Write-Verbose "Organisation is not enabled for customizations -- is 'Dehyrated'. Turning this on now"
+            Enable-OrganizationCustomization  #-confirm:$false
+        }        
+    }
+    catch {
+        Write-Information "Cannot detect Tenant hydration - maybe disconnected"
+    }    
+
     Write-Verbose 'Test new version available'
     try {
         $onLineVersion = Find-Module -Name 'SEPPmail365cloud'|Select-Object -expandproperty Version
@@ -79,11 +85,13 @@ if ($sc365notests -ne $true) {
     }
 }
 
+$global:tenantAcceptedDomains = Get-AcceptedDomain -Erroraction silentlycontinue
+
 Write-Verbose 'Initialize argument completer scriptblocks'
 $paramDomSB = {
     # Read Accepted Domains for domain selection
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
-    (Get-AcceptedDomain -Erroraction silentlycontinue).DomainName | Where-Object {
+    $tenantAccetedDomains.Domain | Where-Object {
         $_ -like "$wordToComplete*"
             } | ForEach-Object {
                 "'$_'"

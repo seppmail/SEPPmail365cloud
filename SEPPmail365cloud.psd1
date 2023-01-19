@@ -53,9 +53,14 @@ PowerShellVersion = '7.2.0'
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
     @{
-        ModuleName = 'ExchangeOnlineManagement'
+           ModuleName = 'ExchangeOnlineManagement'
         ModuleVersion = '3.0.0'
-        GUID = 'B5ECED50-AFA4-455B-847A-D8FB64140A22'
+                 GUID = 'B5ECED50-AFA4-455B-847A-D8FB64140A22'
+     },
+     @{
+           ModuleName = 'DNSClient-PS'
+        ModuleVersion = '1.0.0'
+                 GUID = '698438cc-f80d-4b88-aa04-16e302c1f326'
     }
 )
 
@@ -87,8 +92,8 @@ FunctionsToExport = @(
        'Get-SC365TenantId'
        'Get-SC365MessageTrace'
    'Resolve-SC365DNSname'
-   'Resolve-SC365IP4Address'
-   'Resolve-SC365IP6Address'
+   'Resolve-SC365IPv4Address'
+   'Resolve-SC365IPv6Address'
        'Get-SC365Setup'
        'New-SC365Setup'
     'Remove-SC365Setup'
@@ -141,7 +146,7 @@ PrivateData = @{
         ReleaseNotes = 'See https://github.com/seppmail/SEPPmail365cloud/blob/main/CHANGELOG.md'
 
         # Prerelease string of this module
-        Prerelease = 'preview2'
+        Prerelease = 'preview3'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
