@@ -52,16 +52,17 @@ PowerShellVersion = '7.2.0'
 
 # Modules that must be imported into the global environment prior to importing this module
 RequiredModules = @(
-    @{
-           ModuleName = 'ExchangeOnlineManagement'
-        ModuleVersion = '3.0.0'
-                 GUID = 'B5ECED50-AFA4-455B-847A-D8FB64140A22'
-     },
-     @{
-           ModuleName = 'DNSClient-PS'
-        ModuleVersion = '1.0.0'
-                 GUID = '698438cc-f80d-4b88-aa04-16e302c1f326'
-    }
+    #@{
+    #       ModuleName = 'ExchangeOnlineManagement'
+    #    ModuleVersion = '3.0.0'
+    #             GUID = 'B5ECED50-AFA4-455B-847A-D8FB64140A22'
+    # }
+    # ,
+    #@{
+    #       ModuleName = 'DNSClient-PS'
+    #    ModuleVersion = '1.0.0'
+    #             GUID = '698438cc-f80d-4b88-aa04-16e302c1f326'
+    # }
 )
 
 # Assemblies that must be loaded prior to importing this module
@@ -152,7 +153,7 @@ PrivateData = @{
         # RequireLicenseAcceptance = $false
 
         # External dependent modules of this module
-        ExternalModuleDependencies = @('ExchangeOnlineManagement')
+        ExternalModuleDependencies = @('ExchangeOnlineManagement','DNSCLient-PS')
 
     } # End of PSData hashtable
 

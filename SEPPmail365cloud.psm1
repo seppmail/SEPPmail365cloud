@@ -21,11 +21,31 @@ Write-Host "+ Please read the documentation on GitHub if you are unfamiliar     
 Write-Host "+ with the module and its CmdLets before continuing !                 +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+ https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md    +" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+ Press <CTRL><Klick> to open the Link                                +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 
 if ($sc365notests -ne $true) {
+    # Check Module availability
+    if (!(Get-Module DNSClient-PS -ListAvailable)) {
+        try {
+            Install-Module DNSCLient-PS
+            Import-Module DNSClient-PS -Force
+        } 
+        catch {
+            Write-Error "Could not install requirem Module 'DNSClient'. Please install manually from the PowerShell Gallery"
+        }
+    }
+    if (!(Get-Module ExchangeOnlineManagement -ListAvailable|Where-Object Version -like '3.*')) {
+        try {
+            Install-Module ExchangeOnlineManagement
+            Import-Module ExchangeOnlineManagement
+        } 
+        catch {
+            Write-Error "Could not install requirem Module 'ExchangeOnlineManagement'. Please install manually from the PowerShell Gallery"
+        }
+    }
+    
     #Check Environment
     If ($psversiontable.PsVersion.ToString() -notlike '7.*') {
         Write-Host "+------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
@@ -69,7 +89,14 @@ if ($sc365notests -ne $true) {
         }        
     }
     catch {
-        Write-Information "Cannot detect Tenant hydration - maybe disconnected"
+        Write-Warning "Cannot detect Tenant hydration - maybe disconnected"
+    }    
+
+    try {
+        $global:tenantAcceptedDomains = Get-AcceptedDomain -Erroraction silentlycontinue
+    }
+    catch {
+        Write-Warning "Cannot detect accepted domains, maybe disconnected"
     }    
 
     Write-Verbose 'Test new version available'
@@ -85,7 +112,6 @@ if ($sc365notests -ne $true) {
     }
 }
 
-$global:tenantAcceptedDomains = Get-AcceptedDomain -Erroraction silentlycontinue
 
 Write-Verbose 'Initialize argument completer scriptblocks'
 $paramDomSB = {
