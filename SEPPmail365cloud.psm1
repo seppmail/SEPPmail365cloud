@@ -90,14 +90,7 @@ if ($sc365notests -ne $true) {
     }
     catch {
         Write-Warning "Cannot detect Tenant hydration - maybe disconnected"
-    }    
-
-    try {
-        $global:tenantAcceptedDomains = Get-AcceptedDomain -Erroraction silentlycontinue
-    }
-    catch {
-        Write-Warning "Cannot detect accepted domains, maybe disconnected"
-    }    
+    }     
 
     Write-Verbose 'Test new version available'
     try {

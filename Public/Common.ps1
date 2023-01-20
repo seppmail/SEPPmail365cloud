@@ -1,5 +1,98 @@
 ﻿<#
 .SYNOPSIS
+    A short one-line action-based description, e.g. 'Tests if a function is valid'
+.DESCRIPTION
+    Creates a PSObject with values:
+    routing = inline/parallel
+    region = ch/de/prv
+    seppmailclouddomain = 'abc.com','def.com'
+    seppmaildefaultdomain = 'abc.com'
+    cbcenabled = 'VALUE'
+.NOTES
+    Information or caveats about the function e.g. 'This function is not supported in Linux'
+.LINK
+    Specify a URI to a help page, this will show when Get-Help -Online is used.
+.EXAMPLE
+    Test-MyTestFunction -Verbose
+    Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
+#>
+function Get-SC365DeploymentInfo {
+    [CmdletBinding()]
+    param (
+        
+    )
+    
+    begin {
+        if (!(Test-SC365ConnectionStatus)){
+            throw [System.Exception] "You're not connected to Exchange Online - please connect to the designated tenant prior to using this CmdLet" }
+        else {
+            Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
+        }
+
+    }
+    
+    process {
+             # Detect routing mode based on DNS entries
+             $defaultAcceptedDomain = $tenantAcceptedDomains |Where-Object 'Default' -eq $true |select-Object -ExpandProperty DomainName
+             
+             [string]$relayHost = $defaultAcceptedDomain.Replace('.','-') + '.relay.seppmail.cloud'
+             [string]$mailHost = $defaultAcceptedDomain.Replace('.','-')  + '.mail.seppmail.cloud'
+             [string]$gateHost = $defaultAcceptedDomain.Replace('.','-')  + '.gate.seppmail.cloud'
+             
+             if (((Resolve-Dns -Query $GateHost -NameServer ns.seppmail.cloud).Answers) -and ((Resolve-Dns -Query $RelayHost -NameServer ns.seppmail.cloud).Answers)) {Write-Verbose "$Gatehost and $relayHost alive ==> InLine";$routing = 'inline'}
+             if (((Resolve-Dns -Query $GateHost -NameServer ns.seppmail.cloud).Answers) -and (!((Resolve-Dns -Query $RelayHost -NameServer ns.seppmail.cloud).Answers))) {Write-Verbose "$Gatehost alive,$relayHost missing ==> InLine-InBound only";$routing = 'inline';$inBoundOnly = $true}                
+             if ((Resolve-Dns -Query $MailHost -NameServer ns.seppmail.cloud).Answers) {Write-verbose "$mailHost alive ==> parallel"; $Routing = 'parallel'}
+             #DoubleCheck if MX Record is set correctly
+             $mxFull = get-mxrecordreport -Domain $defaultAcceptedDomain
+             $mx = $mxFull |Select-Object -ExpandProperty highestpriorityMailHost -Unique
+             if (($mx.Split($defaultAcceptedDomain.Replace('.','-'))) -eq '.gate.seppmail.cloud') {
+                Write-Host "MX = SEPPmail"
+             }
+             if (($mx.Split($defaultAcceptedDomain.Replace('.','-'))) -eq '.mail.protection.outlook.com') {
+                Write-Host "MX = Microsoft"
+             }
+
+             if ($routing -eq 'inline') {
+                 if ($mxFull[0].HighestPriorityMailHost -eq $gateHost) {
+                     Write-Host "MX record in M365 Config matches $gateHost" 
+                 }
+                 else {
+                     Write-Error "MX Record configured in M365 does not fit to SEPPmail GateHost in DNS - Check your provisioning Status in SEPPmail.cloud Portal"
+                 }
+             }
+             # Identify Region based on Cloud-IPAddresses
+             $region = $null
+
+             $ch = Get-SC365CloudConfig -region 'CH'
+             $de = Get-SC365CloudConfig -region 'DE'
+             $prv = Get-SC365CloudConfig -region 'PRV'
+             if ($routing -eq 'inline') {
+                 $GateIP = ((Resolve-Dns -Query $GateHost -NameServer ns.seppmail.cloud).Answers)|Select-Object -expand Address| Select-Object -expand IPAddresstoString
+                 if ($ch.GateIPs.Contains($gateIp)) { $region = 'CH'}
+                 if ($de.GateIPs.Contains($gateIp)) { $region = 'DE'}
+                 if ($prv.GateIPs.Contains($gateIp)) { $region = 'PRV'}
+             }
+             if ($routing -eq 'parallel') {
+                $MailIP = ((Resolve-Dns -Query $MailHost -NameServer ns.seppmail.cloud).Answers)|Select-Object -expand Address| Select-Object -expand IPAddresstoString
+                if ($ch.MailIPs.Contains($MailIp)) { $region = 'CH'}
+                if ($de.MailIPs.Contains($MailIp)) { $region = 'DE'}
+                if ($prv.MailIPs.Contains($MailIp)) { $region = 'PRV'}
+             }
+    }
+    
+    end {
+        $DeplyoymentInfo = New-Object -TypeName PSObject
+        Add-Member -InputObject $DeplyoymentInfo NoteProperty Region -Value $region
+        Add-Member -InputObject $DeplyoymentInfo NoteProperty Routing -Value $routing
+        Add-Member -InputObject $DeplyoymentInfo NoteProperty DefaultDomain -Value $defaultAcceptedDomain
+
+        return $DeplyoymentInfo
+    }
+}
+
+
+<#
+.SYNOPSIS
     Generates a report of the current Status of the Exchange Online environment
 .DESCRIPTION
     The report will write all needed information of Exchange Online into an HTML file. This is useful for documentation and decisions for the integration. It also makes sense as some sort of snapshot documentation before and after an integration into seppmail.cloud
@@ -341,7 +434,7 @@ function New-SC365Setup {
     # Specifies a path to one or more locations.
     param(
         [Parameter(
-            Mandatory=$true,
+            Mandatory=$false,
             Position=0,
             HelpMessage="All Domains included / booked in the SEPPmail.cloud")]
             [Alias("domain")]
@@ -349,7 +442,7 @@ function New-SC365Setup {
         [String[]]$SEPPmailCloudDomain,
 
         [Parameter(
-            Mandatory=$true,
+            Mandatory=$false,
             Position=1,
             HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)")]
             [ValidateNotNullOrEmpty()]
@@ -357,16 +450,19 @@ function New-SC365Setup {
         [String]$routing,
     
         [Parameter(
-            Mandatory=$true,
-            Position=0,
+            Mandatory=$false,
+            Position=2,
             HelpMessage="Physical location of your data")]
             [ValidateSet('prv','de','ch')]
         [String]$region
         )
 
     Begin {
-        if ($routing -eq 'p') {$routing = 'parallel'}
-        if ($routing -eq 'i') {$routing = 'inline'}
+
+        $deploymentInfo = Get-SC365DeploymentInfo
+
+        if ($deploymentInfo.routing -eq 'p') {$routing = 'parallel'}
+        if ($deploymentInfo.routing -eq 'i') {$routing = 'inline'}
 
         Write-Verbose "Confirming if $SEPPmailCloudDomain is part or the tenant"
         $TenantDefaultDomain = $null
@@ -526,6 +622,17 @@ function Test-SC365ConnectionStatus
         if ($ExoConnInfo) {
             Write-Verbose "Connected to Exchange Online Tenant $($ExoConnInfo.TenantID)"
 
+            if (!($global:tenantAcceptedDomains)) {
+                try {
+                    $global:tenantAcceptedDomains = Get-AcceptedDomain -Erroraction silentlycontinue
+                }
+                catch {
+                    Write-Error "Cannot detect accepted domains, maybe disconnected. Connect to Exchange Online and load the module again!"
+                    break
+                }       
+            }
+    
+
             [datetime]$TokenExpiryTimeLocal = $ExoConnInfo.TokenExpiryTimeUTC.Datetime.ToLocalTime()
             $delta = New-TimeSpan -Start (Get-Date) -End $TokenExpiryTimeLocal
             $ticks = $delta.Ticks
@@ -595,11 +702,11 @@ function Resolve-SC365IPv4Address {
         $fqdn
     )
     try {
-        $ret = [System.Net.Dns]::GetHostAddresses($fqdn) |where-object AddressFamily -eq 'Internetwork'|select-object -expandproperty ipaddresstostring
-        return = $ret    
+        $ret = [System.Net.Dns]::GetHostAddresses($fqdn) |where-object AddressFamily -eq 'Internetwork'|select-object -expandproperty ipaddresstostring    
     } catch {
-        '--- IP4 Address could not be resolved ---'
+        $ret = '--- IP4 Address could not be resolved ---'
     }
+    return $ret
 }
 
 function Resolve-SC365IPv6Address {
@@ -611,11 +718,11 @@ function Resolve-SC365IPv6Address {
         $fqdn
     )
     try {
-        $ret = [System.Net.Dns]::GetHostAddresses($fqdn) |where-object AddressFamily -eq 'InterNetworkV6'|select-object -expandproperty ipaddresstostring
-        return = $ret    
+        $ret = [System.Net.Dns]::GetHostAddresses($fqdn) |where-object AddressFamily -eq 'InterNetworkV6'|select-object -expandproperty ipaddresstostring  
     } catch {
-        '--- IP6 Address could not be resolved ---'
+        $ret = '--- IP6 Address could not be resolved ---'
     }
+    return $ret
 }
 
 function Resolve-SC365DNSName {
@@ -662,11 +769,10 @@ function Confirm-SC365TenantDefaultDomain {
     )
 
     begin {
-        $TenantDomains = Get-AcceptedDomain
-        $TenantDefaultDomain = $TenantDomains.Where({$_.Default -eq $true}).DomainName     
+        $TenantDefaultDomain = $TenantAcceptedDomains.Where({$_.Default -eq $true}).DomainName     
     }
     process {
-        If (!($TenantDomains.DomainName -contains $ValidationDomain)) {
+        If (!($TenantAcceptedDomains.DomainName -contains $ValidationDomain)) {
             Write-Error "$ValidationDomain is not member of the connected tenant. Retry using only tenant-domains (Use CmdLet: Get-AcceptedDomain)"
             break
         } else {
@@ -686,10 +792,10 @@ function Get-SC365MessageTrace {
         HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
     )]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName=$true)]
         [String]$MessageId,
         
-        [Parameter(Mandatory = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName=$true)]
         [Alias('RecipientAddress')]
         [String]$Recipient
     )
@@ -707,8 +813,10 @@ function Get-SC365MessageTrace {
             Write-Error "Could not detect SEPPmail-Cloud Connectors, aborting"
             break
         }
-        Write-Verbose "Retrieving Tenant-Domains"
-        $TenantDomains = (Get-AcceptedDomain).DomainName
+
+    }
+    
+    process {
 
         Write-Verbose "Retrieving initial Message-Trace id MessageID $MessageId for recipient $Recipient"
         Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 0 -CurrentOperation "Start"
@@ -716,7 +824,7 @@ function Get-SC365MessageTrace {
         $PlainMessageID = $MessageId.Trim('<','>')
         Write-Verbose "Formatting Parameterinput Messageid:$MessageId - adding < and > at beginning and end to filter property"
         if (!($MessageId.StartsWith('<'))) {$MessageId = "<" + $MessageId}
-        if (!($MessageId.EndsWith('<'))) {$MessageId = $MessageId + ">"}
+        if (!($MessageId.EndsWith('>'))) {$MessageId = $MessageId + ">"}
         Write-Verbose "MessageID after formatting is now $MessageId"
 
         Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 40 -CurrentOperation "Messages loaded"
@@ -736,7 +844,7 @@ function Get-SC365MessageTrace {
         }
         try {
             Write-verbose "Test Maildirection, based on the fact that the $Recipient is part of TenantDomains"
-            If ($TenantDomains.Contains(($Recipient -Split '@')[-1])) {
+            If ($TenantAcceptedDomains.Contains(($Recipient -Split '@')[-1])) {
                 $MailDirection = 'InBound'
             }
             else {
@@ -749,7 +857,7 @@ function Get-SC365MessageTrace {
             break
         }
 
-        Write-Verbose "Crafting basic MessateTraceInfo"
+        Write-Verbose "Crafting basic MessageTraceInfo"
 
         $OutPutObject = [PSCustomObject][ordered]@{
             Subject                = if ($MessageTrace.count -eq 1) {$MessageTrace.Subject} else {$MessageTrace[0].Subject}
@@ -763,14 +871,14 @@ function Get-SC365MessageTrace {
 
         if ($MessageTrace.count -eq 1) {
             Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value $MessageTrace.FromIP
-            Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromDNS -Value (Resolve-SC365DNSname -IPAddress $MessageTrace.FromIP)
+            Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromDNS -Value (Resolve-DNS -query $MessageTrace.FromIP).Answers|Select-Object -ExpandProperty Address|Select-Object -ExpandProperty IPAddressToString
             if ($messagetrace.ToIp) {Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value $MessageTrace.ToIP}
-            if ($messagetrace.ToIp) {Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToDNS -Value (Resolve-SC365DNSname -IPAddress $MessageTrace.ToIP)}
+            if ($messagetrace.ToIp) {Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToDNS -Value (((Resolve-DNS -Query $MessageTrace.ToIP -QueryType PTR).Answers).PtrDomainName).Value}
 
         } else {
             if ($Messagetrace[0].FromIP) {
                 Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value $MessageTrace[0].FromIP
-                Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromDNS -Value (Resolve-SC365DNSname -IPAddress $MessageTrace[0].FromIP)
+                Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromDNS -Value ((((Resolve-DNS -Query $MessageTrace[0].FromIP -QueryType PTR).Answers).PtrDomainName).Value)
             }
             else {
                 Add-Member -InputObject $OutputObject -membertype NoteProperty -Name ExternalFromIP -Value '---empty---'
@@ -778,16 +886,14 @@ function Get-SC365MessageTrace {
             }
             if ($MessageTrace[0].ToIP) {
                 Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value $MessageTrace[0].ToIP
-                Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToDNS -Value (Resolve-SC365DNSname -IPAddress $MessageTrace[0].ToIP)
+                Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToDNS -Value ((((Resolve-DNS -Query $MessageTrace[0].ToIP -QueryType PTR).Answers).PtrDomainName).Value)
             } else {
                 Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name ExternalToIP -Value '---empty---'
             }
         }
         Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name 'SplitLine' -Value "-------------------- MessageTrace DETAIL Info Starts Here --------------------"
 
-    }
-    
-    process {
+
         switch ($maildirection)
         {
             {($_ -eq 'InBound') -and ($ibc.identity -eq "[SEPPmail.cloud] Inbound-Parallel")} 
@@ -812,7 +918,7 @@ function Get-SC365MessageTrace {
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExternalReceivedTime -Value $messageTrace[1].Received
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExternalReceivedSize -Value $messageTrace[1].Size
                 $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToIP -Value $messageTrace[1].ToIP
-                $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToDNS -Value (Resolve-SC365DNSName -IPAddress $messageTrace[1].ToIP)
+                $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToDNS -Value ((((Resolve-DNS -Query $MessageTrace[1].ToIP -QueryType PTR).Answers).PtrDomainName).Value)
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExtMessageTraceId -Value $MessageTrace[1].MessageTraceId.Guid
                 $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPMessageTraceId -Value $MessageTrace[0].MessageTraceId.Guid
                 $Outputobject | Add-Member -MemberType NoteProperty -Name 'FullTransportTime(s)' -Value (New-TimeSpan -Start $MTDExtReceived.Date -End $MTDSEPPDelivered.Date).Seconds
@@ -826,7 +932,7 @@ function Get-SC365MessageTrace {
             {
                 $MessageTraceDetail = Get-MessagetraceDetail -MessageTraceId $MessageTrace.MessageTraceId -Recipient $Recipient
                 $MTDReceived = $MessageTraceDetail|where-object {($_.Event -eq 'Received') -or ($_.Event -eq 'Empfangen')} 
-                $MTDDelivered = $MessageTraceDetail|where-object {($_.Event -eq 'Delivered') -or ($_.Event -eq 'Zustellen')}
+                #$MTDDelivered = $MessageTraceDetail|where-object {($_.Event -eq 'Delivered') -or ($_.Event -eq 'Zustellen')}
                 Write-Verbose "Crafting Inbound Connector Name"
                 try {
                     $ibcName = (($MTDReceived.Data).Split(';')|select-string 'S:InboundConnectorData=Name').ToString().Split('=')[-1]
@@ -867,10 +973,10 @@ function Get-SC365MessageTrace {
                     $obcName = "--- E-Mail did not go via a SEPPmail Connector ---"
                 }
                 $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToIP -Value $messageTrace[1].ToIP
-                $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToDNS -Value (Resolve-SC365DNSname -IPAddress $messageTrace[1].ToIP)
+                $Outputobject | Add-Member -MemberType NoteProperty -Name FromExternalSendToDNS -Value ((((Resolve-DNS -Query $MessageTrace[1].ToIP -QueryType PTR).Answers).PtrDomainName).Value)
                 $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromIP -Value $messageTrace[1].FromIP
                 try { 
-                    $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromDNS -Value (Resolve-SC365DNSname -IPAddress $messageTrace[1].FromIP)
+                    $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromDNS -Value ((((Resolve-DNS -Query $MessageTrace[1].FromIP -QueryType PTR).Answers).PtrDomainName).Value)
                 } 
                 catch {
                     Write-Information "Cannot Resolve $($messageTrace[1].FromIP)"
@@ -893,7 +999,7 @@ function Get-SC365MessageTrace {
                 # 1 = Empfangen/Receive
                 $MTDReceive = $MessageTraceDetail|Where-Object {(($_.Event -eq 'Empfangen') -or ($_.Event -eq 'Receive'))}
                 # 2 = Übermitteln/Submit
-                $MTDSubmit = $MessageTraceDetail|Where-Object {(($_.Event -eq 'Übermitteln') -or ($_.Event -eq 'Submit'))}
+                # $MTDSubmit = $MessageTraceDetail|Where-Object {(($_.Event -eq 'Übermitteln') -or ($_.Event -eq 'Submit'))}
                 # 3 = Send external/Extern senden
                 $MTDExtSend = $MessageTraceDetail|Where-Object {(($_.Event -eq 'Send external') -or ($_.Event -eq 'Extern senden'))}
                 Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 80 -CurrentOperation "Preparing Output"

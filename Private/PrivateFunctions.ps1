@@ -109,17 +109,13 @@ function Get-SC365CloudConfig
     Param
     (
         [Parameter(Mandatory=$true)]
-        [SC365.GeoRegion] $Region
+        [String]$Region
     )
 
     Write-Verbose "Loading inbound connector settings for region $Region"
 
     $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -Raw)
-
-    $ret = [SC365.PoliciesAntiSpamSettings]::new($json.Name, $Region)
-
-    Set-SC365PropertiesFromConfigJson $ret -Json $json -Option $Option -Region $Region
-
+    $ret = $json.GeoRegion.$region
     return $ret
 }
 # $number.ToString("N2")
