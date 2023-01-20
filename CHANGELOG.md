@@ -7,7 +7,7 @@ __Enhancements__
 General
 
 - Rule [SEPPmail.cloud] - 050 on SPF fail - no SEPPmail.Cloud now stops after processing
-
+- New-Module dependency DNSCLient-PS. Needed for multi-platform DNS-queries 
 
 ## 1.3.0-preview2
 
