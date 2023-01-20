@@ -7,6 +7,8 @@ $InteractiveSession = [System.Environment]::UserInteractive
 Write-Verbose 'Request terminating errors by default'
 $PSDefaultParameterValues['*:ErrorAction'] = [System.Management.Automation.ActionPreference]::Stop
 
+$global:tenantAcceptedDomains = $null
+
 Write-Verbose 'Loading Module Files'
 . $ModulePath\Private\PrivateFunctions.ps1
 . $ModulePath\Public\Common.ps1
