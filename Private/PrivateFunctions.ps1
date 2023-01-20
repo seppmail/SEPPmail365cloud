@@ -118,7 +118,6 @@ function Get-SC365CloudConfig
     $ret = $json.GeoRegion.$region
     return $ret
 }
-# $number.ToString("N2")
 function Convertto-SC365Numberformat 
 {
     param (
@@ -132,6 +131,32 @@ function Convertto-SC365Numberformat
     }
     return $ConvertedNumber
 }
+
+Function Get-SC365StringHash {
+    [cmdletbinding()]
+    [OutputType([String])]
+    param(
+      [parameter(ValueFromPipeline, Mandatory = $true, Position = 0)]
+      [String]$String,
+      
+      [parameter(ValueFromPipelineByPropertyName, Mandatory = $false, Position = 1)]
+      [ValidateSet("MD5", "RIPEMD160", "SHA1", "SHA256", "SHA384", "SHA512")]
+      [String]$HashName = 'SHA1'
+    )
+    begin {
+  
+    }
+    Process {
+      $StringBuilder = New-Object System.Text.StringBuilder
+      [System.Security.Cryptography.HashAlgorithm]::Create($HashName).ComputeHash([System.Text.Encoding]::UTF8.GetBytes($String))| foreach-object {
+      [Void]$StringBuilder.Append($_.ToString("x2"))
+      }
+      $output = $StringBuilder.ToString()
+    }
+    end {
+      return $output
+    }
+  }
 
 # SIG # Begin signature block
 # MIIL/AYJKoZIhvcNAQcCoIIL7TCCC+kCAQExDzANBglghkgBZQMEAgEFADB5Bgor
