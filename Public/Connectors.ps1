@@ -109,13 +109,13 @@ function New-SC365Connectors
     param
     (
         [Parameter(
-            Mandatory = $true,
+            Mandatory = $false,
             ParameterSetname = 'Bothdirections',
             Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
             Position = 0
             )]
         [Parameter(
-            Mandatory = $true,
+            Mandatory = $false,
             ParameterSetname = 'InBoundOnly',
             Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
             Position = 0
@@ -221,16 +221,21 @@ function New-SC365Connectors
         if ($routing -eq 'p') {$routing = 'parallel'}
 		if ($routing -eq 'i') {$routing = 'inline'}
 
-		if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $SEPPmailCloudDomain) -eq $true) {
-			Write-verbose "Domain is part of the tenant and the Default Domain"
-		} else {
-			if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $SEPPmailCloudDomain) -eq $false) {
-				Write-verbose "Domain is part of the tenant"
-			} else {
-				Write-Error "Domain is NOT Part of the tenant"
-				break
-			}
-		}
+        if ($SEPPmailCloudDomain) {
+            if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $SEPPmailCloudDomain) -eq $true) {
+                Write-verbose "Domain is part of the tenant and the Default Domain"
+            } else {
+                if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $SEPPmailCloudDomain) -eq $false) {
+                    Write-verbose "Domain is part of the tenant"
+                } else {
+                    Write-Error "Domain is NOT Part of the tenant"
+                    break
+                }
+            }    
+        } else {
+            $SEPPmailCloudDomain = $tenantAcceptedDomains|Where-Object {$_.Default -eq $true}
+        }
+
 
         #region Preparing common setup
         Write-Debug "Preparing values for Cloud configuration"
@@ -245,13 +250,17 @@ function New-SC365Connectors
         Write-Verbose "Outbound SmartHost is: $OutboundSmartHost"
 
         Write-Debug "Prepare GeoRegion configuration for region: $region"
-        #$CloudConfig = Get-SC365CloudConfig -Region $region
         $regionConfig = (Get-SC365CloudConfig -Region $region)
         $SEPPmailIPv4Range = $regionConfig.IPv4AllowList
-        $TenantID = Get-SC365Tenantid -Maildomain $SEPPmailCloudDomain
+        
+        if ($SEPPmailCLoudDomain) {
+            $TenantID = Get-SC365Tenantid -Maildomain $SEPPmailCloudDomain
+        } else {
+            $TenantID = Get-SC365Tenantid -maildomain ((Get-OrganizationConfig).Identity)
+        }
+        
         $TlsCertificateName = $regionConfig.TlsCertificate
         Write-Verbose "TLS Certificate is $TlsCertificateName"
-
 
         $TenantIdCertificateName = $tenantId + ($regionConfig.TlsCertificate).Replace('*','')
         Write-verbose "Tenant certificate Name is $TenantIdCertificateName"
