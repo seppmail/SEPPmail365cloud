@@ -79,27 +79,28 @@ function Get-SC365DeploymentInfo {
                    $mxMatch = $false
                }
             }
-             # Identify Region based on Cloud-IPAddresses
+             # Identify region based on Cloud-IPAddresses
              $region = $null
 
-             $ch = Get-SC365CloudConfig -region 'CH'
-             $de = Get-SC365CloudConfig -region 'DE'
-             $prv = Get-SC365CloudConfig -region 'PRV'
+             $ch = Get-SC365CloudConfig -region 'ch'
+             $de = Get-SC365CloudConfig -region 'de'
+             $prv = Get-SC365CloudConfig -region 'prv'
              if ($routing -eq 'inline') {
-                 [String[]]$GateIP = ((Resolve-Dns -Query $GateHost ).Answers)|Select-Object -expand Address| Select-Object -expand IPAddresstoString
-                 Foreach ($IP in $GateIP) {if ($ch.GateIPs.Contains($Ip)) {$region = 'CH';break}}
-                 Foreach ($IP in $GateIP) {if ($de.GateIPs.Contains($gateIp)) {$region = 'DE';break}}
-                 Foreach ($IP in $GateIP) {if ($prv.GateIPs.Contains($gateIp)) {$region = 'PRV';break}}
+                 [String[]]$GateIP = ((Resolve-Dns -Query $GateHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddresstoString
+                 Foreach ($IP in $GateIP) {if ($ch.GateIPs.Contains($Ip)) {$region = 'ch';break}}
+                 Foreach ($IP in $GateIP) {if ($de.GateIPs.Contains($Ip)) {$region = 'de';break}}
+                 Foreach ($IP in $GateIP) {if ($prv.GateIPs.Contains($Ip)) {$region = 'prv';break}}
              }
              if ($routing -eq 'parallel') {
-                $MailIP = ((Resolve-Dns -Query $MailHost ).Answers)|Select-Object -expand Address| Select-Object -expand IPAddresstoString
-                Foreach ($ip in $mailIp) {if ($ch.MailIPs.Contains($MailIp)) { $region = 'CH';break}}
-                Foreach ($ip in $mailIp) {if ($de.MailIPs.Contains($MailIp)) { $region = 'DE';break}}
-                Foreach ($ip in $mailIp) {if ($prv.MailIPs.Contains($MailIp)) { $region = 'PRV';break}}
+                $MailIP = ((Resolve-Dns -Query $MailHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddresstoString
+                Foreach ($ip in $mailIp) {if ($ch.MailIPs.Contains($Ip)) { $region = 'ch';break}}
+                Foreach ($ip in $mailIp) {if ($de.MailIPs.Contains($Ip)) { $region = 'de';break}}
+                Foreach ($ip in $mailIp) {if ($prv.MailIPs.Contains($IP)) { $region = 'prv';break}}
              }
 
              # Check CBC Availability
-             $TenantIDHash = Get-SC365StringHash -String (Get-SC365TenantID -maildomain $seppmailclouddomain -OutVariable "TenantID")
+             [String]$TenantID = Get-SC365TenantID -maildomain $seppmailclouddomain -OutVariable "TenantID"
+             $TenantIDHash = Get-SC365StringHash -String $TenantID
              [string]$hashedDomain =  $TenantIDHash + '.cbc.seppmail.cloud'
 
              if ((((resolve-dns -query $hashedDomain -QueryType TXT).Answers).Text) -eq 'CBC') {
@@ -116,14 +117,14 @@ function Get-SC365DeploymentInfo {
         Add-Member -InputObject $DeplyoymentInfo NoteProperty Region -Value $region
         Add-Member -InputObject $DeplyoymentInfo NoteProperty Routing -Value $routing
         if ($inBoundOnly) {Add-Member -InputObject $DeplyoymentInfo NoteProperty InBoundOnly -Value $inBoundOnly}
-        Add-Member -InputObject $DeplyoymentInfo NoteProperty DefaultAcceptedDomain -Value $SEPPmailCloudDomain
-        Add-Member -InputObject $DeplyoymentInfo NoteProperty TenantID -Value $($TenantId)
+        Add-Member -InputObject $DeplyoymentInfo NoteProperty SEPPmailCloudDomain -Value $SEPPmailCloudDomain
         Add-Member -InputObject $DeplyoymentInfo NoteProperty CBCDeployed -Value $CBCDeployed
+        Add-Member -InputObject $DeplyoymentInfo NoteProperty CBCConnectorHost -Value ($tenantId + ((Get-Variable $region).Value.TlsCertificate).Replace('*',''))
+        if ($CBCDeployed -eq $true) {Add-Member -InputObject $DeplyoymentInfo NoteProperty CBCDnsEntry -Value ($TenantIDHash + '.cbc.seppmail.cloud')}
         if ($routing -eq 'inline') {Add-Member -InputObject $DeplyoymentInfo NoteProperty InlineMXMatch -Value $MxMatch}
         if (($routing -eq 'inline') -and (!($inBoundOnly))) {Add-Member -InputObject $DeplyoymentInfo NoteProperty RelayHost -Value $relayHost}
         if ($routing -eq 'inline') {Add-Member -InputObject $DeplyoymentInfo NoteProperty GateHost -Value $gateHost}
         if ($routing -eq 'parallel') {Add-Member -InputObject $DeplyoymentInfo NoteProperty MailHost -Value $MailHost}
-        if ($CBCDeployed -eq $true) {Add-Member -InputObject $DeplyoymentInfo NoteProperty CBCDnsEntry -Value ($TenantIDHash + '.cbc.seppmail.cloud')}
 
         return $DeplyoymentInfo
     }
@@ -418,11 +419,11 @@ function Remove-SC365Setup {
         [Parameter(
             Mandatory=$true,
             Position=1,
-            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)")]
+            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)",
+            ValueFromPipelineByPropertyName=$true)]
             [ValidateNotNullOrEmpty()]
             [ValidateSet('parallel','inline','p','i')]
         [String]$routing
-
     )
 
     Begin {
@@ -475,7 +476,8 @@ function New-SC365Setup {
         [Parameter(
             Mandatory=$false,
             Position=0,
-            HelpMessage="All Domains included / booked in the SEPPmail.cloud")]
+            HelpMessage="All Domains included / booked in the SEPPmail.cloud",
+            ValueFromPipelineByPropertyName=$true)]
             [Alias("domain")]
             [ValidateNotNullOrEmpty()]
         [String[]]$SEPPmailCloudDomain,
@@ -483,7 +485,8 @@ function New-SC365Setup {
         [Parameter(
             Mandatory=$false,
             Position=1,
-            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)")]
+            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)",
+            ValueFromPipelineByPropertyName=$true)]
             [ValidateNotNullOrEmpty()]
             [ValidateSet('parallel','inline','p','i')]
         [String]$routing,
@@ -491,7 +494,8 @@ function New-SC365Setup {
         [Parameter(
             Mandatory=$false,
             Position=2,
-            HelpMessage="Physical location of your data")]
+            HelpMessage="Physical location of your data",
+            ValueFromPipelineByPropertyName=$true)]
             [ValidateSet('prv','de','ch')]
         [String]$region
         )
@@ -549,7 +553,8 @@ function Get-SC365Setup {
         [Parameter(
             Mandatory=$true,
             Position=1,
-            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)")]
+            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)",
+            ValueFromPipelineByPropertyName=$true)]
             [ValidateNotNullOrEmpty()]
             [ValidateSet('parallel','inline','p','i')]
         [String]$routing
