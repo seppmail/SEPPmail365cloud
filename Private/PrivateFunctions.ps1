@@ -114,8 +114,7 @@ function Get-SC365CloudConfig
 
     Write-Verbose "Loading inbound connector settings for region $Region"
 
-    $json = ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -Raw)
-    $ret = $json.GeoRegion.$region
+    $ret = (ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -Raw)).GeoRegion.($region.ToLower())
     return $ret
 }
 function Convertto-SC365Numberformat 

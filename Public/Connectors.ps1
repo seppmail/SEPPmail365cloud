@@ -245,8 +245,8 @@ function New-SC365Connectors
         Write-Verbose "Outbound SmartHost is: $OutboundSmartHost"
 
         Write-Debug "Prepare GeoRegion configuration for region: $region"
-        $CloudConfig = Get-Content "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -raw|Convertfrom-Json -AsHashtable
-        $regionConfig = $cloudConfig.GeoRegion.($region.Tolower())
+        #$CloudConfig = Get-SC365CloudConfig -Region $region
+        $regionConfig = (Get-SC365CloudConfig -Region $region)
         $SEPPmailIPv4Range = $regionConfig.IPv4AllowList
         $TenantID = Get-SC365Tenantid -Maildomain $SEPPmailCloudDomain
         $TlsCertificateName = $regionConfig.TlsCertificate
@@ -493,7 +493,7 @@ function New-SC365Connectors
                 
                 #region EFSkipIP in inbound connector
                 if ($InboundEFSkipIPs){
-                    [String[]]$EfSkipIPArray = $cloudConfig.GeoRegion.($region.Tolower()).IPv4AllowList + $cloudConfig.GeoRegion.($region.Tolower()).IPv6AllowList
+                    [String[]]$EfSkipIPArray = $regionConfig.IPv4AllowList + $regionConfig.IPv6AllowList
                     $param.EFSkipIPs = $EfSkipIPArray
                 } else {
                     Write-verbose "Inbound Connector $param.Name will be build WITHOUT IP-addresses in EFSkipIPs."
@@ -506,8 +506,6 @@ function New-SC365Connectors
                 {
 
                     $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-                    #[void](New-InboundConnector @param)
-                    # @{Name = 'Region'; Expression = {($_.TlsSenderCertificateName.Split('.')[1])}}
                     New-InboundConnector @param |Select-Object Identity,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsSenderCertificateName.Split('.')[1])}}
 
                     if(!$?) {
