@@ -155,7 +155,24 @@ Function Get-SC365StringHash {
     end {
       return $output
     }
-  }
+}
+
+Function Remove-SC365OnMicrosoftDomain {
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(Mandatory=$true)]
+        [ValidateNotNullOrEmpty()]
+        [System.Collections.ArrayList]$DomainList
+    )
+    [System.Collections.ArrayList]$NewDomainList= @()
+    Foreach ($domain in $DomainList) {
+        if ($domain -Notlike '*.onmicrosoft.com') {
+                [void]$NewDomainList.Add($Domain)     
+        }
+    }
+    return $NewDomainList    
+}
 
 # SIG # Begin signature block
 # MIIL/AYJKoZIhvcNAQcCoIIL7TCCC+kCAQExDzANBglghkgBZQMEAgEFADB5Bgor

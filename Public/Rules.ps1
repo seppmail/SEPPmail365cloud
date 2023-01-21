@@ -120,7 +120,6 @@ function New-SC365Rules
 			Mandatory = $false,
 			HelpMessage = 'Add rules if you provisioned internal e-mail signature in the SEPPmail.cloud Service'
 		)]
-		
 		[switch]$Disabled
 	)
 
@@ -148,6 +147,14 @@ function New-SC365Rules
 			}
 		}
  
+		# Filter onmicrosoft domains
+		try {
+			$FilteredCloudDomain = Remove-SC365OnMicrosoftDomain -DomainList $SEPPmailCloudDomain
+		} catch {
+			Write-Warning "Could not remove onMicrosoft.com domains"
+			$FilteredCloudDomain = $SEPPmailCloudDomain
+		}
+
 		$outboundConnectors = Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
 		if(!($outboundConnectors))
 		{
@@ -226,8 +233,8 @@ function New-SC365Rules
 									New-TransportRule @setting #|Out-Null
 								}
 								"[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail" {
-									Write-Verbose "Including all managed domains $SEPPmailCloudDomain"
-									$Setting.RecipientDomainIs = $SEPPmailCloudDomain
+									Write-Verbose "Including all managed domains $FilteredCloudDomain"
+									$Setting.RecipientDomainIs = $FilteredCloudDomain
 									if ($SCLInboundValue -ne 5) {
 										Write-Verbose "Setting Value $SCLInboundValue to Inbound flowing to SEPPmail.cloud"
 									$Setting.ExceptIfSCLOver = $SCLInboundValue
@@ -235,8 +242,8 @@ function New-SC365Rules
 									New-TransportRule @setting #|Out-Null
 								}
 								"[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail" {
-									Write-Verbose "Including only Outbound E-Mails from domains $SEPPmailCloudDomain"
-									$Setting.SenderDomainIs = $SEPPmailCloudDomain
+									Write-Verbose "Including only Outbound E-Mails from domains $FilteredCloudDomain"
+									$Setting.SenderDomainIs = $FilteredCloudDomain
 									New-TransportRule @setting #|Out-Null
 								}
 								Default {
