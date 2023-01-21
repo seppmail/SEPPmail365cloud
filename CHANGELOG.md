@@ -4,10 +4,17 @@
 
 __Enhancements__
 
-General
+## General
 
 - Rule [SEPPmail.cloud] - 050 on SPF fail - no SEPPmail.Cloud now stops after processing
-- New-Module dependency DNSCLient-PS. Needed for multi-platform DNS-queries 
+- New-Module dependency DNSCLient-PS. Needed for multi-platform DNS-queries
+
+## Enhancements
+
+- New CmdLet Get-SC365DeploymentStatus checks if deployment is ready and correct on SEPPmail side
+- New/Get/Remove-SC365Setup now also work without parameters (leverage GET-SC365DeploymentStatus data)
+- *.onmicrosoft.com Domains are automatically filtered out if selected (as we do not want to route this traffic through SEPPmail infrastructure
+- )
 
 ## 1.3.0-preview2
 
