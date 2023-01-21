@@ -1,20 +1,42 @@
 ﻿<#
 .SYNOPSIS
-    Detects the SEPpmail.CLoud Deploymemnt situation, based in M365 TenantInfo
+    Detects the SEPPmail.Cloud Deploymemnt status, based in M365 Tenant information
 .DESCRIPTION
-    Creates a PSObject with values:
-    routing = inline/parallel
-    region = ch/de/prv
-    seppmailclouddomain = 'abc.com','def.com'
-    seppmaildefaultdomain = 'abc.com'
-    cbcenabled = 'VALUE'
+    Checks Deplyoment Status of the SEPPmail.Cloud based on M365 Tenantinformation.
+    
+    - Queries routingmode based on available MX records in the SEPPmail.cloud
+    - Queries region based on IP adresses and mailhosts
+    - Tests if MX record is set correctly in Inline Mode
+    - Checks if the SEPPmail.cloud is prepared for Certificate-based-Connectors
+    
+    Creates a PSObject with the following values:
+    
+    Routing = inline/parallel                           # Routing Mode
+    Region = ch/de/prv                                  # Cloud Region (Datacenter location)
+    SEPPmailCloudDomain = 'contoso.de','contoso.ch'     # Maildomains which will be routet via SEPPmail. Is basis for naming the mailrouting hosts (gate/relay/mail) 
+    CBCenabled = $true/$false                           # Certificate Based Connectors setup available
+    CBCConnectorHost = '<tenantid>.<rg>.seppmail.cloud' # Hostname of TLS host for CBC
+    InlineMXMatch = $true/$false                        # (Inline Mod only) MX record points to the correct (SEPPmail) host
+    RelayHost = domain-tls.relay.seppmail.cloud         # Name of relay host
+    GateHost = domain-tls.gate.seppmail.cloud           # Name of gate host
+    MailHost = domain-tls.mail.seppmail.cloud           # Name of mail host
+
 .NOTES
-    Information or caveats about the function e.g. 'This function is not supported in Linux'
+    Emits parameters for New-SC365Setup
 .LINK
-    Specify a URI to a help page, this will show when Get-Help -Online is used.
+    https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md
 .EXAMPLE
-    Test-MyTestFunction -Verbose
-    Explanation of the function or its result. You can include multiple examples with additional .EXAMPLE lines
+    Get-SC365DeploymentInfo
+
+    Region              : ch
+    Routing             : inline
+    SEPPmailCloudDomain : contoso.com
+    CBCDeployed         : True
+    CBCConnectorHost    : 271dd771-832d-4913-80d7-9c21616accd4.ch.seppmail.cloud
+    CBCDnsEntry         : c60abc9d247a2bf21cbc3344eef199eb738876b2.cbc.seppmail.cloud
+    InlineMXMatch       : True
+    RelayHost           : contoso-com.relay.seppmail.cloud
+    GateHost            : contoso-com.gate.seppmail.cloud
 #>
 function Get-SC365DeploymentInfo {
     [CmdletBinding()]
@@ -23,7 +45,7 @@ function Get-SC365DeploymentInfo {
             Mandatory   = $false,
             HelpMessage = "Domain name you selected for Tenant-onboarding"
          )]
-         $SEPPmailCloudDomain
+         [string]$SEPPmailCloudDomain
     )
     
     begin {
@@ -32,29 +54,56 @@ function Get-SC365DeploymentInfo {
         else {
             Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
         }
-
+        $DeployMentStatus = $null
+        $region = $null
+        $routing = $null
+        $inBoundOnly = $null
     }
     
     process {
-             # Detect routing mode based on DNS entries
-             
-             if (!($SEPPmailCloudDomain)) {
-                 $SEPPmailCloudDomain = $tenantAcceptedDomains |Where-Object 'Default' -eq $true |select-Object -ExpandProperty DomainName
-             }
+        #region Select DefaultDomain
+            if (!($SEPPmailCloudDomain)) {
+                [String]$SEPPmailCloudDomain = $tenantAcceptedDomains |Where-Object 'Default' -eq $true |select-Object -ExpandProperty DomainName
+                Write-Verbose "Extracted Default-Domain with name $SEPPmailcloudDomain from TenantDefaultDomains"
+                }
+            if (($SEPPmailCloudDomain) -and (!($tenantAcceptedDomains.DomainName.Contains($SEPPmailCloudDomain)))) {
+               throw [System.Exception] "Domain $SEPPmailCloudDomain is not member of this tenant! Check for typos or connect to different tenant"
+            }
+        #endregion Select DefaultDomain
 
-             if (($SEPPmailCloudDomain) -and (!($tenantAcceptedDomains.DomainName.Contains($SEPPmailCloudDomain)))) {
-                throw [System.Exception] "Domain $SEPPmailCloudDomain is not member of this tenant! Check for typos or connect to different tenant"
-             }
-             
-             [string]$relayHost = $SEPPmailCloudDomain.Replace('.','-') + '.relay.seppmail.cloud'
-             [string]$mailHost = $SEPPmailCloudDomain.Replace('.','-')  + '.mail.seppmail.cloud'
-             [string]$gateHost = $SEPPmailCloudDomain.Replace('.','-')  + '.gate.seppmail.cloud'
-             
-             if (((Resolve-Dns -Query $GateHost ).Answers) -and ((Resolve-Dns -Query $RelayHost ).Answers)) {Write-Verbose "$Gatehost and $relayHost alive ==> InLine";$routing = 'inline'}
-             if (((Resolve-Dns -Query $GateHost ).Answers) -and (!((Resolve-Dns -Query $RelayHost ).Answers))) {Write-Verbose "$Gatehost alive,$relayHost missing ==> InLine-InBound only";$routing = 'inline';$inBoundOnly = $true}                
-             if ((Resolve-Dns -Query $MailHost ).Answers) {Write-verbose "$mailHost alive ==> parallel"; $Routing = 'parallel'}
-             #DoubleCheck if MX Record is set correctly
-             $mxFull = get-mxrecordreport -Domain $SEPPmailCloudDomain
+        #region Query SEPPmail routing-Hosts DNS records
+            [string]$relayHost = $SEPPmailCloudDomain.Replace('.','-') + '.relay.seppmail.cloud'
+             [string]$mailHost = $SEPPmailCloudDomain.Replace('.','-') + '.mail.seppmail.cloud'
+             [string]$gateHost = $SEPPmailCloudDomain.Replace('.','-') + '.gate.seppmail.cloud'
+            
+        if (((Resolve-Dns -Query $GateHost).Answers)) {
+            $routing = 'inline'
+            if (!((Resolve-Dns -Query $RelayHost).Answers)) {
+                $inBoundOnly = $true
+                $relayHost = $null
+                Write-Verbose "$Gatehost alive,$relayHost missing ==> InLine-InBound only"
+                $deploymentStatus = $true                
+            }
+            if ((Resolve-Dns -Query $RelayHost).Answers) {                    
+                $inBoundOnly = $false
+                Write-Verbose "$Gatehost and $relayHost alive ==> InLine-bidirectional"
+                $deploymentStatus = $true                
+            }
+        }
+        else {
+            if ((Resolve-Dns -Query $MailHost ).Answers) {
+                Write-verbose "$mailHost alive ==> parallel"
+                $routing = 'parallel'
+            } else {
+                $mailHost = $null
+                $deploymentStatus = $false
+            }            
+            $deploymentStatus = $true                
+        }
+        #endregion Mailhost queries
+
+        #region DoubleCheck if MX Record is set correctly
+            $mxFull = get-mxrecordreport -Domain $SEPPmailCloudDomain
              
             if ($mxFull.Count -eq 1) {
                  $mx = $mxFull
@@ -76,44 +125,47 @@ function Get-SC365DeploymentInfo {
                 }
                 else {
                     Write-Warning "MX Record $mx configured in M365 does not fit to SEPPmail GateHost $gateHost in DNS - Check your provisioning Status in SEPPmail.cloud Portal"
-                   $mxMatch = $false
+                    $mxMatch = $false
+                    $DeployMentStatus = $false
                }
             }
-             # Identify region based on Cloud-IPAddresses
-             $region = $null
+        #endRegion MX Check
 
-             $ch = Get-SC365CloudConfig -region 'ch'
-             $de = Get-SC365CloudConfig -region 'de'
-             $prv = Get-SC365CloudConfig -region 'prv'
-             if ($routing -eq 'inline') {
-                 [String[]]$GateIP = ((Resolve-Dns -Query $GateHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddresstoString
-                 Foreach ($IP in $GateIP) {if ($ch.GateIPs.Contains($Ip)) {$region = 'ch';break}}
-                 Foreach ($IP in $GateIP) {if ($de.GateIPs.Contains($Ip)) {$region = 'de';break}}
-                 Foreach ($IP in $GateIP) {if ($prv.GateIPs.Contains($Ip)) {$region = 'prv';break}}
-             }
-             if ($routing -eq 'parallel') {
-                $MailIP = ((Resolve-Dns -Query $MailHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddresstoString
-                Foreach ($ip in $mailIp) {if ($ch.MailIPs.Contains($Ip)) { $region = 'ch';break}}
-                Foreach ($ip in $mailIp) {if ($de.MailIPs.Contains($Ip)) { $region = 'de';break}}
-                Foreach ($ip in $mailIp) {if ($prv.MailIPs.Contains($IP)) { $region = 'prv';break}}
-             }
+        #region Identify region based on Cloud-IPAddresses
+            $region = $null
+            $ch = Get-SC365CloudConfig -region 'ch'
+            $de = Get-SC365CloudConfig -region 'de'
+            $prv = Get-SC365CloudConfig -region 'prv'
+            if ($routing -eq 'inline') {
+                [String[]]$GateIP = ((Resolve-Dns -Query $GateHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddresstoString
+                Foreach ($IP in $GateIP) {if ($ch.GateIPs.Contains($Ip)) {$region = 'ch';break}}
+                Foreach ($IP in $GateIP) {if ($de.GateIPs.Contains($Ip)) {$region = 'de';break}}
+                Foreach ($IP in $GateIP) {if ($prv.GateIPs.Contains($Ip)) {$region = 'prv';break}}
+            }
+            if ($routing -eq 'parallel') {
+               $MailIP = ((Resolve-Dns -Query $MailHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddresstoString
+               Foreach ($ip in $mailIp) {if ($ch.MailIPs.Contains($Ip)) { $region = 'ch';break}}
+               Foreach ($ip in $mailIp) {if ($de.MailIPs.Contains($Ip)) { $region = 'de';break}}
+               Foreach ($ip in $mailIp) {if ($prv.MailIPs.Contains($IP)) { $region = 'prv';break}}
+            }
+        #endregion Cloud-IP-Addresses
 
-             # Check CBC Availability
-             [String]$TenantID = Get-SC365TenantID -maildomain $seppmailclouddomain -OutVariable "TenantID"
-             $TenantIDHash = Get-SC365StringHash -String $TenantID
-             [string]$hashedDomain =  $TenantIDHash + '.cbc.seppmail.cloud'
-
-             if ((((resolve-dns -query $hashedDomain -QueryType TXT).Answers).Text) -eq 'CBC') {
-                $CBCDeployed = $true
-                Write-Verbose "$HashedDomain of TenantID $tenantId has a CBC entry"
-             } else {
-                $CBCDeployed = $false
-                Write-Warning "Could not find TXT Entry for TenantID $TenantID of domain $SEPPmailCloudDomain. Setup will most likely fail"
-             }
+        #region Check CBC Availability
+            [String]$TenantID = Get-SC365TenantID -maildomain $seppmailclouddomain -OutVariable "TenantID"
+            $TenantIDHash = Get-SC365StringHash -String $TenantID
+            [string]$hashedDomain =  $TenantIDHash + '.cbc.seppmail.cloud'
+            if ((((resolve-dns -query $hashedDomain -QueryType TXT).Answers).Text) -eq 'CBC') {
+               $CBCDeployed = $true
+               Write-Verbose "$HashedDomain of TenantID $tenantId has a CBC entry"
+            } else {
+               $CBCDeployed = $false
+               Write-Warning "Could not find TXT Entry for TenantID $TenantID of domain $SEPPmailCloudDomain. Setup will most likely fail"
+            }
+        #endregion CBC availability
     }
-    
     end {
         $DeplyoymentInfo = New-Object -TypeName PSObject
+        Add-Member -InputObject $DeplyoymentInfo NoteProperty DeployMentStatus -Value $DeploymentStatus
         Add-Member -InputObject $DeplyoymentInfo NoteProperty Region -Value $region
         Add-Member -InputObject $DeplyoymentInfo NoteProperty Routing -Value $routing
         if ($inBoundOnly) {Add-Member -InputObject $DeplyoymentInfo NoteProperty InBoundOnly -Value $inBoundOnly}
