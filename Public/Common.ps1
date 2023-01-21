@@ -182,7 +182,6 @@ function Get-SC365DeploymentInfo {
     }
 }
 
-
 <#
 .SYNOPSIS
     Generates a report of the current Status of the Exchange Online environment
@@ -469,18 +468,23 @@ function Remove-SC365Setup {
     [CmdletBinding()]
     param(
         [Parameter(
-            Mandatory=$true,
-            Position=1,
+            Mandatory=$false,
+            Position=0,
             HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)",
             ValueFromPipelineByPropertyName=$true)]
             [ValidateNotNullOrEmpty()]
             [ValidateSet('parallel','inline','p','i')]
         [String]$routing
     )
-
     Begin {
-        if ($routing -eq 'p') {$routing = 'parallel'}
-        if ($routing -eq 'i') {$routing = 'inline'}
+        if (!($routing)) {
+            $deploymentInfo = Get-SC365DeploymentInfo
+            
+                        $Routing = $deploymentInfo.Routing
+        } else {
+            if ($routing -eq 'p') {$routing = 'parallel'}
+            if ($routing -eq 'i') {$routing = 'inline'}
+        }
     }
     Process {
         Write-Verbose "Creating Progress Bar"
@@ -532,8 +536,8 @@ function New-SC365Setup {
             ValueFromPipelineByPropertyName=$true)]
             [Alias("domain")]
             [ValidateNotNullOrEmpty()]
-        [String[]]$SEPPmailCloudDomain,
-
+            [String[]]$SEPPmailCloudDomain,
+            
         [Parameter(
             Mandatory=$false,
             Position=1,
@@ -553,28 +557,31 @@ function New-SC365Setup {
         )
 
     Begin {
-
-        $deploymentInfo = Get-SC365DeploymentInfo
-
-        if ($deploymentInfo.routing -eq 'p') {$routing = 'parallel'}
-        if ($deploymentInfo.routing -eq 'i') {$routing = 'inline'}
-
-        Write-Verbose "Confirming if $SEPPmailCloudDomain is part or the tenant"
-        $TenantDefaultDomain = $null
-        foreach ($validationDomain in $SEPPmailCloudDomain) {
-			if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $validationDomain) -eq $true) {
-				Write-verbose "Domain is part of the tenant and the Default Domain"
-				$TenantDefaultDomain = $ValidationDomain
-			} else {
-				if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $validationDomain) -eq $false) {
-					Write-verbose "Domain is part of the tenant"
-				} else {
-					Write-Error "Domain is NOT Part of the tenant"
-					break
-				}
-			}
-		 }
-
+        if ((!($SeppmailcloudDomain)) -or (!($Region)) -or (!($routing))  ) {
+            $deploymentInfo = Get-SC365DeploymentInfo
+            
+                        $Routing = $deploymentInfo.Routing
+                         $Region = $deploymentInfo.region
+            $SEPPmailCloudDomain = $DeploymentInfo.SEPPmailCLoudDomain          
+        } else {
+            if ($deploymentInfo.routing -eq 'p') {$routing = 'parallel'}
+            if ($deploymentInfo.routing -eq 'i') {$routing = 'inline'}
+            Write-Verbose "Confirming if $SEPPmailCloudDomain is part or the tenant"
+            $TenantDefaultDomain = $null
+            foreach ($validationDomain in $SEPPmailCloudDomain) {
+                if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $validationDomain) -eq $true) {
+                    Write-verbose "Domain is part of the tenant and the Default Domain"
+                    $TenantDefaultDomain = $ValidationDomain
+                } else {
+                    if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $validationDomain) -eq $false) {
+                        Write-verbose "Domain is part of the tenant"
+                    } else {
+                        Write-Error "Domain is NOT Part of the tenant"
+                        break
+                    }
+                }
+             }    
+        }
     }
     Process {
         try {
@@ -603,7 +610,7 @@ function Get-SC365Setup {
     [CmdletBinding()]
     param(
         [Parameter(
-            Mandatory=$true,
+            Mandatory=$false,
             Position=1,
             HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)",
             ValueFromPipelineByPropertyName=$true)]
@@ -613,8 +620,14 @@ function Get-SC365Setup {
     )
 
     Begin {
-        if ($routing -eq 'p') {$routing = 'parallel'}
-        if ($routing -eq 'i') {$routing = 'inline'}
+        if (!($routing)) {
+            $deploymentInfo = Get-SC365DeploymentInfo
+            
+             $Routing = $deploymentInfo.Routing
+        } else {
+            if ($routing -eq 'p') {$routing = 'parallel'}
+            if ($routing -eq 'i') {$routing = 'inline'}
+        }
     }
     Process {
         $smcConn = Get-SC365Connectors -Routing $routing
@@ -789,6 +802,7 @@ function Test-SC365ConnectionStatus
     return $isConnected
 }
 
+<#
 function Resolve-SC365IPv4Address {
     param(
         [Parameter(
@@ -841,7 +855,7 @@ function Resolve-SC365DNSName {
     }
     return $DNSName
 }
-
+#>
 <#
 .SYNOPSIS
     Validates if a given strig (domainname) is the tenant default maildomain
