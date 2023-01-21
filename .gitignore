@@ -5,3 +5,4 @@ ceo.ps1
 launch.json
 gitinfo*
 .DS_Store
+.vscode
