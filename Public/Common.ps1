@@ -94,29 +94,33 @@ function Get-SC365DeploymentInfo {
             if ((Resolve-Dns -Query $MailHost ).Answers) {
                 Write-verbose "$mailHost alive ==> parallel"
                 $routing = 'parallel'
+                $deploymentStatus = $true                
             } else {
                 $mailHost = $null
                 $deploymentStatus = $false
             }            
-            $deploymentStatus = $true                
         }
         #endregion Mailhost queries
 
         #region DoubleCheck if MX Record is set correctly
             $mxFull = get-mxrecordreport -Domain $SEPPmailCloudDomain
-             
+            
+        if ($mxFull.Count -eq 0) {
+            $DeployMentStatus = $false
+        }
+        else {
             if ($mxFull.Count -eq 1) {
-                 $mx = $mxFull
+                $mx = $mxFull
             } 
             if ($mxFull.Count -gt 1) {
-                 $mx = $mxFull[0] |Select-Object -ExpandProperty highestpriorityMailHost -Unique
+                $mx = $mxFull[0] | Select-Object -ExpandProperty highestpriorityMailHost -Unique
             }
-             
-            if (($mx.Split($SEPPmailCloudDomain.Replace('.','-'))) -eq '.gate.seppmail.cloud') {
-               Write-Verbose "MX = SEPPmail"
+                
+            if (($mx.Split($SEPPmailCloudDomain.Replace('.', '-'))) -eq '.gate.seppmail.cloud') {
+                Write-Verbose "MX = SEPPmail"
             }
-            if (($mx.Split($SEPPmailCloudDomain.Replace('.','-'))) -eq '.mail.protection.outlook.com') {
-               Write-Verbose "MX = Microsoft"
+            if (($mx.Split($SEPPmailCloudDomain.Replace('.', '-'))) -eq '.mail.protection.outlook.com') {
+                Write-Verbose "MX = Microsoft"
             }
             if ($routing -eq 'inline') {
                 if ($mx -eq $gateHost) {
@@ -127,8 +131,9 @@ function Get-SC365DeploymentInfo {
                     Write-Warning "MX Record $mx configured in M365 does not fit to SEPPmail GateHost $gateHost in DNS - Check your provisioning Status in SEPPmail.cloud Portal"
                     $mxMatch = $false
                     $DeployMentStatus = $false
-               }
-            }
+                }
+            }   
+        }
         #endRegion MX Check
 
         #region Identify region based on Cloud-IPAddresses
@@ -478,12 +483,26 @@ function Remove-SC365Setup {
     )
     Begin {
         if (!($routing)) {
-            $deploymentInfo = Get-SC365DeploymentInfo
             
-                        $Routing = $deploymentInfo.Routing
-        } else {
-            if ($routing -eq 'p') {$routing = 'parallel'}
-            if ($routing -eq 'i') {$routing = 'inline'}
+            try {
+                $deploymentInfo = Get-SC365DeploymentInfo
+            }
+            catch {
+                Throw [System.Exception] "Could not autodetect SEPPmail.cloud Deployment Status, use manual parameters"
+            }
+            if ($DeploymentInfo.DeployMentStatus -eq $false) {
+                Write-Error "SEPPmail.cloud setup not (fully) deployed. Use Cloud-Portal and fix deployment."
+                break
+            }
+            else {
+                if ($Deploymentinfo) {
+                    if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Could not autodetect routing, use manual parameters"; break}
+                }
+            }
+        }
+        else {
+            if ($routing -eq 'p') { $routing = 'parallel' }
+            if ($routing -eq 'i') { $routing = 'inline' }
         }
     }
     Process {
@@ -553,19 +572,38 @@ function New-SC365Setup {
             HelpMessage="Physical location of your data",
             ValueFromPipelineByPropertyName=$true)]
             [ValidateSet('prv','de','ch')]
-        [String]$region
+        [String]$region,
+
+        [Parameter(
+            Mandatory=$false,
+            Position=3,
+            HelpMessage="No routing of Outbound Traffic via SEPPmail.cloud",
+            ValueFromPipelineByPropertyName=$true)]
+        [switch]$inboundonly
         )
 
     Begin {
-        if ((!($SeppmailcloudDomain)) -or (!($Region)) -or (!($routing))  ) {
-            $deploymentInfo = Get-SC365DeploymentInfo
+        if ((!($SeppmailcloudDomain)) -or (!($Region)) -or (!($routing)) ) {
+            try {
+                $deploymentInfo = Get-SC365DeploymentInfo
+            } catch {
+                Throw [System.Exception] "Could not autodetect SEPPmail.cloud Deployment Status, use manual parameters"
+            }
             
-                        $Routing = $deploymentInfo.Routing
-                         $Region = $deploymentInfo.region
-            $SEPPmailCloudDomain = $DeploymentInfo.SEPPmailCLoudDomain          
+            if ($DeploymentInfo.DeployMentStatus -eq $false) {
+                Write-Error "SEPPmail.cloud setup not (fully) deployed. Use Cloud-Portal and fix deployment."
+                break
+            } else {
+                if ($Deploymentinfo) {
+                            if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Cloud not autidetect routig info, use manual parameters"; break}
+                             if ($deploymentInfo.region) {$Region = $deploymentInfo.region} else {Write-Error "Could not autodetect region. Use manual parameters"; break}
+                if ($DeploymentInfo.SEPPmailCLoudDomain) {$SEPPmailCloudDomain = $DeploymentInfo.SEPPmailCLoudDomain} else {Write-Error "Could not autodetect SEPPmailCloudDomain. Use manual parameters"; break}          
+                }
+            }
         } else {
             if ($deploymentInfo.routing -eq 'p') {$routing = 'parallel'}
             if ($deploymentInfo.routing -eq 'i') {$routing = 'inline'}
+ 
             Write-Verbose "Confirming if $SEPPmailCloudDomain is part or the tenant"
             $TenantDefaultDomain = $null
             foreach ($validationDomain in $SEPPmailCloudDomain) {
@@ -585,8 +623,13 @@ function New-SC365Setup {
     }
     Process {
         try {
-            Write-Information '--- Creating inbound and outbound connectors ---' -InformationAction Continue
-            New-SC365Connectors -SEPPmailCloudDomain $TenantDefaultDomain -routing $routing -region $region
+            if ($inboundOnly) {
+                Write-Information '--- Creating in and outbound connectors ---' -InformationAction Continue
+                New-SC365Connectors -SEPPmailCloudDomain $TenantDefaultDomain -routing $routing -region $region -inboundonly
+            } else {
+                Write-Information '--- Creating inbound connector ---' -InformationAction Continue
+                New-SC365Connectors -SEPPmailCloudDomain $TenantDefaultDomain -routing $routing -region $region
+            }
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
             break
@@ -620,13 +663,26 @@ function Get-SC365Setup {
     )
 
     Begin {
-        if (!($routing)) {
-            $deploymentInfo = Get-SC365DeploymentInfo
-            
-             $Routing = $deploymentInfo.Routing
-        } else {
-            if ($routing -eq 'p') {$routing = 'parallel'}
-            if ($routing -eq 'i') {$routing = 'inline'}
+        if (!($routing)) {            
+            try {
+                $deploymentInfo = Get-SC365DeploymentInfo
+            }
+            catch {
+                Throw [System.Exception] "Could not autodetect SEPPmail.cloud Deployment Status, use manual parameters"
+            }
+            if ($DeploymentInfo.DeployMentStatus -eq $false) {
+                Write-Error "SEPPmail.cloud setup not (fully) deployed. Use Cloud-Portal and fix deployment."
+                break
+            }
+            else {
+                if ($Deploymentinfo) {
+                    if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Could not autodetect routing, use manual parameters"; break}
+                }
+            }
+        }
+        else {
+            if ($routing -eq 'p') { $routing = 'parallel' }
+            if ($routing -eq 'i') { $routing = 'inline' }
         }
     }
     Process {
@@ -910,7 +966,7 @@ function Get-SC365MessageTrace {
         [String]$Recipient
     )
     begin {
-        Write-Information "This CmdLet is still under development"
+        Write-Information "This CmdLet is still under development" -InformationAction Continue
         try {
             if (!($ibc = Get-Inboundconnector -Identity '[SEPPmail*')) {
                 Write-Error "Could not find SEPPmail.Cloud Inbound-Connecor"
@@ -1089,7 +1145,7 @@ function Get-SC365MessageTrace {
                     $Outputobject | Add-Member -MemberType NoteProperty -Name SEPPmailReceivedFromDNS -Value ((((Resolve-DNS -Query $MessageTrace[1].FromIP -QueryType PTR).Answers).PtrDomainName).Value)
                 } 
                 catch {
-                    Write-Information "Cannot Resolve $($messageTrace[1].FromIP)"
+                    Write-Information "Cannot Resolve $($messageTrace[1].FromIP)" -InformationAction Continue
                 }
                 $Outputobject | Add-Member -MemberType NoteProperty -Name 'ExoTransPortTime(s)' -Value (New-TimeSpan -Start $MTDExtReceive.Date -End $MTDExtExtSend.Date).Seconds
                 $Outputobject | Add-Member -MemberType NoteProperty -Name 'SEPPmailTransPortTime(s)' -Value (New-TimeSpan -Start $MTDSEPPReceive.Date -End $MTDSEPPExtSend.Date).Seconds
