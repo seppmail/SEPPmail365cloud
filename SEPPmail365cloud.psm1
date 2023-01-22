@@ -63,12 +63,12 @@ if ($sc365notests -ne $true) {
         Break
     }
     # Check Exo Module Version 
-    if ((Get-Module -Name ExchangeOnlineManagement -ListAvailable).Where({$_.Version -ge [version]'3.0.0'})) {
+    if (!((Get-Module -Name ExchangeOnlineManagement -ListAvailable).Where({$_.Version -ge [version]'3.0.0'}))) {
         Write-Host "+------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+   WRONG Version of  ExchangeOnlineManagement Module  +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
-        Write-Host "+          Install Version 3.0.0 ++ of the               +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+          Install version 3.0.0 ++ of the               +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+         ExchangeOnlineManagement Module with:        +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+   Install-Module ExchangeOnlineManagement -Force     +" -ForegroundColor Green -BackgroundColor DarkGray
@@ -106,7 +106,6 @@ if ($sc365notests -ne $true) {
         Write-Error "Could not determine newest module version due to exception $($_.Exception.Message)"
     }
 }
-
 
 Write-Verbose 'Initialize argument completer scriptblocks'
 $paramDomSB = {
