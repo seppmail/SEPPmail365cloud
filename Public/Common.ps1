@@ -624,10 +624,10 @@ function New-SC365Setup {
     Process {
         try {
             if ($inboundOnly) {
-                Write-Information '--- Creating in and outbound connectors ---' -InformationAction Continue
+                Write-Information '--- Creating inbound connector ---' -InformationAction Continue
                 New-SC365Connectors -SEPPmailCloudDomain $TenantDefaultDomain -routing $routing -region $region -inboundonly
             } else {
-                Write-Information '--- Creating inbound connector ---' -InformationAction Continue
+                Write-Information '--- Creating in and outbound connectors ---' -InformationAction Continue
                 New-SC365Connectors -SEPPmailCloudDomain $TenantDefaultDomain -routing $routing -region $region
             }
         } catch {
@@ -979,7 +979,7 @@ function Get-SC365MessageTrace {
             Write-Error "Could not detect SEPPmail-Cloud Connectors, aborting"
             break
         }
-
+        $TenantAcceptedDomains = Get-AcceptedDomain
     }
     
     process {
@@ -1010,7 +1010,7 @@ function Get-SC365MessageTrace {
         }
         try {
             Write-verbose "Test Maildirection, based on the fact that the $Recipient is part of TenantDomains"
-            If ($TenantAcceptedDomains.Contains(($Recipient -Split '@')[-1])) {
+            If (($TenantAcceptedDomains.DomainName).Contains(($Recipient -Split '@')[-1])) {
                 $MailDirection = 'InBound'
             }
             else {
@@ -1176,12 +1176,12 @@ function Get-SC365MessageTrace {
                     $obcName = '--- E-Mail did not go over SEPPmail Connector ---'
                 }
                 Write-verbose "Adding Specific Outbound-Inline Data to output"
-                $Outputobject | Add-Member -MemberType NoteProperty -Name 'ExoInternalTransportTime(s)' -Value (New-TimeSpan -Start $MTDReceive.Date -End $MTDExtSend.Date).Seconds
+                if (($MTDReceive.Date) -and ($MTDExtSend.Date)) {$Outputobject | Add-Member -MemberType NoteProperty -Name 'ExoInternalTransportTime(s)' -Value (New-TimeSpan -Start $MTDReceive.Date -End $MTDExtSend.Date).Seconds}
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ReceiveDetail -Value $MTDReceive.Detail
                 #$Outputobject | Add-Member -MemberType NoteProperty -Name SubmitDetail -Value $MTDSubmit.Detail # Keine Relevante Info
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExtSendDetail -Value $MTDExtSend.Detail
                 $Outputobject | Add-Member -MemberType NoteProperty -Name OutboundConnectorName -Value $obcName
-                $Outputobject | Add-Member -MemberType NoteProperty -Name ExternalSendLatency -Value (((($MTDExtSend.Data -Split '<') -replace ('>','')) -split (';') | select-String 'S:ExternalSendLatency').ToString()).Split('=')[-1]
+                if ($MTDExtSend) {$Outputobject | Add-Member -MemberType NoteProperty -Name ExternalSendLatency -Value (((($MTDExtSend.Data -Split '<') -replace ('>','')) -split (';') | select-String 'S:ExternalSendLatency').ToString()).Split('=')[-1]}
                 Write-Progress -Activity "Loading message data" -Status "StatusMessage" -PercentComplete 100 -CurrentOperation "Done"
             }
 
