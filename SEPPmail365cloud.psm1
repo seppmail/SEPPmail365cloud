@@ -63,12 +63,12 @@ if ($sc365notests -ne $true) {
         Break
     }
     # Check Exo Module Version 
-    if ((Get-Module ExchangeOnlineManagement -Listavailable).Version -notlike '3.*') {
+    if ((Get-Module -Name ExchangeOnlineManagement -ListAvailable).Where({$_.Version -ge [version]'3.0.0'})) {
         Write-Host "+------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+   WRONG Version of  ExchangeOnlineManagement Module  +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
-        Write-Host "+          Install Version 3.0.0+ of the               +" -ForegroundColor Green -BackgroundColor DarkGray
+        Write-Host "+          Install Version 3.0.0 ++ of the               +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+         ExchangeOnlineManagement Module with:        +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+                                                      +" -ForegroundColor Green -BackgroundColor DarkGray
         Write-Host "+   Install-Module ExchangeOnlineManagement -Force     +" -ForegroundColor Green -BackgroundColor DarkGray
