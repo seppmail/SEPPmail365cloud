@@ -109,13 +109,13 @@ function New-SC365Connectors
     param
     (
         [Parameter(
-            Mandatory = $false,
+            Mandatory = $true,
             ParameterSetname = 'Bothdirections',
             Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
             Position = 0
             )]
         [Parameter(
-            Mandatory = $false,
+            Mandatory = $true,
             ParameterSetname = 'InBoundOnly',
             Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
             Position = 0
@@ -124,13 +124,13 @@ function New-SC365Connectors
         [String] $SEPPmailCloudDomain,
 
         [Parameter(
-            Mandatory = $false,
+            Mandatory = $true,
             ParameterSetName = 'BothDirections',
             HelpMessage = 'Geographcal region of the seppmail.cloud service',
             Position = 1
         )]
         [Parameter(
-            Mandatory = $false,
+            Mandatory = $true,
             ParameterSetName = 'InBoundOnly',
             HelpMessage = 'Geographcal region of the seppmail.cloud service',
             Position = 1
@@ -139,13 +139,13 @@ function New-SC365Connectors
         [String]$region,
 
         [Parameter(
-            Mandatory = $false,
+            Mandatory = $true,
             ParameterSetname = 'BothDirections',
             Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft',
             Position = 2
             )]
         [Parameter(
-            Mandatory = $false,
+            Mandatory = $true,
             ParameterSetname = 'InBoundOnly',
             Helpmessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft',
             Position = 2

@@ -595,7 +595,7 @@ function New-SC365Setup {
                 break
             } else {
                 if ($Deploymentinfo) {
-                            if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Cloud not autidetect routig info, use manual parameters"; break}
+                            if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Cloud not autodetect routig info, use manual parameters"; break}
                              if ($deploymentInfo.region) {$Region = $deploymentInfo.region} else {Write-Error "Could not autodetect region. Use manual parameters"; break}
                 if ($DeploymentInfo.SEPPmailCLoudDomain) {$SEPPmailCloudDomain = $DeploymentInfo.SEPPmailCLoudDomain} else {Write-Error "Could not autodetect SEPPmailCloudDomain. Use manual parameters"; break}          
                 }
