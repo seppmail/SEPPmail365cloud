@@ -600,35 +600,31 @@ function New-SC365Setup {
     param(
         [Parameter(
             Mandatory=$false,
-            Position=0,
-            HelpMessage="The primary domain, booked in the SEPPmail.cloud",
-            ValueFromPipelineByPropertyName=$true)]
+            HelpMessage="The primary domain, booked in the SEPPmail.cloud"
+            )]
             [Alias('domain')]
             [ValidateNotNullOrEmpty()]
             [String]$SEPPmailCloudDomain,
     
         [Parameter(
             Mandatory=$false,
-            Position=1,
-            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)",
-            ValueFromPipelineByPropertyName=$true)]
+            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)"
+            )]
             [ValidateNotNullOrEmpty()]
             [ValidateSet('parallel','inline','p','i')]
         [String]$routing,
     
         [Parameter(
             Mandatory=$false,
-            Position=2,
-            HelpMessage="Physical location of your data",
-            ValueFromPipelineByPropertyName=$true)]
+            HelpMessage="Physical location of your data"
+            )]
             [ValidateSet('prv','de','ch')]
         [String]$region,
 
         [Parameter(
             Mandatory=$false,
-            Position=3,
-            HelpMessage="No routing of outbound traffic via SEPPmail.cloud",
-            ValueFromPipelineByPropertyName=$true)]
+            HelpMessage="No routing of outbound traffic via SEPPmail.cloud"
+            )]
         [switch]$InBoundOnly
         )
 
@@ -719,17 +715,15 @@ function Get-SC365Setup {
         [Parameter(
             ParameterSetName = 'parallel',
             Mandatory=$false,
-            Position=0,
-            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)",
-            ValueFromPipelineByPropertyName=$true)]
+            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)"
+            )]
             [ValidateNotNullOrEmpty()]
             [ValidateSet('parallel','inline','p','i')]
         [Parameter(
             ParameterSetName = 'inline',
             Mandatory=$false,
-            Position=0,
-            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)",
-            ValueFromPipelineByPropertyName=$true)]
+            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)"
+            )]
             [ValidateNotNullOrEmpty()]
             [ValidateSet('parallel','inline','p','i')]
         [String]$routing,
@@ -737,9 +731,8 @@ function Get-SC365Setup {
         [Parameter(
             ParameterSetName = 'inline',
             Mandatory=$false,
-            Position=1,
-            HelpMessage="No routing of outbound traffic via SEPPmail.cloud",
-            ValueFromPipelineByPropertyName=$true)]
+            HelpMessage="No routing of outbound traffic via SEPPmail.cloud"
+            )]
         [switch]$InBoundOnly
     )
     Begin {
