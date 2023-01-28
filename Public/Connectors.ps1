@@ -16,41 +16,42 @@
 function Get-SC365Connectors
 {
     [CmdletBinding(
+        SupportsShouldProcess = $false,
+        ConfirmImpact = 'Medium',
+        DefaultparameterSetname = 'parallel',
         HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
-    )]
-    Param
+     )]
+
+    param
     (
         [Parameter(
-            Mandatory = $true
-        )]
+            Mandatory = $true,
+            Helpmessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft'
+            )]
         [ValidateSet('parallel','inline','p','i')]
-        $routing
-    )
-    begin {
-        if ($routing -eq 'p') {$routing = 'parallel'}
-		if ($routing -eq 'i') {$routing = 'inline'}
+        [String] $routing,
 
-        if (!(Test-SC365ConnectionStatus))
-        { 
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetName = 'inline',
+            HelpMessage = 'For routingtype `"inline`", if only inbound service is used.'
+        )]
+        [switch]$inBoundOnly
+    )
+
+    begin {       
+        if (!(Test-SC365ConnectionStatus)) { 
             throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"
         }
         else {
             Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`" " 
         }
+        if ($routing -eq 'p') { $routing = 'parallel' }
+        if ($routing -eq 'i') { $routing = 'inline' }
     }
     process {
         $inbound = Get-SC365InboundConnectorSettings -Routing $routing
-        $outbound = Get-SC365OutboundConnectorSettings -Routing $routing
-        $obc = Get-OutboundConnector $outbound.Name -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
         $ibc = Get-InboundConnector $inbound.Name -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
-
-        if ($obc | Where-Object Identity -eq $($outbound.Name))
-        {
-            $obc|select-object Name,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsDomain.Split('.')[1])}}
-        }
-        else {
-            Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found. Wrong routing mode or Inboundonly ?"
-        }
         if ($ibc | Where-Object Identity -eq $($inbound.Name))
         {
             $ibc|select-object Name,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsSenderCertificateName.Split('.')[1])}}
@@ -58,6 +59,16 @@ function Get-SC365Connectors
         else 
         {
             Write-Warning "No SEPPmail.cloud Inbound Connector with Name `"$($inbound.Name)`" found - Wrong routing mode ?"
+        }
+        if ($inBoundOnly -eq $false) {
+            $outbound = Get-SC365OutboundConnectorSettings -Routing $routing
+            $obc = Get-OutboundConnector $outbound.Name -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+            if ($obc | Where-Object Identity -eq $($outbound.Name)){
+                $obc|select-object Name,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsDomain.Split('.')[1])}}
+            }
+            else {
+                Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found - Wrong routing mode or inbound only ?"
+            }
         }
     }
 }
@@ -105,20 +116,17 @@ function New-SC365Connectors
          DefaultparameterSetname = 'BothDirections',
          HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
      )]
-
     param
     (
         [Parameter(
             Mandatory = $true,
             ParameterSetname = 'Bothdirections',
-            Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
-            Position = 0
+            Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.'
             )]
         [Parameter(
             Mandatory = $true,
             ParameterSetname = 'InBoundOnly',
-            Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.',
-            Position = 0
+            Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.'
             )]
         [Alias('domain','maildomain','primaryMailDomain')]
         [String] $SEPPmailCloudDomain,
@@ -126,14 +134,12 @@ function New-SC365Connectors
         [Parameter(
             Mandatory = $true,
             ParameterSetName = 'BothDirections',
-            HelpMessage = 'Geographcal region of the seppmail.cloud service',
-            Position = 1
+            HelpMessage = 'Geographcal region of the seppmail.cloud service'
         )]
         [Parameter(
             Mandatory = $true,
             ParameterSetName = 'InBoundOnly',
-            HelpMessage = 'Geographcal region of the seppmail.cloud service',
-            Position = 1
+            HelpMessage = 'Geographcal region of the seppmail.cloud service'
         )]
         [ValidateSet('ch','prv','de')]
         [String]$region,
@@ -141,14 +147,12 @@ function New-SC365Connectors
         [Parameter(
             Mandatory = $true,
             ParameterSetname = 'BothDirections',
-            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft',
-            Position = 2
+            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft'
             )]
         [Parameter(
             Mandatory = $true,
             ParameterSetname = 'InBoundOnly',
-            Helpmessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft',
-            Position = 2
+            Helpmessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft'
             )]
         [ValidateSet('parallel','inline','p','i')]
         [String] $routing,
@@ -158,7 +162,7 @@ function New-SC365Connectors
             ParameterSetName = 'InBoundOnly',
             HelpMessage = 'For routingtype `"inline`", if only inbound service is used.'
         )]
-        [switch]$inBoundOnly = $false,
+        [switch]$inBoundOnly,
 
         [Parameter(
             Mandatory = $false,
@@ -236,7 +240,6 @@ function New-SC365Connectors
             $SEPPmailCloudDomain = $tenantAcceptedDomains|Where-Object {$_.Default -eq $true}
         }
 
-
         #region Preparing common setup
         Write-Debug "Preparing values for Cloud configuration"
 
@@ -253,7 +256,7 @@ function New-SC365Connectors
         $regionConfig = (Get-SC365CloudConfig -Region $region)
         $SEPPmailIPv4Range = $regionConfig.IPv4AllowList
         
-        if ($SEPPmailCLoudDomain) {
+        if ($SEPPmailCloudDomain) {
             $TenantID = Get-SC365Tenantid -Maildomain $SEPPmailCloudDomain
         } else {
             $TenantID = Get-SC365Tenantid -maildomain ((Get-OrganizationConfig).Identity)
@@ -337,7 +340,6 @@ function New-SC365Connectors
     {
             #region - OutboundConnector
             Write-Debug "Building Outbound parameters based on smarthost $outboundtlsdomain"
-            #$outbound = Get-SC365OutboundConnectorSettings -routing $routing -Option $Option
             $param = Get-SC365OutboundConnectorSettings -Routing $routing -Option $option
             $param.SmartHosts = $OutboundSmartHost
             Write-Verbose "Outbound Connector Smarthosts are $($param.SmartHosts)"
@@ -565,21 +567,47 @@ function New-SC365Connectors
 #>
 function Remove-SC365Connectors
 {
-    [CmdletBinding(SupportsShouldProcess=$true,
-                   ConfirmImpact='Medium',
-                   HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
-                   )]
-    Param
+    [CmdletBinding(
+        SupportsShouldProcess = $true,
+        ConfirmImpact = 'Medium',
+        DefaultparameterSetname = 'parallel',
+        HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
+     )]
+
+    param
     (
         [Parameter(
             Mandatory = $true,
-            Helpmessage = 'The routing tyoe of the connector to you want to remove'
-        )]
+            ParameterSetname = 'parallel',
+            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft'
+            )]
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetname = 'inline',
+            Helpmessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft'
+            )]
         [ValidateSet('parallel','inline','p','i')]
-        [String]$routing,
-        
+        [String] $routing,
+
+        [Parameter(
+            Mandatory = $true,
+            ParameterSetName = 'inline',
+            HelpMessage = 'For routingtype `"inline`", if only inbound service is used.'
+        )]
+        [switch]$inBoundOnly,
+           
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetname = 'parallel',
+            Helpmessage = '`Sets AntiSpam IP AllowList'
+            )]
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetname = 'inline',
+            Helpmessage = '`Sets AntiSpam IP AllowList'
+            )]
         [ValidateSet('AntiSpamAllowListing')]
-        [String]$option
+        [String]$option = $null
     )
 
     begin {
@@ -590,22 +618,23 @@ function Remove-SC365Connectors
         }
         if ($routing -eq 'p') {$routing = 'parallel'}
 		if ($routing -eq 'i') {$routing = 'inline'}
-
     }
     process {
         $inbound = Get-SC365InboundConnectorSettings -routing $routing 
-        $outbound = Get-SC365OutboundConnectorSettings -routing $routing
+        if (!($inboundOnly)) {$outbound = Get-SC365OutboundConnectorSettings -routing $routing}
         $hcfp = Get-HostedConnectionFilterPolicy
     
-        if($PSCmdlet.ShouldProcess($outbound.Name, "Remove SEPPmail outbound connector $($Outbound.Name)"))
-        {
-            if (Get-OutboundConnector -WarningAction SilentlyContinue | Where-Object {$_.Name -eq $($outbound.Name)})
+        if (!($InBoundOnly)) {
+            if ($PSCmdlet.ShouldProcess($outbound.Name, "Remove SEPPmail outbound connector $($Outbound.Name)"))
             {
-                Remove-OutboundConnector $outbound.Name -confirm:$false
-            }
-            else {
-                Write-Warning 'No SEPPmail Outbound Connector found'
-            }
+                if (Get-OutboundConnector -WarningAction SilentlyContinue | Where-Object {$_.Name -eq $($outbound.Name)})
+                {
+                    Remove-OutboundConnector $outbound.Name -confirm:$false
+                }
+                else {
+                    Write-Warning 'No SEPPmail Outbound Connector found'
+                }
+            }    
         }
     
         if($PSCmdlet.ShouldProcess($inbound.Name, "Remove SEPPmail inbound connector $($inbound.Name)"))
@@ -620,23 +649,24 @@ function Remove-SC365Connectors
                     [array]$InboundSEPPmailIP = $inboundConnector.SenderIPAddresses -split ' '
                 }
                 Remove-InboundConnector $inbound.Name -confirm:$false
-    
+
                 Write-Verbose "If Inbound Connector has been removed, remove also AllowListed IPs"
                 if ((!($Option -like 'AntiSpamAllowListing')) -and (!(Get-InboundConnector | Where-Object Identity -eq $($inbound.Name))))
                 {
-                        Write-Verbose "Remove SEPPmail Appliance IP from AllowList in 'Hosted Connection Filter Policy'"
-                        
-                        Write-Verbose "Collecting existing AllowList"
-                        [System.Collections.ArrayList]$existingAllowList = $hcfp.IPAllowList
-                        Write-verbose "Removing SEPPmail Appliance IP $InboundSEPPmailIP from Policy $($hcfp.Id)"
-                        if ($existingAllowList) {
-                            foreach ($IP in $InboundSEPPmailIP) {
-                                $existingAllowList.Remove($IP)
-                            }
-                            Set-HostedConnectionFilterPolicy -Identity $hcfp.Id -IPAllowList $existingAllowList
-                            Write-Verbose "IP: $InboundSEPPmailIP removed from Hosted Connection Filter Policy $hcfp.Id"
+                    Write-Verbose "Remove SEPPmail Appliance IP from AllowList in 'Hosted Connection Filter Policy'"
+                    
+                    Write-Verbose "Collecting existing AllowList"
+                    [System.Collections.ArrayList]$existingAllowList = $hcfp.IPAllowList
+                    Write-verbose "Removing SEPPmail Appliance IP $InboundSEPPmailIP from Policy $($hcfp.Id)"
+                    if ($existingAllowList) {
+                        foreach ($IP in $InboundSEPPmailIP) {
+                            $existingAllowList.Remove($IP)
+                        }
+                        Set-HostedConnectionFilterPolicy -Identity $hcfp.Id -IPAllowList $existingAllowList
+                        Write-Verbose "IP: $InboundSEPPmailIP removed from Hosted Connection Filter Policy $hcfp.Id"
                     }
                 }
+                #}
             }
             else 
             {

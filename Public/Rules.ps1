@@ -7,9 +7,9 @@
 	If you want to be informed about all installed transport rules, use New-SC365ExoReport.
 
 .EXAMPLE
-	Get-SC365Rules -routing -parallel
+	Get-SC365Rules -routing 'parallel'
 .EXAMPLE
-	Get-SC365Rules -routing -inline
+	Get-SC365Rules -routing 'inline'
 #>
 function Get-SC365Rules {
 	[CmdletBinding(
@@ -19,7 +19,7 @@ function Get-SC365Rules {
 	(
 		[Parameter(Mandatory = $true)]
 		[ValidateSet('parallel','inline','p','i')]
-		$routing
+		[String]$routing
 	)
 
 	begin {
@@ -29,12 +29,11 @@ function Get-SC365Rules {
 		}
 		else 
 		{
-			if ($routing -eq 'p') {$routing = 'parallel'}
-			if ($routing -eq 'i') {$routing = 'inline'}
-	
 			Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
-			$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
 		}
+		if ($routing -eq 'p') {$routing = 'parallel'}
+		if ($routing -eq 'i') {$routing = 'inline'}
+		$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
 	}
 	process {
 		foreach ($file in $transportRuleFiles) {
@@ -95,26 +94,26 @@ function New-SC365Rules
 	]
 	param
 	(
-		[Parameter(Mandatory=$false,
-				   HelpMessage='Should the new rules be placed before or after existing ones (if any)')]
-		[ValidateSet('Top','Bottom')]
+		[Parameter(Mandatory = $false,
+			HelpMessage = 'Should the new rules be placed before or after existing ones (if any)')]
+		[ValidateSet('Top', 'Bottom')]
 		[String] $PlacementPriority = 'Bottom',
 
 		[Parameter(
 			Mandatory = $true,
 			HelpMessage = 'MX record->SEPPmail means routingtype inline, MX->Microsoft means routingtype parallel'
 		)]
-		[ValidateSet('parallel','inline','p','i')]
+		[ValidateSet('parallel', 'inline', 'p', 'i')]
 		[String]$routing,
 
-		[Parameter(Mandatory=$true,
-				   HelpMessage='E-Mail domains you have registered in the SEPmail.Cloud')]
-	   [String[]]$SEPPmailCloudDomain,
+		[Parameter(Mandatory = $true,
+			HelpMessage = 'E-Mail domains you have registered in the SEPPmail.Cloud')]
+		[String[]]$SEPPmailCloudDomain,
 
-	   [Parameter(Mandatory=$false,
-	   				HelpMessage='SCL Value for inbound Mails which should NOT be processed by SEPPmail.Cloud. Default is 5')]
-	   [ValidateSet('-1','0','5','6','8','9')]
-	   [int]$SCLInboundValue=5,
+		[Parameter(Mandatory = $false,
+			HelpMessage = 'SCL Value for inbound Mails which should NOT be processed by SEPPmail.Cloud. Default is 5')]
+		[ValidateSet('-1', '0', '5', '6', '8', '9')]
+		[int]$SCLInboundValue = 5,
 
 		[Parameter(
 			Mandatory = $false,
@@ -131,8 +130,8 @@ function New-SC365Rules
 			Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`" " 
 		}
 
-		 if ($routing -eq 'p') {$routing = 'parallel'}
-		 if ($routing -eq 'i') {$routing = 'inline'}
+		if ($routing -eq 'p') {$routing = 'parallel'}
+		if ($routing -eq 'i') {$routing = 'inline'}
 
 		foreach ($validationDomain in $SEPPmailCloudDomain) {
 			if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $validationDomain) -eq $true) {
@@ -158,7 +157,7 @@ function New-SC365Rules
 		$outboundConnectors = Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
 		if(!($outboundConnectors))
 		{
-			throw [System.Exception] "No SEPPmail.cloud outbound connector found. Run `"New-SC365Connectors`" to add the proper SEPPmail.cloud connectors"
+			throw [System.Exception] "No SEPPmail.cloud outbound connector found. InBoundOnly Mode ? Run `"New-SC365Connectors`" to add the proper SEPPmail.cloud connectors"
 		}
 		if ($($outboundConnectors.Enabled) -ne $true) {
 			throw [System.Exception] "SEPPmail.cloud outbound-connector is disabled, cannot create rules. Create connectors without -Disable switch, or enable them in the admin portal."
@@ -299,6 +298,7 @@ function Remove-SC365Rules {
 		if ($routing -eq 'p') {$routing = 'parallel'}
 		if ($routing -eq 'i') {$routing = 'inline'}
 		$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
+
 	}
 	process {
 		Write-Verbose "Removing current version module rules"
@@ -306,9 +306,11 @@ function Remove-SC365Rules {
 			$setting = Get-SC365TransportRuleSettings -routing $routing -file $file
 			if ($setting.values) {
 				if($PSCmdlet.ShouldProcess($setting.Name, "Remove transport rule")) {
-				$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
-				if($rule -ne $null)
-					{$rule | Remove-TransportRule -Confirm:$false}
+					$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
+					if($rule -ne $null)
+						{
+							$rule | Remove-TransportRule -Confirm:$false
+						}
 				}
 			}
 		} 

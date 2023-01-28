@@ -99,6 +99,7 @@ FunctionsToExport = @(
     'Remove-SC365Setup'
    'Confirm-SC365TenantDefaultDomain'
        'Get-SC365DeploymentInfo'
+      'Show-SC365Tenant'
     )
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
@@ -146,7 +147,7 @@ PrivateData = @{
         ReleaseNotes = 'See https://github.com/seppmail/SEPPmail365cloud/blob/main/CHANGELOG.md'
 
         # Prerelease string of this module
-        Prerelease = 'preview3'
+        # Prerelease = 'preview3'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
