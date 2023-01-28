@@ -591,6 +591,8 @@ function Remove-SC365Setup {
 
 function New-SC365Setup {
     [CmdletBinding(
+        SupportsShouldProcess = $true,
+        ConfirmImpact = 'Medium',
         HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md'
     )]
 
@@ -702,9 +704,11 @@ function New-SC365Setup {
         }
     }
     End{
-        Write-Information "--- Successfully created SEPPmail.cloud Setup for $seppmailclouddomain in region $region in $routing mode ---" -InformationAction Continue
-        Write-Information "--- Wait a few minutes until changes are applied in the Microsoft cloud ---" -InformationAction Continue
-        Write-Information "--- Afterwards, start testing E-Mails in and out ---" -InformationAction Continue
+        if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain)) {
+            Write-Information "--- Successfully created SEPPmail.cloud Setup for $seppmailclouddomain in region $region in $routing mode ---" -InformationAction Continue
+            Write-Information "--- Wait a few minutes until changes are applied in the Microsoft cloud ---" -InformationAction Continue
+            Write-Information "--- Afterwards, start testing E-Mails in and out ---" -InformationAction Continue
+        }
     }
 }
 
