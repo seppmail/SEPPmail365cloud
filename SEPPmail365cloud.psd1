@@ -35,7 +35,7 @@ Copyright = '(c) SEPPmail AG. All rights reserved.'
 Description = 'Integrate and maintain Exchange Online with SEPPmail.Cloud'
 
 # Minimum version of the PowerShell engine required by this module
-PowerShellVersion = '7.2.0'
+# PowerShellVersion = '7.2.0' # replased with error Handling in psm Module
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
