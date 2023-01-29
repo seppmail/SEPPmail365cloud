@@ -625,8 +625,14 @@ function New-SC365Setup {
             Mandatory=$false,
             HelpMessage="No routing of outbound traffic via SEPPmail.cloud"
             )]
-        [switch]$InBoundOnly
-        )
+        [switch]$InBoundOnly,
+
+        [Parameter(
+            Mandatory=$false,
+            HelpMessage="Removes existing setup"
+        )]
+        [switch]$force
+    )
 
     Begin {
         if(!(Test-SC365ConnectionStatus)) {
@@ -677,6 +683,16 @@ function New-SC365Setup {
         }
     }
     Process {
+        try {
+            if ($force) {
+                Remove-SC365Setup
+            }    
+        } catch {
+            throw [System.Exception] "Error: $($_.Exception.Message)"
+            Write-Error "Setup removal failed. Try removing SEPPmail.cloud Rules and Connectors from Portal of with native CmdLets."
+            break
+        }
+
         try {
             if ($InBoundOnly -eq $true) {
                 Write-Information '--- Creating inbound connector ---' -InformationAction Continue
