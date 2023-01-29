@@ -1,59 +1,52 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
-## 1.3.0-preview3
+## 1.3.0 - Certificate based Connectors Edition
 
-__Enhancements__
+Beginning from Saturday 28. Feb 2023, all SEPPmail Customers can use certificate based connectors (Default for all existing an new customers)
+
+This means that every SEPPmail.cloud customer may now setup with SEPPmail365cloud PS Module version 1.3.0+
+
+## Major changes
+
+- Certificate based connectivity to Exchange Online
+- Auto discovery of deployment status
+- Get/New/Remove-Setup CmdLets allow one-stop setup for simple environments
+- Auto installation of missing modules
 
 ## General
 
 - New-Module dependency DNSCLient-PS. Needed for multi-platform DNS-queries
+- *.onmicrosoft.com Domains are automatically filtered out if selected (as we do not want to route this traffic through SEPPmail infrastructure
+- Detection of TenantID based on current Exo-Session
+- Domain-check: When entering a DNSDomain in the Parameter -SEPPmailCloudDomain which is not part of the tenants "AcceptedDomains", the commands New-SC365Rules and New-SC365Connectors will raise an error message, stop, and ask you to enter correct domain(s).
+- Big, ugly note at Module startup to read the Readme.md at Github.
+- Big, ugly warning signs if wrong PowerShell version or wrong ExchangeOnlineManagement Module on module startup
+- Linux(Debian) compatibility. Module has been tested intensively on Debian
+- macOS compatibility. Module has been tested intensively on macOS (Intel and Apple 'M' processors)
+- M365-Tenants, which are still "hydrated" are now prompted to "Enable-OrganizationCustomization"
+- BETA: New Commandlet Get-SC36MessageTrace to trace messages from ExO
 
 ## Enhancements
 
+__Common__
+
 - New CmdLet Get-SC365DeploymentStatus checks if deployment is ready and correct on SEPPmail side
 - New/Get/Remove-SC365Setup now also work without parameters (leverage GET-SC365DeploymentStatus data)
-- *.onmicrosoft.com Domains are automatically filtered out if selected (as we do not want to route this traffic through SEPPmail infrastructure
 - Rule [SEPPmail.cloud] - 050 on SPF fail - no SEPPmail.Cloud now stops after processing
 - Check if DNS entries are available before deploying connectors
-- Detection of TenantID based on current Exo-Session
-
-## 1.3.0-preview2
-
-__Enhancements__
-
-General
-
 - New/Remove/Get-SC365rules have now a mandatory -routing parameter, as we add transport rules to the inline routing mode.
 - New-SC365Setup CmdLet combines all commands to setup an environment
 - Remove-SC365Setup CmdLet combines all command to remove a environment setup
 - Get-SC365Setup CmdLet shoes the current configuration with one CmdLet.
 - Add Confirm-SC365TenantDefaultDomain. A CmdLet to check if a specific domain is the default mail domain of a tenant.
 
-## 1.3.0-preview1 Certificate-Based-Connectors Release
-
-** To use the new CBC functinality, please enable the functionality in the cloud-portal for your tenant. **
-
-Guidance to use 1.3.0-preview editions can be found here. [Link](https://github.com/seppmail/SEPPmail365cloud/blob/main/130-preview.md)
-
-__Enhancements__
-
-General
-
-- Domain-check: When entering a DNSDomain in the Parameter -SEPPmailCloudDomain which is not part of the tenants "AcceptedDomains", the commands New-SC365Rules and New-SC365Connectors will raise an error message, stop, and ask you to enter correct domain(s).
-- Big, ugly note at Module startup to read the Readme.md at Github.
-- Big, ugly warning signs if wrong PowerShell version or wrong ExchangeOnlineManagement Module on module startup
-- Linux(Debian) compatibility. Module has been tested intensively on Debian
-- macOS compatibility. Module has been tested intensively on macOS (Intel and Apple)
-- M365-Tenants, which are still "hydrated" are now prompted to "Enable-OrganizationCustomization"
-- BETA: New Commandlet Get-SC36MessageTrace to trace messages from ExO
-
-Connectors
+__Connectors__
 
 - Inbound-Connectors are now linking to a specific, TenantID-based certificate, which ensures highest delivery-trust by Microsoft
 - Connector type for Inline-Mode is changed to "Partner"
 - Slim connector configuration for parallel mode connectors (No SenderIpAdresses, HostedConnectionFilterPolicy, EFSkipIPs)
 
-Enhancements in Rules
+__Rules__
 
 - Rules now use a positive list of domains. So if a customer adds domains, there is no need to reconfigure the rules until they are booked at SEPPmail.cloud
 - New transport "050" rule to avoid failed SPF-check E-mails to be routed to SEPPmail.cloud (parallel mode only)
