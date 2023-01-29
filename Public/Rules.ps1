@@ -5,7 +5,6 @@
 	Use this tofigure out if there are already SEPPmail.cloud rules implemented in Exchange online.
 	It is only emitting installed rules which come with the seppmail365cloud PowerShell Module.
 	If you want to be informed about all installed transport rules, use New-SC365ExoReport.
-
 .EXAMPLE
 	Get-SC365Rules -routing 'parallel'
 .EXAMPLE
@@ -69,8 +68,8 @@ function Get-SC365Rules {
 .DESCRIPTION
 	Creates all necessary transport rules in Exchange Online to send E-Mails through seppmail.cloud for cryptographic processing.
 .EXAMPLE
-		PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu','contoso.com' -routing inline
-		Creates the rules for specific domains. Includes only defined e-mail domains from processing by SEPPmail.cloud
+	PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu','contoso.com' -routing inline
+	Creates the rules for specific domains. Includes only defined e-mail domains from processing by SEPPmail.cloud
 .EXAMPLE
 	PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu' -PlacementPriority Top -routing parallel
 	Places the transport rules BEFORE all other rules. This is unusual and against the default. It may make sense in some situations.

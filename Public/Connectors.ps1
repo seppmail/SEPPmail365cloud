@@ -10,6 +10,9 @@
 .EXAMPLE
     Get-SC365Connectors -routing -inline
     Shows Connectors in inline mode
+.EXAMPLE
+    Get-SC365Connectors -routing -inline -InboundOnly
+    Shows Connectors in inline/inboundOnly Mode
 .NOTES
     See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
