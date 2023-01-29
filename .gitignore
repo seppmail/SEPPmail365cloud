@@ -6,3 +6,5 @@ launch.json
 gitinfo*
 .DS_Store
 .vscode
+.gitlab/*
+.gitlab
