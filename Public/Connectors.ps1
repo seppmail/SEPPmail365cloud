@@ -409,7 +409,8 @@ function New-SC365Connectors
                     }
                 }
                 else {
-                    Write-Error "There are still transport-rules pointing to the outbound Connector $($existingSMOutboundConn.Identity) Use Remove-SC365rules -routing <routingmode>"
+                    Write-Error "There are still transport-rules pointing to the outbound Connector $($existingSMOutboundConn.Identity)"
+                    Write-Error "Use `"Remove-SC365rules -routing parallel/inline`" to remove and restart New-SC365Connectors."
                 }
             }
             else
@@ -637,8 +638,7 @@ function Remove-SC365Connectors
             }    
         }
     
-        if($PSCmdlet.ShouldProcess($inbound.Name, "Remove SEPPmail inbound connector $($inbound.Name)"))
-        {
+        if($PSCmdlet.ShouldProcess($inbound.Name, "Remove SEPPmail inbound connector $($inbound.Name)")) {
             $InboundConnector = Get-InboundConnector | Where-Object {$_.Name -eq $($inbound.Name)}
             if ($inboundConnector)
                 {
@@ -673,7 +673,7 @@ function Remove-SC365Connectors
                 Write-Warning 'No SEPPmail.Cloud Inbound Connector found'
             }
     
-    }
+        }
     }
 }
 
