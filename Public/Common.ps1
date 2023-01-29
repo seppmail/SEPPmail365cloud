@@ -2,7 +2,7 @@
 .SYNOPSIS
     Detects the SEPPmail.Cloud Deploymemnt status, based in M365 Tenant information
 .DESCRIPTION
-    Checks Deplyoment Status of the SEPPmail.Cloud based on M365 Tenantinformation.
+    Checks Deplyoment Status of the SEPPmail.Cloud based on M365 Tenantinformation from outside, based on DNS information
     
     - Queries routingmode based on available MX records in the SEPPmail.cloud
     - Queries region based on IP adresses and mailhosts
@@ -28,13 +28,16 @@
 .EXAMPLE
     Get-SC365DeploymentInfo
 
+    DeployMentStatus    : True
+    SEPPmailCloudDomain : contoso.com
     Region              : ch
     Routing             : inline
-    SEPPmailCloudDomain : contoso.com
+    InBoundOnly         : False
     CBCDeployed         : True
     CBCConnectorHost    : 271dd771-832d-4913-80d7-9c21616accd4.ch.seppmail.cloud
     CBCDnsEntry         : c60abc9d247a2bf21cbc3344eef199eb738876b2.cbc.seppmail.cloud
     InlineMXMatch       : True
+    MailHost            : 
     RelayHost           : contoso-com.relay.seppmail.cloud
     GateHost            : contoso-com.gate.seppmail.cloud
 #>
@@ -498,6 +501,28 @@ function New-SC365ExOReport {
     }
 }
 
+<#
+.SYNOPSIS
+    Removes all Rules and Connectors
+.DESCRIPTION
+    Based on autodiscovery, or forced values through parameters, Remove-SC365Setup removes all connectors and rules from an Exo-Tenant
+.NOTES
+    - none -
+.LINK
+    https://github.com/seppmail/seppmail365cloud
+.EXAMPLE
+    Remove-SC365Setup
+    # Without any parameters, it runs discovery mode and removes rules and connectors
+.EXAMPLE
+    Remove-SC365Setup -parallel
+    # Forces to remove parallel setup config
+.EXAMPLE
+    Remove-SC365Setup -inline
+    # Forces to remove inline setup config
+.EXAMPLE
+    Remove-SC365Setup -inline -inBoundOnly
+    # Forces to remove inline in "InbohndOnly" mode setup config
+#>
 function Remove-SC365Setup {
     [CmdletBinding(
         SupportsShouldProcess = $true,
@@ -589,6 +614,31 @@ function Remove-SC365Setup {
     }
 }
 
+<#
+.SYNOPSIS
+    Creates all Rules and Connectors for SEPPmail.cloud
+.DESCRIPTION
+    Based on autodiscovery, or forced values through parameters, New-SC365Setup creates all connectors and rules for an Exo-Tenant
+.NOTES
+    - none -
+.LINK
+    https://github.com/seppmail/seppmail365cloud
+.EXAMPLE
+    New-SC365Setup
+    # Without any parameters, it runs discovery mode and created rules and connectors
+.EXAMPLE
+    New-SC365Setup -force
+    # The force parameter will force the removal of an existig setup and recreate connectors and rules 
+.EXAMPLE
+    New-SC365Setup -SEPPmailCloudDomain contoso.com -routing parallel -region ch
+    # Creates a setup for one domain in parallel mode and in region Switzerland
+.EXAMPLE
+    New-SC365Setup -SEPPmailCloudDomain contoso.de -routing inline -region de
+    # Creates a setup for one domain in inline mode and in region Germany/EU
+.EXAMPLE
+    New-SC365Setup -SEPPmailCloudDomain contoso.de -routing inline -region de -inboundonly
+    # Creates a setup for one domain in inline mode and in region Germany/EU inbound only.
+#>
 function New-SC365Setup {
     [CmdletBinding(
         SupportsShouldProcess = $true,
@@ -724,6 +774,28 @@ function New-SC365Setup {
     }
 }
 
+<#
+.SYNOPSIS
+    Reads all Rules and Connectors for SEPPmail.cloud in an Exo-Tenant
+.DESCRIPTION
+    Based on autodiscovery, or forced values through parameters, Get-SC365Setup reads all connectors and rules from an Exo-Tenant
+.NOTES
+    - none -
+.LINK
+    https://github.com/seppmail/seppmail365cloud
+.EXAMPLE
+    Get-SC365Setup
+    # Without any parameters, it runs discovery mode and reads rules and connectors
+.EXAMPLE
+    Get-SC365Setup -parallel
+    # Reads parallel setup config
+.EXAMPLE
+    Get-SC365Setup -inline
+    # Reads inline setup config
+.EXAMPLE
+    Get-SC365Setup -inline -inBoundOnly
+    # Reads inline in "InbohndOnly" mode setup config
+#>
 function Get-SC365Setup {
     [CmdletBinding(DefaultParameterSetName='parallel')]
     
@@ -955,61 +1027,6 @@ function Test-SC365ConnectionStatus
     }
     return $isConnected
 }
-
-<#
-function Resolve-SC365IPv4Address {
-    param(
-        [Parameter(
-            Mandatory = $true,
-            HelpMessage = 'DNS Name'
-        )]
-        $fqdn
-    )
-    try {
-        $ret = [System.Net.Dns]::GetHostAddresses($fqdn) |where-object AddressFamily -eq 'Internetwork'|select-object -expandproperty ipaddresstostring    
-    } catch {
-        $ret = '--- IP4 Address could not be resolved ---'
-    }
-    return $ret
-}
-
-function Resolve-SC365IPv6Address {
-    param(
-        [Parameter(
-            Mandatory = $true,
-            HelpMessage = 'DNS Name'
-        )]
-        $fqdn
-    )
-    try {
-        $ret = [System.Net.Dns]::GetHostAddresses($fqdn) |where-object AddressFamily -eq 'InterNetworkV6'|select-object -expandproperty ipaddresstostring  
-    } catch {
-        $ret = '--- IP6 Address could not be resolved ---'
-    }
-    return $ret
-}
-
-function Resolve-SC365DNSName {
-    [CmdLetBinding()]
-    param(
-        [Parameter(
-            Mandatory = $true,
-            HelpMessage = 'IP4 or IPv6 IP address'
-        )]
-        [String]$ipAddress
-    )
-    $DnsName = $Null
-
-    try {
-        Write-Verbose "Resolving $iPAddress to HostName"
-        $DNSName = [System.Net.Dns]::GetHostEntry($ipaddress).Hostname
-     } 
-     catch {
-        $DnsName = "---IP could not be resolved---"
-    }
-    return $DNSName
-}
-#>
 <#
 .SYNOPSIS
     Validates if a given strig (domainname) is the tenant default maildomain
@@ -1021,7 +1038,7 @@ function Resolve-SC365DNSName {
 .LINK
     - none -
 .EXAMPLE
-    Confirm-TenantDefaultDomain -Domain 'contoso.eu'
+    Confirm-SC365TenantDefaultDomain -Domain 'contoso.eu'
     Returns either an error if the domain is NOT in the tenant, of true or false.
 #>
 function Confirm-SC365TenantDefaultDomain {
@@ -1051,6 +1068,18 @@ function Confirm-SC365TenantDefaultDomain {
     }
 }
 
+<#
+.SYNOPSIS
+    Tracks Messages in Exchange Online connected with SEPPmail.cloud
+.DESCRIPTION
+    Combines information from messagetrace and messagetrace details, to emit information how a specific message went throught Exchangeonline
+.NOTES
+    - none - 
+.LINK
+    - none -
+.EXAMPLE
+    Get-SC365Messagetrace -MessageId '123@somedomain.com' -RecipientAddress 'bob@contoso.com'
+#>
 function Get-SC365MessageTrace {
     [CmdLetBinding(
         HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
@@ -1340,9 +1369,6 @@ Function Show-sc365Tenant {
 
 
 }
-
-
-
 
 Register-ArgumentCompleter -CommandName Get-SC365TenantId -ParameterName MailDomain -ScriptBlock $paramDomSB
 Register-ArgumentCompleter -CommandName New-SC365Setup -ParameterName SEPPmailCloudDomain -ScriptBlock $paramDomSB
