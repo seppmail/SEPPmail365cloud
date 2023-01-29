@@ -16,15 +16,15 @@ Write-Verbose 'Loading Module Files'
 . $ModulePath\Public\Connectors.ps1
 
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+ Welcome to the SEPPmail.cloud PowerShell setup module               +" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+ Please read the documentation on GitHub if you are unfamiliar       +" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+ with the module and its CmdLets before continuing !                 +" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+ https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md    +" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+ Press <CTRL><Klick> to open the Link                                +" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+                                                                     +" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "| Welcome to the SEPPmail.cloud PowerShell setup module               |" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "| Please read the documentation on GitHub if you are unfamiliar       |" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "| with the module and its CmdLets before continuing !                 |" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "| https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md    |" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "| Press <CTRL><Klick> to open the Link                                |" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 
 if ($sc365notests -ne $true) {
@@ -53,37 +53,37 @@ if ($sc365notests -ne $true) {
     #Check Environment
     If ($psversiontable.PsVersion.ToString() -notlike '7.*') {
         Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+                                                      +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+           ! WRONG POWERSHELL VERSION !               +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+                                                      +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+           PLEASE install PowerShell CORE 7.2+        +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+                                                      +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+           The module will not work on                +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+           Windows Powershell 5.1  :-( :-(            +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+                                                      +" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|           ! WRONG POWERSHELL VERSION !               |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|           PLEASE install PowerShell CORE 7.2+        |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|           The module will not work on                |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|           Windows Powershell 5.1  :-( :-(            |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
         Break
     }
     # Check Exo Module Version 
     if (!((Get-Module -Name ExchangeOnlineManagement -ListAvailable).Where({$_.Version -ge [version]'3.0.0'}))) {
         Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+                                                      +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+   WRONG Version of ExchangeOnlineManagement Module   +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+                                                      +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+          Install version 3.0.0 ++ of the             +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+         ExchangeOnlineManagement Module with:        +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+                                                      +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+  `"Install-Module ExchangeOnlineManagement -Force`"    +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+                                                      +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+     # EXIT and RESTART THE POWERSHELL SESSION #      +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+                                                      +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+       `"Import-Module ExchangeOnlineManagement`"       +" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+                                                      +" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|   WRONG Version of ExchangeOnlineManagement Module   |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|          Install version 3.0.0 ++ of the             |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|         ExchangeOnlineManagement Module with:        |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|  `"Install-Module ExchangeOnlineManagement -Force`"    |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|     # EXIT and RESTART THE POWERSHELL SESSION #      |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|       `"Import-Module ExchangeOnlineManagement`"       |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
     }
     Write-Verbose "Testing Exchange Online connectivity"
     if (!(Test-SC365ConnectionStatus)) {
-        Write-Warning "You are not connected to Exchange Online. Use Connect-ExchangeOnline to connect to your tenant"
+        Write-Warning "You are not connected to Exchange Online. Use `"Connect-ExchangeOnline`" to connect to your tenant"
     }
 
     try {

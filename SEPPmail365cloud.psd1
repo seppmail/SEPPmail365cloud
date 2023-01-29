@@ -35,7 +35,7 @@ Copyright = '(c) SEPPmail AG. All rights reserved.'
 Description = 'Integrate and maintain Exchange Online with SEPPmail.Cloud'
 
 # Minimum version of the PowerShell engine required by this module
-# PowerShellVersion = '7.2.0' # replased with error Handling in psm Module
+PowerShellVersion = '5.1' # should be 7.2.0, but set to 5.1 becasue of: Could not determine newest module version due to exception The module manifest 'C:\Users\rst\GitLab\seppmail365cloud\SEPPmail365cloud.psd1' is specified with the CompatiblePSEditions key which is supported only on PowerShell version '5.1' or higher.
 
 # Name of the PowerShell host required by this module
 # PowerShellHostName = ''
