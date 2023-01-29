@@ -1,10 +1,54 @@
+![](./Visuals/SMC-rm.png)
+
 ***Setup SEPPmail.cloud in 3 easy steps:***
 
 | 1-Install PowerShell CORE | 2-Install module | 3-Run the Setup Command |
 | --------------- | --------------- | --------------- |
-| [docs.microsoft.com](https://learn.microsoft.com/de-de/powershell/scripting/install/installing-powershell?view=powershell-7.3) | ```Install-Module seppmail365cloud``` | ```New-SC365Setup``` |
+| [Microsoft PS-Core install docs](https://learn.microsoft.com/de-de/powershell/scripting/install/installing-powershell?view=powershell-7.3) | ```Install-Module seppmail365cloud``` | ```New-SC365Setup -force``` |
 
-For more details and advanced setup routines, read more below.
+## NEW customers: Basic setup for most (single maildomain) environments
+
+If you are a new customer and just got the deployment e-Mail from SEPPmail.cloud all you have to do is to run:
+
+```powershell
+New-SC365Setup
+```
+
+This will setup all necessary connectors and rules for your Microsoft tenant.
+
+## EXISTING customers: Basic setup-update for most (single maildomain) environments.
+
+If you are an existing customer and just and just updated the PowerShell Module, do is to to update:
+
+```powershell
+New-SC365Setup -force
+```
+
+This will recreate all necessary connectors and rules for your Microsoft tenant.
+
+
+
+## Check you Setup
+
+If you want to know what setup has been implemented in your tenant, run Get-SC365Setup
+
+```powershell
+Get-SC365Setup
+```
+
+This will list Connectors and Transport Rules of your tenant.
+
+## Remove SEPPmail.cloud integration
+
+To remove all SEPPmail.cloud connectors and rules, run:
+
+```powershell
+Remove-SC365Setup
+```
+
+
+
+For more details and advanced setup routines, read details below.
 - [The SEPPmail365cloud PowerShell Module README.MD](#the-seppmail365cloud-powershell-module-readmemd)
   - [Introduction](#introduction)
   - [Latest Changes](#latest-changes)
@@ -22,24 +66,24 @@ For more details and advanced setup routines, read more below.
   - [Using the seppmail365cloud PowerShell module](#using-the-seppmail365cloud-powershell-module)
     - [Get to know your Microsoft Exchange Online environment](#get-to-know-your-microsoft-exchange-online-environment)
     - [Clean up before installing](#clean-up-before-installing)
-  - [Setup the integration](#setup-the-integration)
+  - [Setup the integration for BASIC environments](#setup-the-integration-for-basic-environments)
+  - [Setup the integration for ADVANCED environments](#setup-the-integration-for-advanced-environments)
     - [Example for routingmode: inline](#example-for-routingmode-inline)
+    - [Example for routingmode: inline/inboundonly](#example-for-routingmode-inlineinboundonly)
     - [Example for routingmode: parallel](#example-for-routingmode-parallel)
   - [Review the changes](#review-the-changes)
   - [Test your mailflow](#test-your-mailflow)
-  - [Advanced Setup](#advanced-setup)
+  - [Advanced Setup Options](#advanced-setup-options)
     - [Creating Connectors and disabled Rules for time-controlled integration](#creating-connectors-and-disabled-rules-for-time-controlled-integration)
     - [Place TransportRules at the top of the rule-list](#place-transportrules-at-the-top-of-the-rule-list)
     - [Use AllowLists for specific customer situations](#use-allowlists-for-specific-customer-situations)
-      - [Inbound-Only (Inline Mode)](#inbound-only-inline-mode)
       - [Allowlisting SEPPmail.cloud in the Defender Enhanced Filtering List (Parallel Mode)](#allowlisting-seppmailcloud-in-the-defender-enhanced-filtering-list-parallel-mode)
       - [Allowlisting SEPPmail.cloud in the Anti-SPAM filter list, aka HostedConnectionFilterPolicy (Parallel Mode)](#allowlisting-seppmailcloud-in-the-anti-spam-filter-list-aka-hostedconnectionfilterpolicy-parallel-mode)
   - [Issues and solutions](#issues-and-solutions)
     - [Computer has User home directory on a fileshare (execution policy error)](#computer-has-user-home-directory-on-a-fileshare-execution-policy-error)
-- [Preview 1.3.0 Information.](#preview-130-information)
-  - [One-CmdLet Setup](#one-cmdlet-setup)
-  - [Check you Setup](#check-you-setup)
-  - [Remove SEPPmail.cloud integration](#remove-seppmailcloud-integration)
+    - [Special Case : Connectors with "/" or "\\" in the name](#special-case--connectors-with--or--in-the-name)
+    - [Special Cases - Still mail-loops after re-setup with Version 1.3.0+](#special-cases---still-mail-loops-after-re-setup-with-version-130)
+    - [Well-Known Error: New-SC365Rukes asks for rulenames](#well-known-error-new-sc365rukes-asks-for-rulenames)
 
 # The SEPPmail365cloud PowerShell Module README.MD
 
@@ -50,7 +94,7 @@ The module requires you to connect to your Exchange Online environment as admini
 
 ## Latest Changes
 
-Changes in the module versions are documented in ![CHANGELOG.md](./CHANGELOG.md)
+Changes in the module versions are documented in the ![CHANGELOG.md](./CHANGELOG.md)
 
 ## Prerequisites
 
@@ -59,7 +103,11 @@ Changes in the module versions are documented in ![CHANGELOG.md](./CHANGELOG.md)
 The module requires:
 
 - *PowerShell Core* (minimum version 7.2.1)
-- Exchange Online Module version minimum 3.0.0
+
+The module requires and automatically installs:
+
+- Exchange Online Module version minimum 3.0.0+
+- DNSClient-PS 1.0+
 
 If you want to know how to connect to Exchange Online via Powershell read [https://learn.microsoft.com](https://learn.microsoft.com/de-de/powershell/exchange/connect-to-exchange-online-powershell?view=exchange-ps).
 
@@ -80,7 +128,7 @@ When connecting to Exchange Online, we recommend using the **-Device** or **-Cre
 To install the SEPPmail365Cloud module, open Powershell Core (pwsh.exe) and execute:
 
 ```powershell
-cd ~                              # moves inito the Home-Directory
+cd ~                              # moves into the Home-Directory
 
 Install-Module "SEPPmail365cloud" # installs the SEPPmail365cloud module
 ```
@@ -150,22 +198,46 @@ The report will give you valued information about existing connectors, rules and
 
 ### Clean up before installing
 
-If your Exchange Online environment was originally integrated with a SEPPmail Appliance, you need to remove the existing SEPPmail365 connectors and rules before integrating into SEPPmail.cloud.
-To do this use our OTHER PS-Module **SEPPmail365**. Find info on [Remove SEPPmail connectors and rules here.](https://github.com/seppmail/SEPPmail365#cleanup-environment)
+If your Exchange Online environment was originally integrated with a SEPPmail Appliance, you need to **remove the existing SEPPmail365 connectors and rules** before integrating into SEPPmail.cloud.
+To do this use our OTHER PS-Module **SEPPmail365** or the Office admin Portal. Find info on [Remove SEPPmail connectors and rules here.](https://github.com/seppmail/SEPPmail365#cleanup-environment)
 
 >Note: *If you do not remove existing __[SEPPmail]__ rules and connectors, the mailflow will be a **mess** and the **integration will not work**.*
 
-## Setup the integration
 
-After you are sure that your Exchange Online environment is prepared, you have received a **welcome e-mail** from SEPPmail, and followed all instructions, you can start with the integration.
+## Setup the integration for BASIC environments
+
+A basic environment has the following characteristics.
+
+- All customer mailboxes are hosted in Exchange Online.
+- The customer uses **one** e-mail domain for all users.
+- This one e-mail domain is the tenant-default domain.
+- This e-mail has been used to book SEPPmail.cloud.
+- There are no hybrid connectors.
+- There are no other external connectors.
+- There are no cross-tenant connectors.
+- There are no other 3rd party connectors.
+- There are no transport-rules implemented which may affect mailrouting to SEPPmail.cloud
+
+If all those requirements are met the 3 commandlets below are your friends and will do the setup job for you.
+
+- Get-SC365Setup ==> Read the existing setup
+- New-SC365Setup ==> create a new setup
+- Remove-SC365Setup ==> remove an existing setup
+
+## Setup the integration for ADVANCED environments
+
+Advanced Setups require a deeper understanding of the impact of the SEPPmail.cloud integration, and allow more flexibility.
+
+After you have received a **welcome e-mail** from SEPPmail, and followed all instructions in the e-mail, you can start with the integration.
 
 You need to know 3 input values to run the CmdLets.
 
 - **SEPPMailCloudDomain** (the e-mail domain of your Exchange Online environnement that has been configured in the seppmail.cloud. Most of the time this is the default-domain in your Exchange Online Tenant.)
 - **routing** (either "inline" or "parallel", read above for details)
 - **region** ("de" or "ch", the geographical region of the SEPPmail.cloud infrastructure)
+- **inBoundOnly** (a parameter you may set or not set in INLINE Mode only, which is for customers which use our INBOUND filter only)
 
->Note: All 3 parameters are automatically populating valid options if you press TAB after the prameter. This reduces typo errors.
+>Note: All 4 parameters are automatically populating valid options if you press TAB after the parameter. This reduces typo errors.
 
 You need to setup inbound and outbound-connectors and transport rules, so run the two commands as explained below.
 
@@ -174,7 +246,15 @@ You need to setup inbound and outbound-connectors and transport rules, so run th
 ```powershell
 New-SC365Connectors -SEPPmailCloudDomain 'contoso.ch' -routing 'inline' -region 'ch'
 
-# Currently no rules are needed for routingtype SEPPmail, so you are done after setting up the connectors!
+New-SC365Rules -routing 'inline' -SEPPmailCloudDomain 'contoso.eu'
+
+```
+### Example for routingmode: inline/inboundonly
+
+```powershell
+New-SC365Connectors -SEPPmailCloudDomain 'contoso.ch' -routing 'inline' -region 'ch' -inboundonly
+
+# No rules required for inbound only setups
 ```
 
 ### Example for routingmode: parallel
@@ -190,7 +270,6 @@ New-SC365Rules -routing parallel -SEPPmailCloudDomain 'contoso.eu'
 
 ```powershell
 Get-SC365Connectors -routing parallel
-
 Get-SC365Rules -routing parallel
 
 # Important: Those 2 commands will show the current connectors and rules.
@@ -204,7 +283,7 @@ You can use also the native Exchange Online Commandlets.
 
 Send an e-mail from inside-out and outside-in to see if the mailflow is working.
 
-## Advanced Setup
+## Advanced Setup Options
 
 The module allows some extra-tweaks for advanced configurations
 
@@ -243,14 +322,6 @@ New-SC365Rules -PlacementPriority Top
 
 ### Use AllowLists for specific customer situations
 
-#### Inbound-Only (Inline Mode)
-
-In rare customer situations or for testing purposes, clients only want to use the inbound-filter. To create Inbound connectivity ONLY, use the -inBoundOnly parameter like in the example below.
-
-```powershell
-New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'inline' -region 'de' -inBoundOnly
-```
-
 #### Allowlisting SEPPmail.cloud in the Defender Enhanced Filtering List (Parallel Mode)
 
 We saw situations where the EnhancedFiltering Allowlist needed to be filled with SEPPmail.cloud IP addresses.
@@ -284,34 +355,20 @@ Save-module seppmail365cloud -Path c:\temp
 import-modue c:\temp\seppmail365cloud
 ```
 
-# Preview 1.3.0 Information.
+### Special Case : Connectors with "/" or "\\" in the name
 
-## One-CmdLet Setup
+We had a version of the SEPPmail.cloud connectors in place which used slashes in the name. Microsoft somehow stopped to accept this. If you find such a connector do this:
 
-If you are a new customer and just got the deployment E-Mail from SEPPmail.cloud all you have to do is to run:
+1. Rename connectors in the admin.microsoft.com portal
+2. Delete them after renaming in the admin portal.
 
-```powershell
-New-SC365Setup
-```
+### Special Cases - Still mail-loops after re-setup with Version 1.3.0+ 
 
-This will setup all necessary connectors and rules for your Microsoft tenant.
+If you set up everything according to the description above, and still have mail-loops, check if the recipient is also in the SEPPmail.cloud, the recipient tenant MUST also use the newest connectors (CBC). Reach out to he recipients admin and force them to update their setup.
 
-## Check you Setup
+### Well-Known Error: New-SC365Rukes asks for rulenames
 
-If you want to know what setup has been implemented in your tenant, run Get-SC365Setup
+We saw this on several windows machines, but could not trace it down so far. If you get this error send us an e-Mail to support.
 
-```powershell
-Get-SC365Setup
-```
-
-This will list Connectors and Transport Rules of your tenant.
-
-## Remove SEPPmail.cloud integration
-
-To remove all SEPPmail.cloud connectors and rules, run:
-
-```powershell
-Get-SC365Setup
-```
 
 <p style="text-align: center;">--- End of document ---</p>
