@@ -2,7 +2,7 @@
 
 ***Setup SEPPmail.cloud in 3 easy steps:***
 
-| 1-Install PowerShell CORE | 2-Install module | 3-Run the Setup Command |
+| 1-Install PowerShell CORE | 2-Install module | [3-Run the Setup Command](#setup-the-integration-for-basic-environments) |
 | --------------- | --------------- | --------------- |
 | [Microsoft PS-Core install docs](https://learn.microsoft.com/de-de/powershell/scripting/install/installing-powershell?view=powershell-7.3) | ```Install-Module seppmail365cloud``` | ```New-SC365Setup -force``` |
 
