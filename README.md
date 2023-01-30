@@ -46,9 +46,6 @@ To remove all SEPPmail.cloud connectors and rules, run:
 Remove-SC365Setup
 ```
 
-
-
-For more details and advanced setup routines, read details below.
 - [The SEPPmail365cloud PowerShell Module README.MD](#the-seppmail365cloud-powershell-module-readmemd)
   - [Introduction](#introduction)
   - [Latest Changes](#latest-changes)
