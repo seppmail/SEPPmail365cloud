@@ -60,7 +60,7 @@ Remove-SC365Setup
       - [Routing mode "inline"](#routing-mode-inline)
       - [Routing mode "parallel"](#routing-mode-parallel)
     - [Cloud Regions](#cloud-regions)
-  - [Using the seppmail365cloud PowerShell module](#using-the-seppmail365cloud-powershell-module)
+  - [Using the SEPPmail365cloud PowerShell module](#using-the-seppmail365cloud-powershell-module)
     - [Get to know your Microsoft Exchange Online environment](#get-to-know-your-microsoft-exchange-online-environment)
     - [Clean up before installing](#clean-up-before-installing)
   - [Setup the integration for BASIC environments](#setup-the-integration-for-basic-environments)
@@ -147,31 +147,29 @@ __Further information__ and detailed steps for the module setup can be found on 
 
 ### Routing modes
 
-When integrating your Exchange online environment with seppmail.cloud, you have to decide between two e-mail routing modes to Microsoft. We either set the mx-record to *SEPPmail.cloud* (inline) or leave it at *Microsoft* (parallel). Customers routing e-Mails via seppmail.cloud benefit from our outstanding e-mail filter which prevents spam and unwanted software flowing into your network via e-mail.
+When integrating your Exchange online environment with SEPPmail.cloud, you have to decide between two e-mail routing modes to Microsoft. We either set the mx-record to *SEPPmail.cloud* (inline) or leave it at *Microsoft* (parallel). Customers routing e-Mails via SEPPmail.cloud benefit from our outstanding e-mail filter which prevents spam and unwanted software flowing into your network via e-mail.
 
 >Note: If you leave the mx-record at microsoft you CANNOT use the SEPPmail.cloud e-mail filter, but for sure our encryption processing possibilities.
 
 Now lets look into the 2 different modes.
 
+![Routing modes](./Visuals/130-routingmodes.png)
+
 #### Routing mode "inline"
 
 Routing mode "inline" allows you to use the full power of the SEPPmail.cloud! In this scenario, the __mx-record of the e-mail domain is set to the SEPPmail cloud hosts__. Inbound e-mails flow to the SEPPmail.cloud, are scanned, treated cryptographically and then flow to Microsoft via connectors. Same is outbound, the mails simply pass the SEPPmail.cloud before leaving to the internet.
-
-![inline](./Visuals/seppmail365cloud-visuals-inline.png)
 
 #### Routing mode "parallel"
 
 This routing mode is similar to the way you would integrate any SEPPmail Appliance (self hosted or MSP) with ExchangeOnline. E-mails flow to Microsoft, and are looped through SEPPmail.cloud, based on the need for cryptographic treatment. Unfortunately, no SEPPmail Virus or SPAM filter is possible in this configuration.
 
-![parallel](./Visuals/seppmail365cloud-visuals-parallel.png)
-
 ### Cloud Regions
 
-SEPPmail.cloud is operated in different cloud-regions (datacenters). based on what you ordered, your tenant may be provisioned in one or the other cloud-region.
+SEPPmail.cloud is operated in different cloud-regions (datacenters). Based on what you ordered, your tenant may be provisioned in one or the other cloud-region.
 
 Deploying to the wrong region will lead to a non-working environment. Your onboarding E-Mail should contain all information for your region.
 
-## Using the seppmail365cloud PowerShell module
+## Using the SEPPmail365cloud PowerShell module
 
 ### Get to know your Microsoft Exchange Online environment
 
@@ -229,7 +227,7 @@ After you have received a **welcome e-mail** from SEPPmail, and followed all ins
 
 You need to know 3 input values to run the CmdLets.
 
-- **SEPPMailCloudDomain** (the e-mail domain of your Exchange Online environnement that has been configured in the seppmail.cloud. Most of the time this is the default-domain in your Exchange Online Tenant.)
+- **SEPPMailCloudDomain** (the e-mail domain of your Exchange Online environnement that has been configured in the SEPPmail.cloud. Most of the time this is the default-domain in your Exchange Online Tenant.)
 - **routing** (either "inline" or "parallel", read above for details)
 - **region** ("de" or "ch", the geographical region of the SEPPmail.cloud infrastructure)
 - **inBoundOnly** (a parameter you may set or not set in INLINE Mode only, which is for customers which use our INBOUND filter only)
