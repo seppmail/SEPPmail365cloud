@@ -48,7 +48,7 @@ function Get-SC365DeploymentInfo {
             Mandatory   = $false,
             HelpMessage = "Domain name you selected for Tenant-onboarding"
          )]
-         [string]$SEPPmailCloudDomain
+         [string[]]$SEPPmailCloudDomain
     )
     
     begin {
@@ -84,18 +84,36 @@ function Get-SC365DeploymentInfo {
     process {
         #region Select DefaultDomain
             if (!($SEPPmailCloudDomain)) {
-                [String]$SEPPmailCloudDomain = $tenantAcceptedDomains |Where-Object 'Default' -eq $true |select-Object -ExpandProperty DomainName
+                [String]$DNSHostDomain = $tenantAcceptedDomains |Where-Object 'Default' -eq $true |select-Object -ExpandProperty DomainName
                 Write-Verbose "Extracted Default-Domain with name $SEPPmailcloudDomain from TenantDefaultDomains"
                 }
-            if (($SEPPmailCloudDomain) -and (!($tenantAcceptedDomains.DomainName.Contains($SEPPmailCloudDomain)))) {
-               throw [System.Exception] "Domain $SEPPmailCloudDomain is not member of this tenant! Check for typos or connect to different tenant"
+            else {
+                foreach ($dom in $SEPPmailCloudDomain) {
+                    if (!($tenantAcceptedDomains.DomainName.Contains($Dom))) {
+                        throw [System.Exception] "Domain $Dom is not member of this tenant! Check for typos or connect to different tenant"
+                    }
+                    else {
+                        Write-Verbose "Domain $Dom is member of the tenant domains"
+                        if ($dom -eq ($tenantAcceptedDomains |Where-Object 'Default' -eq $true |select-Object -ExpandProperty DomainName)) {
+                            $DnsHostDomain = $dom
+                        }
+                        else {
+                            Write-Verbose "TenantDefaultDomain not selected, using $dom ans DNSHostDoman"
+                            $DnsHostDomain = $dom
+                        }
+                    }
+                }
             }
+
+        <#    if (($SEPPmailCloudDomain) -and (!($tenantAcceptedDomains.DomainName.Contains($SEPPmailCloudDomain)))) {
+               throw [System.Exception] "Domain $SEPPmailCloudDomain is not member of this tenant! Check for typos or connect to different tenant"
+            }#>
         #endregion Select DefaultDomain
 
         #region Query SEPPmail routing-Hosts DNS records and detect routing mode and in/oitbound
-            [string]$relayHost = $SEPPmailCloudDomain.Replace('.','-') + '.relay.seppmail.cloud'
-             [string]$mailHost = $SEPPmailCloudDomain.Replace('.','-') + '.mail.seppmail.cloud'
-             [string]$gateHost = $SEPPmailCloudDomain.Replace('.','-') + '.gate.seppmail.cloud'
+            [string]$relayHost = $DnsHostDomain.Replace('.','-') + '.relay.seppmail.cloud'
+             [string]$mailHost = $DnsHostDomain.Replace('.','-') + '.mail.seppmail.cloud'
+             [string]$gateHost = $DnsHostDomain.Replace('.','-') + '.gate.seppmail.cloud'
             
         if (((Resolve-Dns -Query $GateHost).Answers)) {
             $routing = 'inline'
@@ -125,7 +143,7 @@ function Get-SC365DeploymentInfo {
         #endregion Mailhost queries
 
         #region DoubleCheck if MX Record is set correctly
-            $mxFull = get-mxrecordreport -Domain $SEPPmailCloudDomain
+            $mxFull = get-mxrecordreport -Domain $DnsHostDomain
             
         if ($mxFull.Count -eq 0) {
             $DeployMentStatus = $false
@@ -138,10 +156,10 @@ function Get-SC365DeploymentInfo {
                 $mx = $mxFull[0] | Select-Object -ExpandProperty highestpriorityMailHost -Unique
             }
                 
-            if (($mx.Split($SEPPmailCloudDomain.Replace('.', '-'))) -eq '.gate.seppmail.cloud') {
+            if (($mx.Split($DnsHostDomain.Replace('.', '-'))) -eq '.gate.seppmail.cloud') {
                 Write-Verbose "MX = SEPPmail"
             }
-            if (($mx.Split($SEPPmailCloudDomain.Replace('.', '-'))) -eq '.mail.protection.outlook.com') {
+            if (($mx.Split($DnsHostDomain.Replace('.', '-'))) -eq '.mail.protection.outlook.com') {
                 Write-Verbose "MX = Microsoft"
             }
             if ($routing -eq 'inline') {
@@ -178,7 +196,7 @@ function Get-SC365DeploymentInfo {
         #endregion Cloud-IP-Addresses
 
         #region Check CBC Availability
-            [String]$TenantID = Get-SC365TenantID -maildomain $seppmailclouddomain -OutVariable "TenantID"
+            [String]$TenantID = Get-SC365TenantID -maildomain $DnsHostDomain -OutVariable "TenantID"
             $TenantIDHash = Get-SC365StringHash -String $TenantID
             [string]$hashedDomain =  $TenantIDHash + '.cbc.seppmail.cloud'
             #if ((((resolve-dns -query $hashedDomain -QueryType TXT).Answers).Text) -eq 'CBC') {
@@ -196,7 +214,7 @@ function Get-SC365DeploymentInfo {
                Write-Verbose "$HashedDomain of TenantID $tenantId has a CBC entry"
             } else {
                $CBCDeployed = $false
-               Write-Warning "Could not find TXT Entry for TenantID $TenantID of domain $SEPPmailCloudDomain. Setup will most likely fail! Go to the SEPPmail.cloud-portal and check the deployment status."
+               Write-Warning "Could not find TXT Entry for TenantID $TenantID of domain $DNSHostCloudDomain. Setup will most likely fail! Go to the SEPPmail.cloud-portal and check the deployment status."
             }
         #endregion CBC availability
     }
