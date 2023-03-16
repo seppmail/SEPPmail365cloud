@@ -13,6 +13,18 @@
           "SMPriority"                              : 2,
           "FromScope"                               : "NotInOrganization",
           "SentToScope"                             : "InOrganization",
+          "HeaderContainsMessageHeader"             : "content-type",
+          "HeaderContainsWords"                     : [
+                                                        "application/x-pkcs7-mime",
+                                                        "application/pkcs7-mime",
+                                                        "application/x-pkcs7-signature",
+                                                        "application/pkcs7-signature",
+                                                        "multipart/signed",
+                                                        "application/pgp-signature",
+                                                        "multipart/encrypted",
+                                                        "application/pgp-encrypted",
+                                                        "application/octet-stream"
+                                                      ],
           "SetHeaderName"                           : "X-SM-maildirection",
           "SetHeaderValue"                          : "inbound",
           "ExceptIfHeaderMatchesMessageHeader"      : "X-SM-internal",
