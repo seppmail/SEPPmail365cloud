@@ -12,6 +12,7 @@
 
 - Updated IP-Address list of DE and CH cloud.
 - All transport rules have set "AuditSeverity" to "low", so we can trace transport rules trigger for diagnosis and debugging.
+- Checking if Tenant allows creation of OnPrem Connectors to see if Exchange Error EX505293 will take place
 
 ## 1.3.0 - Certificate based Connectors Edition
 
