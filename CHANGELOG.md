@@ -5,17 +5,17 @@
 ### Enhancements
 
 - Parallel Mode - Inbound Rule 100 not only routes E-Mails tp SEPPmail.cloud if they are signed/encrypted somehow (Content-type matches SMIME or PGP sign/encrypt)
-- Parallel-mode: InboundConnector has EFSkipLastIP set to "true" to allow support for ARC-Signing
+- Parallel-mode: InboundConnector has EFSkipLastIP set to "true" by default to allow support for ARC-signing
+- Inline-mode: InboundConnector has EFSkipLastIP set to "true" by default
 
 ### Maintenance
 
 - Updated IP-Address list of DE and CH cloud.
-- All transport rules have set "AuditSeverity" to "low", so we can trace Transport rules trigger for diagnosis and debugging.
+- All transport rules have set "AuditSeverity" to "low", so we can trace transport rules trigger for diagnosis and debugging.
 
 ## 1.3.0 - Certificate based Connectors Edition
 
 Beginning from Saturday 28. Feb 2023, all SEPPmail Customers can use certificate based connectors (Default for all existing an new customers)
-
 This means that every SEPPmail.cloud customer may now setup with SEPPmail365cloud PS Module version 1.3.0+
 
 ## Major changes

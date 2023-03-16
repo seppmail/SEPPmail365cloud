@@ -9,6 +9,7 @@
             "ConnectorSource"              : "Default",
             "ConnectorType"                : "Partner",
             "Enabled"                      : true,
+            "EFSkipLastIP"                 : true,
             "RequireTls"                   : true,
             "RestrictDomainsToCertificate" : true,
             "SenderDomains"                : "",
