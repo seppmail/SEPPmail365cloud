@@ -10,6 +10,7 @@
 ### Maintenance
 
 - Updated IP-Address list of DE and CH cloud.
+- All transport rules have set "AuditSeverity" to "low", so we can trace Transport rules trigger for diagnosis and debugging.
 
 ## 1.3.0 - Certificate based Connectors Edition
 
