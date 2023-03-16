@@ -1,5 +1,13 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 1.3.1 - Maintenance Release
+
+### Enhancements
+
+- Parallel Mode - Inbound Rule 100 not only routes E-Mails tp SEPPmail.cloud if they are signed/encrypted somehow (Content-type matches SMIME or PGP sign/encrypt)
+- 
+
+
 ## 1.3.0 - Certificate based Connectors Edition
 
 Beginning from Saturday 28. Feb 2023, all SEPPmail Customers can use certificate based connectors (Default for all existing an new customers)
