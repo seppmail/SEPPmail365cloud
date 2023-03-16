@@ -7,6 +7,9 @@
 - Parallel Mode - Inbound Rule 100 not only routes E-Mails tp SEPPmail.cloud if they are signed/encrypted somehow (Content-type matches SMIME or PGP sign/encrypt)
 - Parallel-mode: InboundConnector has EFSkipLastIP set to "true" to allow support for ARC-Signing
 
+### Maintenance
+
+- Updated IP-Address list of DE and CH cloud.
 
 ## 1.3.0 - Certificate based Connectors Edition
 
