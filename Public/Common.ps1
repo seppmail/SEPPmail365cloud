@@ -199,16 +199,6 @@ function Get-SC365DeploymentInfo {
             [String]$TenantID = Get-SC365TenantID -maildomain $DnsHostDomain -OutVariable "TenantID"
             $TenantIDHash = Get-SC365StringHash -String $TenantID
             [string]$hashedDomain =  $TenantIDHash + '.cbc.seppmail.cloud'
-            #if ((((resolve-dns -query $hashedDomain -QueryType TXT).Answers).Text) -eq 'CBC') {
-
-            <# Prep for TimestampInfo
-            $CBCRecord = (Resolve-DNS -query $hashedDomain -QueryType TXT).Answers
-            
-            if (!($CBCRecord)) {$CBCDeployed = $false} else {
-                [DateTime]$DeployMentTime = Get-Date -UnixTime $CBCRecord.Text
-            }
-            
-            #>    
             if (((resolve-dns -query $hashedDomain -QueryType TXT).Answers)) {
                $CBCDeployed = $true
                Write-Verbose "$HashedDomain of TenantID $tenantId has a CBC entry"
