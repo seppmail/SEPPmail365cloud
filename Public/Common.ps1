@@ -213,7 +213,7 @@ function Get-SC365DeploymentInfo {
         $DeplyoymentInfo.Region = $region
         $DeplyoymentInfo.Routing = $routing
         $DeplyoymentInfo.InBoundOnly  = $inBoundOnly
-        $DeplyoymentInfo.SEPPmailCloudDomain = $SEPPmailCloudDomain
+        $DeplyoymentInfo.SEPPmailCloudDomain = $DNSHostDomain
         $DeplyoymentInfo.CBCDeployed = $CBCDeployed
         if ($DeplyoymentInfo.DeployMentTime) {$DeplyoymentInfo.DeployMentTime = $DeployMentTime}
         if ($region) {$DeplyoymentInfo.CBCConnectorHost = ($tenantId + ((Get-Variable $region).Value.TlsCertificate).Replace('*',''))}
@@ -1115,6 +1115,30 @@ function Get-SC365MessageTrace {
             break
         }
         $TenantAcceptedDomains = Get-AcceptedDomain
+
+        <#
+        switch ($PSUIculture) 
+        {
+            {($PSUICulture -like de*)}
+            {
+                $receive = 'Empfangen'
+                $sumbit = 'Übermitteln'
+                $extsend = 'Extern Senden'
+                $deliver = 'Zustellen'
+            }
+            {($PSUICulture -like en*)}
+            {
+                $receive = 'Receive'
+                $sumbit = 'Submit'
+                $extsend = 'Send external'
+                $deliver = 'Deliver'
+            }
+
+        }
+
+        #>
+         
+
     }
     
     process {
@@ -1140,7 +1164,9 @@ function Get-SC365MessageTrace {
             }
         }
         if (!($MessageTrace)){
-            Write-Error "Could not find Message with ID $MessageID and recipient $recipient. Look for typos. Message too old ? Try Search-MessageTrackingReport or Get-Messagetrace"
+            Write-Error "Could not find Message with ID $MessageID and recipient $recipient. Look for typos." 
+            Write-Error "Message too young ? Try Get-Messagetrace"
+            Write-Error "Message too old ? Try Search-MessageTrackingReport "
             break
         }
         try {
