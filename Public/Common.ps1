@@ -1116,27 +1116,23 @@ function Get-SC365MessageTrace {
         }
         $TenantAcceptedDomains = Get-AcceptedDomain
 
-        <#
         switch ($PSUIculture) 
         {
-            {($PSUICulture -like de*)}
+            {($PSUICulture -like 'de*')}
             {
                 $receive = 'Empfangen'
                 $sumbit = 'Übermitteln'
                 $extsend = 'Extern Senden'
                 $deliver = 'Zustellen'
             }
-            {($PSUICulture -like en*)}
+            {($PSUICulture -like 'en*')}
             {
                 $receive = 'Receive'
                 $sumbit = 'Submit'
                 $extsend = 'Send external'
                 $deliver = 'Deliver'
             }
-
         }
-
-        #>
          
 
     }
