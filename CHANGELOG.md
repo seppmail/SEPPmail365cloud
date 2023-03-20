@@ -4,29 +4,29 @@
 
 ### Enhancements
 
-- Parallel Mode - Inbound Rule 100 not only routes E-Mails tp SEPPmail.cloud if they are signed/encrypted somehow (Content-type matches SMIME or PGP sign/encrypt)
-- Parallel-mode: InboundConnector has EFSkipLastIP set to "true" by default to allow support for ARC-signing
-- Inline-mode: InboundConnector has EFSkipLastIP set to "true" by default
+- Parallel Mode - Inbound Rule 100 not only routes E-Mails to SEPPmail.cloud if they are signed/encrypted somehow (Content-type matches SMIME or PGP sign/encrypt)
+- InboundConnector (parallel and inline mode) has EFSkipLastIP set to "true" by default to allow support for ARC-signing
+- Enhanced filtering on the inbound connector (parallel and inline) is changed from none to EFSkipLastIP = $true to support ARC-Signing and avoid wrongly detected malware.
 
 ### Maintenance
 
 - Updated IP-Address list of DE and CH cloud.
-- All transport rules have set "AuditSeverity" to "low", so we can trace transport rules trigger for diagnosis and debugging.
-- Checking if Tenant allows creation of OnPrem Connectors to see if Exchange Error EX505293 will take place
+- All transport rules have a new value in property "Auditseverity". Changed from "DoNotAudit" to "Low" for better tracing and debugging of mailflow issues.
+- Checking if Tenant allows creation of OnPrem Connectors on Module initialization to see if Exchange Error EX505293 will take place.
 
 ## 1.3.0 - Certificate based Connectors Edition
 
 Beginning from Saturday 28. Feb 2023, all SEPPmail Customers can use certificate based connectors (Default for all existing an new customers)
 This means that every SEPPmail.cloud customer may now setup with SEPPmail365cloud PS Module version 1.3.0+
 
-## Major changes
+### Major changes
 
 - Certificate based connectivity to Exchange Online
 - Auto discovery of deployment status
 - Get/New/Remove-Setup CmdLets allow one-stop setup for simple environments
 - Auto installation of missing modules
 
-## General
+### General
 
 - New-Module dependency DNSCLient-PS. Needed for multi-platform DNS-queries
 - *.onmicrosoft.com Domains are automatically filtered out if selected (as we do not want to route this traffic through SEPPmail infrastructure
@@ -39,7 +39,7 @@ This means that every SEPPmail.cloud customer may now setup with SEPPmail365clou
 - M365-Tenants, which are still "hydrated" are now prompted to "Enable-OrganizationCustomization"
 - BETA: New Commandlet Get-SC36MessageTrace to trace messages from ExO
 
-## Enhancements
+### Enhancements
 
 __Common__
 
