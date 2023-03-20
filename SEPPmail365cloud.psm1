@@ -47,6 +47,7 @@ if ($sc365notests -ne $true) {
         } 
         catch {
             Write-Error "Could not install required Module 'ExchangeOnlineManagement'. Please install manually from the PowerShell Gallery"
+            break
         }
     }
     
@@ -84,25 +85,25 @@ if ($sc365notests -ne $true) {
     Write-Verbose "Testing Exchange Online connectivity"
     if (!(Test-SC365ConnectionStatus)) {
         Write-Warning "You are not connected to Exchange Online. Use `"Connect-ExchangeOnline`" to connect to your tenant"
-    }
-
-    try {
-        if ((Get-OrganizationConfig).IsDehydrated) {
-            Write-Verbose "Organisation is not enabled for customizations -- is 'Dehyrated'. Turning this on now"
-            Enable-OrganizationCustomization  #-confirm:$false
-        }        
-    }
-    catch {
-        Write-Warning "Cannot detect Tenant hydration - maybe disconnected"
-    }
-    
-    try {
-        Write-verbose "Creating Test OnPrem Connector to check if tenant allows connector creation"
-        New-InboundConnector -Name '[SEPPmail.cloud] TempConnector EX505293' -ConnectorType OnPrem -TlsSenderCertificateName 'test.nowhere.org' -SenderDomains 'test.nowhere.org' -RequireTls $true -enabled $false
-        Remove-InboundConnector -Identity '[SEPPmail.cloud] TempConnector EX505293' -Confirm:$false
-    }
-    catch {
-        Write-Error "This Tenant is not yet allowed to create OnPrem-Connectors (Exchange Error EX505293).If this tenant shall be integrated in PARALLEL mode, contact Microsoft Support and request connector creation"
+    } else {
+        try {
+            if ((Get-OrganizationConfig).IsDehydrated) {
+                Write-Verbose "Organisation is not enabled for customizations -- is 'Dehyrated'. Turning this on now"
+                Enable-OrganizationCustomization  #-confirm:$false
+            }        
+        }
+        catch {
+            Write-Warning "Cannot detect Tenant hydration - maybe disconnected"
+        }
+        
+        try {
+            Write-verbose "Creating Test OnPrem Connector to check if tenant allows connector creation"
+            New-InboundConnector -Name '[SEPPmail.cloud] TempConnector EX505293' -ConnectorType OnPrem -TlsSenderCertificateName 'test.nowhere.org' -SenderDomains 'test.nowhere.org' -RequireTls $true -enabled $false
+            Remove-InboundConnector -Identity '[SEPPmail.cloud] TempConnector EX505293' -Confirm:$false
+        }
+        catch {
+            Write-Error "This Tenant is not yet allowed to create OnPrem-Connectors (Exchange Error EX505293).If this tenant shall be integrated in PARALLEL mode, contact Microsoft Support and request connector creation"
+        }            
     }
 
     Write-Verbose 'Test new version available'
