@@ -1101,42 +1101,24 @@ function Get-SC365MessageTrace {
         [String]$Recipient
     )
     begin {
+           $OldEaPreference = $ErrorActionPreference
+           $ErrorActionPreference = 'SilentlyContinue'
         Write-Information "This CmdLet is still under development" -InformationAction Continue
-        try {
-            if (!($ibc = Get-Inboundconnector -Identity '[SEPPmail*')) {
-                Write-Error "Could not find SEPPmail.Cloud Inbound-Connecor"
+            try {
+                if (!($ibc = Get-Inboundconnector -Identity '[SEPPmail*')) {
+                    Write-Error "Could not find SEPPmail.Cloud Inbound-Connecor"
+                }
+                if (!($obc = Get-Outboundconnector -Identity '[SEPPmail*')) {
+                    Write-Error "Could not find SEPPmail.Cloud Outbound-Connecor"
+                }
             }
-            if (!($obc = Get-Outboundconnector -Identity '[SEPPmail*')) {
-                Write-Error "Could not find SEPPmail.Cloud Outbound-Connecor"
-            }
-        }
-        catch {
+            catch {
             Write-Error "Could not detect SEPPmail-Cloud Connectors, aborting"
             break
-        }
-        $TenantAcceptedDomains = Get-AcceptedDomain
-
-        switch ($PSUIculture) 
-        {
-            {($PSUICulture -like 'de*')}
-            {
-                $receive = 'Empfangen'
-                $sumbit = 'Übermitteln'
-                $extsend = 'Extern Senden'
-                $deliver = 'Zustellen'
             }
-            {($PSUICulture -like 'en*')}
-            {
-                $receive = 'Receive'
-                $sumbit = 'Submit'
-                $extsend = 'Send external'
-                $deliver = 'Deliver'
-            }
+            $TenantAcceptedDomains = Get-AcceptedDomain
         }
-         
-
-    }
-    
+   
     process {
 
         Write-Verbose "Retrieving initial Message-Trace id MessageID $MessageId for recipient $Recipient"
@@ -1223,12 +1205,12 @@ function Get-SC365MessageTrace {
             {
                 # Im Parallel Mode kommt die Mail 2x, einmal von externem Host und einmal von SEPpmail, Index 0 und 1
                 
-                $MessageTraceDetailExternal = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient
-                $MTDExtReceived = $MessageTraceDetailExternal[0]
-                $MTDExtExtSend = $MessageTraceDetailExternal[1]
-                $MessageTraceDetailSEPPmail = Get-MessagetraceDetail -MessageTraceId $MessageTrace[0].MessageTraceId -Recipient $Recipient
-                $MTDSEPPReceived = $MessageTraceDetailSEPPmail[0]
-                $MTDSEPPDelivered = $MessageTraceDetailSEPPmail[1]
+                #$MessageTraceDetailExternal = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient
+                $MTDExtReceived = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient -Event 'RECEIVE'
+                $MTDExtExtSend = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient | Where-Object event -like '*send*'
+                #$MessageTraceDetailSEPPmail = Get-MessagetraceDetail -MessageTraceId $MessageTrace[0].MessageTraceId -Recipient $Recipient
+                $MTDSEPPReceived = Get-MessagetraceDetail -MessageTraceId $MessageTrace[0].MessageTraceId -Recipient $Recipient -Event 'RECEIVE'
+                $MTDSEPPDelivered = Get-MessagetraceDetail -MessageTraceId $MessageTrace[0].MessageTraceId -Recipient $Recipient -Event 'DELIVER'
                 Write-Verbose "Crafting Inbound Connector Name"
                 try {
                     $ibcName = (($MTDSEPPReceived.Data).Split(';') | Select-String 'S:InboundConnectorData=Name').ToString().Split('=')[-1]
@@ -1254,7 +1236,8 @@ function Get-SC365MessageTrace {
             {($_ -eq 'InBound') -and ($ibc.identity -eq "[SEPPmail.cloud] Inbound-Inline")} 
             {
                 $MessageTraceDetail = Get-MessagetraceDetail -MessageTraceId $MessageTrace.MessageTraceId -Recipient $Recipient
-                $MTDReceived = $MessageTraceDetail|where-object {($_.Event -eq 'Received') -or ($_.Event -eq 'Empfangen')} 
+                #$MTDReceived = $MessageTraceDetail|where-object {($_.Event -eq 'Received') -or ($_.Event -eq 'Empfangen')} 
+                $MTDReceived = Get-MessagetraceDetail -MessageTraceId $MessageTrace.MessageTraceId -Recipient $Recipient -event 'received'
                 #$MTDDelivered = $MessageTraceDetail|where-object {($_.Event -eq 'Delivered') -or ($_.Event -eq 'Zustellen')}
                 Write-Verbose "Crafting Inbound Connector Name"
                 try {
@@ -1276,20 +1259,13 @@ function Get-SC365MessageTrace {
             {($_ -eq 'OutBound') -and ($obc.identity -eq "[SEPPmail.cloud] Outbound-Parallel")}
             {
                 # We take one of 2 Send/Receive Messagetraces from SEPPmail and get the details
-                #if ($MessageTrace.count -eq 1) {
-                 #   $MessageTraceDetailSEPPmail = Get-MessagetraceDetail -MessageTraceId $MessageTrace.MessageTraceId -Recipient $Recipient
-                #} else {
-                    $MessageTraceDetailSEPPmail = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient
-                #}
-                
+
                 # Now this one has 3 Parts. 0= Recieve from Mailboxhost, 1 = SumbitMessage (Exo internal), 2 = Send to SEPPmail
-                $MTDSEPPReceive = $MessageTraceDetailSEPPmail[0]
+                $MTDSEPPReceive = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient -Event 'receive'
                 # $MTDSEPPSubmit = $MessageTraceDetailSEPPmail[1] Not interesting for us
-                $MTDSEPPExtSend = $MessageTraceDetailSEPPmail[2]
-                
-                $MessageTraceDetailExternal = Get-MessagetraceDetail -MessageTraceId $MessageTrace[0].MessageTraceId -Recipient $Recipient
-                $MTDExtReceive = $MessageTraceDetailExternal[0]
-                $MTDExtExtSend = $MessageTraceDetailExternal[1]
+                $MTDSEPPExtSend = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient |where-object Event -like  '*SEND*'                
+                $MTDExtReceive = Get-MessagetraceDetail -MessageTraceId $MessageTrace[0].MessageTraceId -Recipient $Recipient -Event 'receive'
+                $MTDExtExtSend = Get-MessagetraceDetail -MessageTraceId $MessageTrace[0].MessageTraceId -Recipient $Recipient |where-object Event -like  '*SEND*'
                 try {
                     $obcName = (((($MTDSEPPExtSend.Data -Split '<') -replace ('>','')) -split (';') | select-String 'S:Microsoft.Exchange.Hygiene.TenantOutboundConnectorCustomData').ToString()).Split('=')[-1]
                 }catch {
@@ -1341,16 +1317,11 @@ function Get-SC365MessageTrace {
                 if ($MTDExtSend) {$Outputobject | Add-Member -MemberType NoteProperty -Name ExternalSendLatency -Value (((($MTDExtSend.Data -Split '<') -replace ('>','')) -split (';') | select-String 'S:ExternalSendLatency').ToString()).Split('=')[-1]}
                 Write-Progress -Activity "Loading message data" -Status "StatusMessage" -PercentComplete 100 -CurrentOperation "Done"
             }
-
         }
-
-
     }
-        #endregion Send/Outbound
     end {
-        #$SC365MessageTrace = New-Object -TypeName pscustomobject -ArgumentList $SC365MessageTraceHT
         return $OutPutObject
-        #$SC365MessageTraceHT
+        $ErrorActionPreference = $OldEaPreference
     }
 }
 
