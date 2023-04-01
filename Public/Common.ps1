@@ -454,7 +454,7 @@ function New-SC365ExOReport {
             $hTransPortRules = '<p><h2>Existing Mailflow Rules</h2><p>'
             Write-Verbose "TransportRules"
             $hN = '<p><h3>Existing Transport Rules</h3><p>'
-            $N = Get-ExoHTMLData -ExoCmd 'Get-TransportRule | select-object Name,State,Mode,Priority,FromScope,SentToScope'
+            $N = Get-ExoHTMLData -ExoCmd 'Get-TransportRule | select-object Name,State,Mode,Priority,FromScope,SentToScope,StopRuleProcessing'
             #endregion transport rules
 
             $HeaderLogo = [Convert]::ToBase64String((Get-Content -path $PSScriptRoot\..\HTML\SEPPmailLogo_T.png -AsByteStream))

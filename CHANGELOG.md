@@ -4,10 +4,10 @@
 
 ### Enhancements
 
-- Get/Remove-SC365Rules doesnt ask for routing mode anymore
+- Get/Remove-SC365Rules does not ask for routing mode anymore
 - Get/Remove-SC365Rules removes all '[SEPPmail.Cloud]*' rules, independent of the config shipped with the module. This allows us to remove rule-Configs and still be able to clean and get the current config.
-- Removes Rule 050. The intention was to not send Mails with SPF fails to SEPPmail.Cloud, though there are too many Mailservers out there with misconfigured SPF records, so the rule made more issues than solutions
-- 
+- Removed Rule 050. The intention was to not send Mails with SPF fails to SEPPmail.Cloud, though there are too many Mailservers out there with misconfigured SPF records, so the rule made more issues than solutions
+- New-SC365ExoReport now shows also if a transport rule stops after processing 
 
 ## 1.3.1 - Maintenance Release
 
