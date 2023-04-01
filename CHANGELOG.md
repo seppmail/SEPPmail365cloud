@@ -1,5 +1,13 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 1.3.5 - Feature Release
+
+### Enhancements
+
+- Get/Remove-SC365Rules doesnt ask for routing mode anymore
+- Get/Remove-SC365Rules removes all '[SEPPmail.Cloud]*' rules, independent of the config shipped with the module. This allows us to remove rule-Configs and still be able to clean and get the current config.
+- 
+
 ## 1.3.1 - Maintenance Release
 
 ### Enhancements
