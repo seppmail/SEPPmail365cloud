@@ -16,9 +16,10 @@ function Get-SC365Rules {
 	)]
 	param
 	(
-		[Parameter(Mandatory = $true)]
+		<#[Parameter(Mandatory = $true)]
 		[ValidateSet('parallel','inline','p','i')]
 		[String]$routing
+		#>
 	)
 
 	begin {
@@ -30,32 +31,31 @@ function Get-SC365Rules {
 		{
 			Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
 		}
-		if ($routing -eq 'p') {$routing = 'parallel'}
-		if ($routing -eq 'i') {$routing = 'inline'}
-		$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
+		#if ($routing -eq 'p') {$routing = 'parallel'}
+		#if ($routing -eq 'i') {$routing = 'inline'}
+		#$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
 	}
 	process {
-		foreach ($file in $transportRuleFiles) {
-			$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
-			if ($setting.values) {
-				$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
-				if ($rule) {
-					if ($rule.Identity -like '*100*') {
-						$rule|Select-Object Identity,Priority,State,@{Name = 'IncludedDomains'; Expression={$_.RecipientDomainIs}}
+		#foreach ($file in $transportRuleFiles) {
+		$allSEPPmailCloudRules = Get-TransportRule -Identity '[SEPPmail.cloud]*'
+		 	if ($allSEPPmailCloudRules) {
+				Foreach ($rule in $allSEPPmailCloudRules) {
+					if ($rule) {
+						if ($rule.Identity -like '*100*') {
+							$rule|Select-Object Identity,Priority,State,@{Name = 'IncludedDomains'; Expression={$_.RecipientDomainIs}}
+						}
+						elseif ($rule.Identity -like '*200*') {
+							$rule|Select-Object Identity,Priority,State,@{Name = 'IncludedDomains'; Expression={$_.SenderDomainIs}}
+						}
+						else {
+							$rule|Select-Object Identity,Priority,State,IncludedDomains
+						}
 					}
-					elseif ($rule.Identity -like '*200*') {
-						$rule|Select-Object Identity,Priority,State,@{Name = 'IncludedDomains'; Expression={$_.SenderDomainIs}}
-					}
-					else {
-						$rule|Select-Object Identity,Priority,State,IncludedDomains
-					}
-				}
-				else
-				{
-					Write-Warning "No transport rule '$($setting.Name)'"
 				}
 			}
-		}
+			else {
+				Write-Warning "No transport rules found matching [SEPPmail.Cloud]* in your tenant."
+			}
 	}
 	end {
 
@@ -274,17 +274,17 @@ function New-SC365Rules
 #>
 function Remove-SC365Rules {
 	[CmdletBinding(SupportsShouldProcess = $true,
-				   ConfirmImpact = 'Medium',
+				   ConfirmImpact = 'High',
 				   HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
 				  )]
 	param
 	(
-		[Parameter(
+		<#[Parameter(
 			Mandatory = $true,
 			HelpMessage = 'Use seppmail if the MX record points to SEPPmail and microsoft if the MX record points to the Microsoft Inrastructure'
 		)]
 		[ValidateSet('parallel','inline','p','i')]
-		[String]$routing
+		[String]$routing#>
 	)
 
 	begin {
@@ -294,23 +294,18 @@ function Remove-SC365Rules {
 		} else {
 			Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`" " 
 		}
-		if ($routing -eq 'p') {$routing = 'parallel'}
-		if ($routing -eq 'i') {$routing = 'inline'}
-		$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
+		#if ($routing -eq 'p') {$routing = 'parallel'}
+		#if ($routing -eq 'i') {$routing = 'inline'}
+		#$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
 
 	}
 	process {
 		Write-Verbose "Removing current version module rules"
-		foreach ($file in $transportRuleFiles) {
-			$setting = Get-SC365TransportRuleSettings -routing $routing -file $file
-			if ($setting.values) {
-				if($PSCmdlet.ShouldProcess($setting.Name, "Remove transport rule")) {
-					$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
-					if($rule -ne $null)
-						{
-							$rule | Remove-TransportRule -Confirm:$false
-						}
-				}
+		$allSEPPmailCloudRules = Get-TransportRule -Identity '[SEPPmail.cloud]*'
+		foreach ($rule in $allSEPPmailCloudRules) {
+			if($PSCmdlet.ShouldProcess($rule.Name, "Remove transport rule")) {
+					#$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
+				Remove-TransportRule -Identity $rule -confirm:$false
 			}
 		} 
 	}

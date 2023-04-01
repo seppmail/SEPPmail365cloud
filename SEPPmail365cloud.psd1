@@ -14,7 +14,7 @@
 RootModule = 'SEPPmail365cloud.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.3.1'
+ModuleVersion = '1.3.5'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Core')
