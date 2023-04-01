@@ -262,7 +262,6 @@ function New-SC365ExOReport {
            HelpMessage = 'Relative path of the HTML report on disk',
            ParameterSetName = 'FilePath',
            Position = 0
-           #Position = 0
         )]
         [Alias('Path')]
         [string]$filePath = '.',
@@ -273,7 +272,22 @@ function New-SC365ExOReport {
            ParameterSetName = 'LiteralPath',
            Position = 0
         )]
-        [string]$Literalpath = '.'
+        [string]$Literalpath = '.',
+
+        [Parameter(   
+           Mandatory   = $false,
+           HelpMessage = 'Literal path of the HTML report on disk',
+           ParameterSetName = 'LiteralPath',
+           Position = 1
+        )]
+        [Parameter(   
+            Mandatory   = $false,
+            HelpMessage = 'Literal path of the HTML report on disk',
+            ParameterSetName = 'FilePath',
+            Position = 1
+         )]
+         [switch]$jsonBackup
+ 
     )
 
     begin
@@ -337,7 +351,11 @@ function New-SC365ExOReport {
                 if ($null -eq $rawData) {
                     $ExoHTMLData = New-object -type PSobject -property @{Result = '--- no information available ---'}|Convertto-HTML -Fragment
                 } else {
-                    $ExoHTMLData = $rawData|Convertto-HTML -Fragment
+                    $ExoHTMLData = $rawData |Convertto-HTML -Fragment
+                    if ($jsonBackup) {
+                        $script:JsonData += '---' + $exoCmd + '---'|Convertto-Json
+                        $script:JsonData += $RawData|ConvertTo-Json
+                    }
                 } 
                 return $ExoHTMLData
             }
@@ -345,11 +363,14 @@ function New-SC365ExOReport {
                 Write-Warning "Could not fetch data from command '$exoCmd'"
             }    
         }
+
     }
 
     process
     {
         try {
+            # Initialize JsonDATA to be filled by Get-ExoHTMLData for Backup Purposes
+            $script:JsonData = $null
             if ($pscmdlet.ShouldProcess("Target", "Operation")) {
                 #"Whatis is $Whatif and `$pscmdlet.ShouldProcess is $($pscmdlet.ShouldProcess) "
                 #For later Use
@@ -475,30 +496,47 @@ function New-SC365ExOReport {
             # Write Report to Disk
             try {
                 $finalReport|Out-File -FilePath $FinalPath -Force
+                if ($jsonBackup) {
+                    # Store json in the same location as HTML
+                    $jsonpath = (Join-Path -Path (split-path $FinalPath -Parent) -ChildPath (split-path $FinalPath -leafbase)) + '.json'
+                    Set-Content -Value $JsonData -Path $jsonPath -force
+                }
             }
             catch{
                 Write-Warning "Could not write report to $FinalPath"
                 if ($IsWindows) {
                     $FinalPath = Join-Path -Path $env:localappdata -ChildPath $ReportFilename
+                    if ($jsonBackup) {
+                        $jsonpath = (Join-Path -Path (split-path $FinalPath -Parent) -ChildPath (split-path $FinalPath -leafbase)) + '.json'
+                    }
                 }
-                if ($IsMacOs) {
+                if (($IsMacOs) -or ($isLinux)) {
                     $Finalpath = Join-Path -Path $env:HOME -ChildPath $ReportFilename
+                    if ($jsonBackup) {
+                        $jsonpath = (Join-Path -Path (split-path $FinalPath -Parent) -ChildPath (split-path $FinalPath -leafbase)) + '.json'
+                    }
                 }
                 Write-Verbose "Writing report to $finalPath"
                 try {
                     $finalReport|Out-File -FilePath $finalPath -Force
+                    if ($jsonBackup) {
+                        # Store json in the same location as HTML
+                        Set-Content -Value $JsonData -Path $jsonPath -force
+                    }
                 }
                 catch {
                     $error[0]
                 }
             }
-
             if ($IsWindows) {
                 Write-Information -MessageData "Opening $finalPath with default browser"
                 Invoke-Expression "& '$finalpath'"
             }
-            if ($IsMacOs) {
+            if (($IsMacOs) -or (isLinux)) {
                 "Report is stored on your disk at $finalpath. Open with your favorite browser."
+                if ($jsonBackup) {
+                    "Json Backup is stored on your disk at $jsonPath. Open with your favorite editor."
+                }
             }
         }
         catch {
