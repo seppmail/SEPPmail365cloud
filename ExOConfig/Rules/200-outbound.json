@@ -22,7 +22,7 @@
             "Name"                                : "[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail",
             "Comments"                            : "E-mails sent from inside the organization to the Internet are sent to SEPPmail.cloud crypto-processing.",
             "RouteMessageOutboundConnector"       : "[SEPPmail.cloud] Outbound-Parallel",
-            "SMPriority"                          : 3,
+            "SMPriority"                          : 2,
             "FromScope"                           : "InOrganization",
             "SentToScope"                         : "NotInOrganization",
             "SetHeaderName"                       : "X-SM-maildirection",
