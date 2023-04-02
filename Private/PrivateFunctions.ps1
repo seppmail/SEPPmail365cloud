@@ -174,6 +174,40 @@ Function Remove-SC365OnMicrosoftDomain {
     return $NewDomainList    
 }
 
+function Get-ExoHTMLData {
+    param (
+        [Parameter(
+              Mandatory = $true,
+            HelpMessage = 'Enter Cmdlte to ')]
+        [string]$ExoCmd
+    )
+    try {
+        $allCmd = $exoCmd.Split('|')[0].Trim()
+        $htmlSelectCmd = $exoCmd.Split('|')[-1].Trim()
+
+        $rawData = Invoke-Expression -Command $allCmd
+        if ($null -eq $rawData) {
+            $ExoHTMLData = New-object -type PSobject -property @{Result = '--- no information available ---'}|Convertto-HTML -Fragment
+        } else {
+            $ExoHTMLCmd = "{0}|{1}" -f  $allcmd,$htmlSelectCmd
+            $ExoHTMLData = Invoke-expression -Command $ExoHTMLCmd |Convertto-HTML -Fragment
+            if ($jsonBackup) {
+                $script:JsonData += '---' + $AllCmd + '---'|Convertto-Json
+                $script:JsonData += $rawData|ConvertTo-Json
+            }
+        } 
+        return $ExoHTMLData
+    }
+    catch {
+        Write-Warning "Could not fetch data from command '$exoCmd'"
+    }    
+}
+
+function New-SelfGeneratedReportName {
+    Write-Verbose "Creating self-generated report filename."
+    return ("{0:HHm-ddMMyyy}" -f (Get-Date)) + (Get-AcceptedDomain|where-object default -eq $true|select-object -expandproperty Domainname) + '.html'
+}
+
 # SIG # Begin signature block
 # MIIVzAYJKoZIhvcNAQcCoIIVvTCCFbkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
