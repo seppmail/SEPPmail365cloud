@@ -347,14 +347,18 @@ function New-SC365ExOReport {
                 [string]$ExoCmd
             )
             try {
-                $rawData = Invoke-Expression -Command $exoCmd
+                $allCmd = $exoCmd.Split('|')[0].Trim()
+                $htmlSelectCmd = $exoCmd.Split('|')[-1].Trim()
+
+                $rawData = Invoke-Expression -Command $allCmd
                 if ($null -eq $rawData) {
                     $ExoHTMLData = New-object -type PSobject -property @{Result = '--- no information available ---'}|Convertto-HTML -Fragment
                 } else {
-                    $ExoHTMLData = $rawData |Convertto-HTML -Fragment
+                    $ExoHTMLCmd = "{0}|{1}" -f  $allcmd,$htmlSelectCmd
+                    $ExoHTMLData = Invoke-expression -Command $ExoHTMLCmd |Convertto-HTML -Fragment
                     if ($jsonBackup) {
-                        $script:JsonData += '---' + $exoCmd + '---'|Convertto-Json
-                        $script:JsonData += $RawData|ConvertTo-Json
+                        $script:JsonData += '---' + $AllCmd + '---'|Convertto-Json
+                        $script:JsonData += $rawData|ConvertTo-Json
                     }
                 } 
                 return $ExoHTMLData
