@@ -10,7 +10,7 @@
 - New-SC365ExoReport now shows also if a transport rule stops after processing
 - New-SC365ExoReport has a new switch parameter -jsonbackup (default off) which stores a complete backup of the tenant config in JSON at the same location as the report is stored. This may be used for a detailed config backup for archiving of diagnosis
 - New CmdLet: Get-SC365SetupTime reads the "WhenCreated" property of the SEPPmail.cloud inbound connector and emits the create date on the console.
-- 
+- New switch parameter '-CryptoContentOnly' on New-SC365Rules. If set, rule 100 will be modified to only send E-Mails to SEPpmail which require cryptographic processing. !Important - if set, you will loose the message tracking capability of the SEPPmail.cloud.
 
 ## 1.3.1 - Maintenance Release
 

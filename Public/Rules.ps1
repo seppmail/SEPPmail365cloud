@@ -115,6 +115,12 @@ function New-SC365Rules
 		[int]$SCLInboundValue = 5,
 
 		[Parameter(
+			  Mandatory = $false,
+			HelpMessage = 'Rule 100 will only send E-Mails to SEPPmail.cloud which requires cryptographic processing'
+		)]
+		[switch]$CryptoContentOnly,
+
+		[Parameter(
 			Mandatory = $false,
 			HelpMessage = 'Add rules if you provisioned internal e-mail signature in the SEPPmail.cloud Service'
 		)]
@@ -235,7 +241,12 @@ function New-SC365Rules
 									$Setting.RecipientDomainIs = $FilteredCloudDomain
 									if ($SCLInboundValue -ne 5) {
 										Write-Verbose "Setting Value $SCLInboundValue to Inbound flowing to SEPPmail.cloud"
-									$Setting.ExceptIfSCLOver = $SCLInboundValue
+										$Setting.ExceptIfSCLOver = $SCLInboundValue
+									}
+									if ($cryptoContentOnly) {
+										Write-Verbose 'Adding Setting to send only crptographic needed E-Mails to SEPPmail.cloud'
+										$Setting.HeaderContainsMessageHeader = 'content-type'
+										$Setting.HeaderContainsWords = "application/x-pkcs7-mime","application/pkcs7-mime","application/x-pkcs7-signature","application/pkcs7-signature","multipart/signed","application/pgp-signature","multipart/encrypted","application/pgp-encrypted","application/octet-stream"
 									}
 									New-TransportRule @setting #|Out-Null
 								}
