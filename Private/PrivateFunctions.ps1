@@ -183,7 +183,7 @@ function Get-ExoHTMLData {
     )
     try {
         $allCmd = $exoCmd.Split('|')[0].Trim()
-        $htmlSelectCmd = $exoCmd.Split('|')[-1].Trim()
+        $htmlSelectCmd = $exoCmd.Split('|')[1].Trim()
 
         $rawData = Invoke-Expression -Command $allCmd
         if ($null -eq $rawData) {
