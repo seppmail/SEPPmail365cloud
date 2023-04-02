@@ -1398,7 +1398,8 @@ Function Show-sc365Tenant {
     Get-Sc365SetupTime -verbose
     Montag, 20. März 2023 10:56:04
     VERBOSE: SEPPmail Cloud was created 13 days ago
-    VERBOSE: Inbound Connector Comments writes install date is: 03/20/2023 10:56:04#>
+    VERBOSE: Inbound Connector Comments writes install date is: 03/20/2023 10:56:04
+#>
 Function Get-SC365SetupTime {
     [CmdLetBinding()]
 
@@ -1415,6 +1416,51 @@ Function Get-SC365SetupTime {
         Write-Verbose "Inbound Connector Comments writes install date is: $commentsTime"
     }
     end{}
+}
+
+<#
+.SYNOPSIS
+    Convert a DNS domain to IDNA Format
+.DESCRIPTION
+    The CmdLet uses the System.Globalization.IdnMapping .NET Method to convert a DNS Domain with special characters like ä, ü, or ß to the IDNA format.
+.NOTES
+    none
+.LINK
+    none
+.EXAMPLE
+    Get-Sc365SetupTime öbb.at
+    xn--bb-eka.at
+#>
+function ConvertTo-SC365IDNA {
+    [CmdLetBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$String
+    )
+    $idn = [System.Globalization.IdnMapping]::new()
+    return $idn.GetAscii($String)
+}
+<#
+.SYNOPSIS
+    Convert a IDNA Formatted Domain to DNS
+.DESCRIPTION
+    The CmdLet uses the System.Globalization.IdnMapping .NET Method to convert a IDNA Domain with special characters like ä, ü, or ß to the original DNS format.
+.NOTES
+    none
+.LINK
+    none
+.EXAMPLE
+    Get-Sc365SetupTime xn--bb-eka.at
+    öbb.at
+#>
+function ConvertFrom-SC365IDNA {
+    [CmdLetBinding()]
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$String
+    )
+    $idn = [System.Globalization.IdnMapping]::new()
+    return $idn.GetUnicode($String)
 }
 
 Register-ArgumentCompleter -CommandName Get-SC365TenantId -ParameterName MailDomain -ScriptBlock $paramDomSB

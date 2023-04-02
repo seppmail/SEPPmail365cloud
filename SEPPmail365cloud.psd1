@@ -103,7 +103,9 @@ FunctionsToExport = @(
    'Confirm-SC365TenantDefaultDomain'
        'Get-SC365DeploymentInfo'
       'Show-SC365Tenant'
-    )
+      'ConvertFrom-SC365IDNA'   
+      'ConvertTo-SC365IDNA'   
+)
 
 # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
 CmdletsToExport = @()
