@@ -1109,10 +1109,10 @@ function Get-SC365MessageTrace {
         [String]$Recipient
     )
     begin {
-           $OldEaPreference = $ErrorActionPreference
-           $ErrorActionPreference = 'SilentlyContinue'
+        $OldEaPreference = $ErrorActionPreference
+        $ErrorActionPreference = 'SilentlyContinue'
         Write-Information "This CmdLet is still under development" -InformationAction Continue
-            try {
+            <#try {
                 if (!($ibc = Get-Inboundconnector -Identity '[SEPPmail*')) {
                     Write-Error "Could not find SEPPmail.Cloud Inbound-Connecor"
                 }
@@ -1123,7 +1123,7 @@ function Get-SC365MessageTrace {
             catch {
             Write-Error "Could not detect SEPPmail-Cloud Connectors, aborting"
             break
-            }
+            }#>
             $TenantAcceptedDomains = Get-AcceptedDomain
         }
    
@@ -1205,7 +1205,6 @@ function Get-SC365MessageTrace {
             }
         }
         Add-Member -InputObject $OutPutObject -membertype NoteProperty -Name 'SplitLine' -Value "-------------------- MessageTrace DETAIL Info Starts Here --------------------"
-
 
         switch ($maildirection)
         {
@@ -1324,6 +1323,10 @@ function Get-SC365MessageTrace {
                 $Outputobject | Add-Member -MemberType NoteProperty -Name OutboundConnectorName -Value $obcName
                 if ($MTDExtSend) {$Outputobject | Add-Member -MemberType NoteProperty -Name ExternalSendLatency -Value (((($MTDExtSend.Data -Split '<') -replace ('>','')) -split (';') | select-String 'S:ExternalSendLatency').ToString()).Split('=')[-1]}
                 Write-Progress -Activity "Loading message data" -Status "StatusMessage" -PercentComplete 100 -CurrentOperation "Done"
+            }
+            Default {
+                $OutputObject |  Add-Member -MemberType NoteProperty -Name "SEPPmail.cloud Integration" -Value 'none found'
+                Write-Verbose "E-Mail direction was $_, could not detect SEPPmail.cloud."
             }
         }
     }
