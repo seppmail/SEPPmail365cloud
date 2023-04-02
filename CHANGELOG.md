@@ -8,7 +8,9 @@
 - Get/Remove-SC365Rules removes all '[SEPPmail.Cloud]*' rules, independent of the config shipped with the module. This allows us to remove rule-Configs and still be able to clean and get the current config.
 - Removed Rule 050. The intention was to not send Mails with SPF fails to SEPPmail.Cloud, though there are too many Mailservers out there with misconfigured SPF records, so the rule made more issues than solutions
 - New-SC365ExoReport now shows also if a transport rule stops after processing
-- New-SC365ExoReport has a new switch parameter -jsonbackup (default off) which stores a complete backup of the tenant config in JSON at the same location as the report is stored.
+- New-SC365ExoReport has a new switch parameter -jsonbackup (default off) which stores a complete backup of the tenant config in JSON at the same location as the report is stored. This may be used for a detailed config backup for archiving of diagnosis
+- New CmdLet: Get-SC365SetupTime reads the "WhenCreated" property of the SEPPmail.cloud inbound connector and emits the create date on the console.
+- 
 
 ## 1.3.1 - Maintenance Release
 

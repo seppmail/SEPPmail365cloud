@@ -1379,6 +1379,41 @@ Function Show-sc365Tenant {
 
 }
 
+<#
+.SYNOPSIS
+    Read DateTime of SEPPmail.cloud Setup
+.DESCRIPTION
+    Reads the Creation Time of the SEPPmail.cloud Inbound Connector and emits dateTime of the moment the setup occured.
+.NOTES
+    none
+.LINK
+    none
+.EXAMPLE
+    Get-Sc365SetupTime 
+    Montag, 20. März 2023 10:56:04
+.EXAMPLE
+    Get-Sc365SetupTime -verbose
+    Montag, 20. März 2023 10:56:04
+    VERBOSE: SEPPmail Cloud was created 13 days ago
+    VERBOSE: Inbound Connector Comments writes install date is: 03/20/2023 10:56:04#>
+Function Get-SC365SetupTime {
+    [CmdLetBinding()]
+
+    param ()
+
+    begin {}
+    process {
+        $ibc = Get-InboundConnector -Identity '[SEPPmail.Cloud]*'
+        $ibc|Select-Object -ExpandProperty WhenCreated
+
+        $days = (New-Timespan -Start (Get-Date $ibc.WhenCreated) -End (Get-Date)).Days
+        Write-verbose "SEPPmail Cloud was created $days days ago"
+        $commentstime = ((($ibc.comment|select-String 'Created with') -split 'version').trim()[-1] -split 'on').trim()[-1]
+        Write-Verbose "Inbound Connector Comments writes install date is: $commentsTime"
+    }
+    end{}
+}
+
 Register-ArgumentCompleter -CommandName Get-SC365TenantId -ParameterName MailDomain -ScriptBlock $paramDomSB
 Register-ArgumentCompleter -CommandName New-SC365Setup -ParameterName SEPPmailCloudDomain -ScriptBlock $paramDomSB
 
