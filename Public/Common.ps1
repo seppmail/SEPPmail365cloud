@@ -299,11 +299,6 @@ function New-SC365ExOReport {
             Write-verbose 'Defining Function fo read Exo Data and return an info Message in HTML even if nothing is retrieved'
         }
 
-        function New-SelfGeneratedReportName {
-            Write-Verbose "Creating self-generated report filename."
-            return ("{0:HHm-ddMMyyy}" -f (Get-Date)) + (Get-AcceptedDomain|where-object default -eq $true|select-object -expandproperty Domainname) + '.html'
-        }
-
         #region Filetest only if not $Literalpath is selected
         if ($PsCmdlet.ParameterSetName -eq "FilePath") {
 
@@ -327,7 +322,6 @@ function New-SC365ExOReport {
                     }
                 }
         }
-
         else {
         # Literalpath
             $SplitLiteralPath = Split-Path -Path $LiteralPath -Parent
@@ -339,34 +333,6 @@ function New-SC365ExOReport {
         }
         #endregion
 
-        function Get-ExoHTMLData {
-            param (
-                [Parameter(
-                      Mandatory = $true,
-                    HelpMessage = 'Enter Cmdlte to ')]
-                [string]$ExoCmd
-            )
-            try {
-                $allCmd = $exoCmd.Split('|')[0].Trim()
-                $htmlSelectCmd = $exoCmd.Split('|')[-1].Trim()
-
-                $rawData = Invoke-Expression -Command $allCmd
-                if ($null -eq $rawData) {
-                    $ExoHTMLData = New-object -type PSobject -property @{Result = '--- no information available ---'}|Convertto-HTML -Fragment
-                } else {
-                    $ExoHTMLCmd = "{0}|{1}" -f  $allcmd,$htmlSelectCmd
-                    $ExoHTMLData = Invoke-expression -Command $ExoHTMLCmd |Convertto-HTML -Fragment
-                    if ($jsonBackup) {
-                        $script:JsonData += '---' + $AllCmd + '---'|Convertto-Json
-                        $script:JsonData += $rawData|ConvertTo-Json
-                    }
-                } 
-                return $ExoHTMLData
-            }
-            catch {
-                Write-Warning "Could not fetch data from command '$exoCmd'"
-            }    
-        }
 
     }
 
