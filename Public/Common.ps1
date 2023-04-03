@@ -1434,7 +1434,10 @@ Function Get-SC365SetupTime {
 function ConvertTo-SC365IDNA {
     [CmdLetBinding()]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(
+                    Mandatory = $true,
+            ValueFromPipeline = $true
+            )]
         [string]$String
     )
     $idn = [System.Globalization.IdnMapping]::new()
@@ -1456,7 +1459,10 @@ function ConvertTo-SC365IDNA {
 function ConvertFrom-SC365IDNA {
     [CmdLetBinding()]
     param (
-        [Parameter(Mandatory = $true)]
+        [Parameter(
+                    Mandatory = $true,
+            ValueFromPipeline = $true
+            )]
         [string]$String
     )
     $idn = [System.Globalization.IdnMapping]::new()
