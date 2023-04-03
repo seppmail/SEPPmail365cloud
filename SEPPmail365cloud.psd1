@@ -53,19 +53,7 @@ PowerShellVersion = '5.1' # should be 7.2.0, but set to 5.1 becasue of: Could no
 # ProcessorArchitecture = 'Amd64'
 
 # Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @(
-    #@{
-    #       ModuleName = 'ExchangeOnlineManagement'
-    #    ModuleVersion = '3.0.0'
-    #             GUID = 'B5ECED50-AFA4-455B-847A-D8FB64140A22'
-    # }
-    # ,
-    #@{
-    #       ModuleName = 'DNSClient-PS'
-    #    ModuleVersion = '1.0.0'
-    #             GUID = '698438cc-f80d-4b88-aa04-16e302c1f326'
-    # }
-)
+RequiredModules = @()
 
 # Assemblies that must be loaded prior to importing this module
 # RequiredAssemblies = @()
@@ -152,7 +140,7 @@ PrivateData = @{
         ReleaseNotes = 'See https://github.com/seppmail/SEPPmail365cloud/blob/main/CHANGELOG.md'
 
         # Prerelease string of this module
-        # Prerelease = 'preview3'
+        Prerelease = 'RC1'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false
