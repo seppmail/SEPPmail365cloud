@@ -10,8 +10,8 @@
 - New-SC365ExoReport now shows also if a transport rule stops after processing
 - New-SC365ExoReport has a new switch parameter -jsonbackup (default off) which stores a complete backup of the tenant config in JSON at the same location as the report is stored. This may be used for a detailed config backup for archiving of diagnosis
 - New CmdLet: Get-SC365SetupTime reads the "WhenCreated" property of the SEPPmail.cloud inbound connector and emits the create date on the console.
-- New switch parameter '-CryptoContentOnly' on New-SC365Rules. If set, rule 100 will be modified to only send E-Mails to SEPpmail which require cryptographic processing. !Important - if set, you will loose the message tracking capability of the SEPPmail.cloud.
-- New early edition of IDNA Support. For domains with special characters, we will use IDNA to convert DNS revords to ASCII-Format. ConvertFrom-SC365 and ConvertTo-SC365 provide basic functionality for DNS-IDNA-DNS conversion.
+- New switch parameter '-CryptoContentOnly' on New-SC365Rules. If set, rule 100 will be modified to only send E-Mails to SEPPmail.cloud which require cryptographic processing. !Important - if set, you will loose the message tracking capability of the SEPPmail.cloud.
+- New early edition of IDNA Support. For domains with special characters, we will use IDNA to convert DNS records to ASCII-Format in the future. ConvertFrom-SC365IDNA and ConvertTo-SC365IDNS provide basic functionality for DNS-IDNA-DNS conversion.
 
 ### Maintenance
 
