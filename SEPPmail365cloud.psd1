@@ -140,7 +140,7 @@ PrivateData = @{
         ReleaseNotes = 'See https://github.com/seppmail/SEPPmail365cloud/blob/main/CHANGELOG.md'
 
         # Prerelease string of this module
-        Prerelease = 'RC1'
+        Prerelease = 'RC2'
 
         # Flag to indicate whether the module requires explicit user acceptance for install/update/save
         # RequireLicenseAcceptance = $false

@@ -873,7 +873,7 @@ function Get-SC365Setup {
             $smcConn = Get-SC365Connectors -Routing $routing -inboundonly:$false
         }
         if ($InBoundOnly -eq $false) {
-            $smcTRules = Get-SC365Rules -Routing $routing
+            $smcTRules = Get-SC365Rules
         }
     }
     End{
