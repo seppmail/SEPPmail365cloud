@@ -615,7 +615,7 @@ function Remove-SC365Setup {
             else {
                 #Write-Progress -Activity "Removing SEPPmail.Cloud Setup" -Status "Removing Rules" -PercentComplete (0)
                 Write-Information '--- Removing transport rules ---' -InformationAction Continue
-                Remove-SC365Rules -Routing $routing
+                Remove-SC365Rules
                 Write-Information '--- Remove connector(s) ---' -InformationAction Continue
                 Remove-SC365Connectors -routing $routing -Inboundonly:$inboundonly
             }

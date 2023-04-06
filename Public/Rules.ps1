@@ -2,13 +2,11 @@
 .SYNOPSIS
 	Read existing SEPPmail.cloud transport rules in the exchange online environment.
 .DESCRIPTION
-	Use this tofigure out if there are already SEPPmail.cloud rules implemented in Exchange online.
+	Use this to figure out if there are already SEPPmail.cloud rules implemented in Exchange online.
 	It is only emitting installed rules which come with the seppmail365cloud PowerShell Module.
 	If you want to be informed about all installed transport rules, use New-SC365ExoReport.
 .EXAMPLE
-	Get-SC365Rules -routing 'parallel'
-.EXAMPLE
-	Get-SC365Rules -routing 'inline'
+	Get-SC365Rules
 #>
 function Get-SC365Rules {
 	[CmdletBinding(
@@ -16,10 +14,7 @@ function Get-SC365Rules {
 	)]
 	param
 	(
-		<#[Parameter(Mandatory = $true)]
-		[ValidateSet('parallel','inline','p','i')]
-		[String]$routing
-		#>
+
 	)
 
 	begin {
@@ -37,7 +32,7 @@ function Get-SC365Rules {
 	}
 	process {
 		#foreach ($file in $transportRuleFiles) {
-		$allSEPPmailCloudRules = Get-TransportRule -Identity '[SEPPmail.cloud]*'
+		$allSEPPmailCloudRules = Get-TransportRule -Identity '[SEPPmail*'
 		 	if ($allSEPPmailCloudRules) {
 				Foreach ($rule in $allSEPPmailCloudRules) {
 					if ($rule) {
@@ -281,7 +276,7 @@ function New-SC365Rules
 .DESCRIPTION
 	Convenience function to remove the SEPPmail.cloud rules in one CmdLet.
 .EXAMPLE
-	Remove-SC365Rules -routing inline
+	Remove-SC365Rules
 #>
 function Remove-SC365Rules {
 	[CmdletBinding(SupportsShouldProcess = $true,
@@ -290,12 +285,6 @@ function Remove-SC365Rules {
 				  )]
 	param
 	(
-		<#[Parameter(
-			Mandatory = $true,
-			HelpMessage = 'Use seppmail if the MX record points to SEPPmail and microsoft if the MX record points to the Microsoft Inrastructure'
-		)]
-		[ValidateSet('parallel','inline','p','i')]
-		[String]$routing#>
 	)
 
 	begin {
@@ -305,14 +294,10 @@ function Remove-SC365Rules {
 		} else {
 			Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`" " 
 		}
-		#if ($routing -eq 'p') {$routing = 'parallel'}
-		#if ($routing -eq 'i') {$routing = 'inline'}
-		#$transportRuleFiles = Get-Childitem "$psscriptroot\..\ExOConfig\Rules\"
-
 	}
 	process {
 		Write-Verbose "Removing current version module rules"
-		$allSEPPmailCloudRules = Get-TransportRule -Identity '[SEPPmail.cloud]*'
+		$allSEPPmailCloudRules = Get-TransportRule -Identity '[SEPPmail*'
 		foreach ($rule in $allSEPPmailCloudRules) {
 			if($PSCmdlet.ShouldProcess($rule.Name, "Remove transport rule")) {
 					#$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue

@@ -15,7 +15,8 @@
 
 ### Maintenance
 
-- Added an Initscript.ps1, so that not all the module load preprocessing happens in the psm1 file. 
+- Added an Initscript.ps1, so that not all the module load preprocessing happens in the psm1 file.
+- Get-SC365Rules and Remove-SC365Rules now filter all rules which match "[SEPPmail*". also in Migration scenarios from a SEPPmail Appliance there must not be any old Appliance rules in the mailflow.
 
 ## 1.3.1 - Maintenance Release
 
