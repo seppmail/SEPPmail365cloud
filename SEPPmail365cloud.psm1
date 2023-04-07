@@ -1,14 +1,4 @@
-Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "| Welcome to the SEPPmail.cloud PowerShell setup module               |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "| Please read the documentation on GitHub if you are unfamiliar       |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "| with the module and its CmdLets before continuing !                 |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "| https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md    |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "| Press <CTRL><Klick> to open the Link                                |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
+# The SEPPmail365cloud module file
 
 [CmdLetBinding()]
 
@@ -27,7 +17,30 @@ Write-Verbose 'Loading Module Files'
 . $ModulePath\Public\Rules.ps1
 . $ModulePath\Public\Connectors.ps1
 
-Write-Verbose 'Test new version available'
+if ($sc365notest -ne $true) {
+    Write-Verbose "Testing Exchange Online connectivity"
+    if (!(Test-SC365ConnectionStatus)) {
+        Write-Warning "You are not connected to Exchange Online. Use `"Connect-ExchangeOnline`" to connect to your tenant"
+    } else {
+        try {
+            if ((Get-OrganizationConfig).IsDehydrated) {
+                Write-Verbose "Organisation is not enabled for customizations -- is 'Dehyrated'. Turning this on now"
+                Enable-OrganizationCustomization  #-confirm:$false
+            }        
+        } catch {
+            Write-Warning "Cannot detect Tenant hydration - maybe disconnected"
+        }
+        try {
+            Write-verbose "Creating Test OnPrem Connector to check if tenant allows connector creation"
+            New-InboundConnector -Name '[SEPPmail.cloud] TempConnector EX505293' -ConnectorType OnPrem -TlsSenderCertificateName 'test.nowhere.org' -SenderDomains 'test.nowhere.org' -RequireTls $true -enabled $false |out-null
+            Remove-InboundConnector -Identity '[SEPPmail.cloud] TempConnector EX505293' -Confirm:$false
+        }
+        catch {
+            Write-Error "This Tenant is not yet allowed to create OnPrem-Connectors (Exchange Error EX505293).If this tenant shall be integrated in PARALLEL mode, contact Microsoft Support and request connector creation. See SEPPmail.cloud onboarding mail for details."
+        }            
+    }
+}
+Write-Verbose 'Test new version availability'
 try {
     $onLineVersion = Find-Module -Name 'SEPPmail365cloud'|Select-Object -expandproperty Version
     $offLineVersion = Test-ModuleManifest (Join-Path $ModulePath -ChildPath SEPPmail365cloud.psd1) |Select-Object -ExpandProperty Version 
