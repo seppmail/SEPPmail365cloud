@@ -64,11 +64,11 @@ function Get-SC365DeploymentInfo {
         $inBoundOnly = $null
 
         $DeplyoymentInfo = [PSCustomObject]@{
-            DeployMentStatus    = $null
+            DeploymentStatus    = $null
             SEPPmailCloudDomain = $Null
-            region              = $null
-            routing             = $null
-            InBoundOnly         = $null
+            Region              = $null
+            Routing             = $null
+            InboundOnly         = $null
             CBCDeployed         = $Null
             CBCConnectorHost    = $null
             CBCDnsEntry         = $null
@@ -209,13 +209,12 @@ function Get-SC365DeploymentInfo {
         #endregion CBC availability
     }
     end {
-        $DeplyoymentInfo.DeployMentStatus = $DeploymentStatus
+        $DeplyoymentInfo.DeploymentStatus = $DeploymentStatus
         $DeplyoymentInfo.Region = $region
         $DeplyoymentInfo.Routing = $routing
-        $DeplyoymentInfo.InBoundOnly  = $inBoundOnly
+        $DeplyoymentInfo.InboundOnly  = $inBoundOnly
         $DeplyoymentInfo.SEPPmailCloudDomain = $DNSHostDomain
         $DeplyoymentInfo.CBCDeployed = $CBCDeployed
-        if ($DeplyoymentInfo.DeployMentTime) {$DeplyoymentInfo.DeployMentTime = $DeployMentTime}
         if ($region) {$DeplyoymentInfo.CBCConnectorHost = ($tenantId + ((Get-Variable $region).Value.TlsCertificate).Replace('*',''))}
         if ($CBCDeployed -eq $true) {$DeplyoymentInfo.CBCDnsEntry = ($TenantIDHash + '.cbc.seppmail.cloud')}
         if ($routing -eq 'inline') {$DeplyoymentInfo.InlineMXMatch = $MxMatch}
