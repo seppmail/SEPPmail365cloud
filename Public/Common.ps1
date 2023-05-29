@@ -1111,19 +1111,21 @@ function Get-SC365MessageTrace {
         $OldEaPreference = $ErrorActionPreference
         $ErrorActionPreference = 'SilentlyContinue'
         Write-Information "This CmdLet is still under development" -InformationAction Continue
-            <#try {
+        
+        Write-Verbose "Collecting SEPPmail Connectors for Messagetrace-Detail analysis"
+        try {
                 if (!($ibc = Get-Inboundconnector -Identity '[SEPPmail*')) {
-                    Write-Error "Could not find SEPPmail.Cloud Inbound-Connecor"
+                    Write-Error "Could not find SEPPmail Inbound-Connecor"
                 }
                 if (!($obc = Get-Outboundconnector -Identity '[SEPPmail*')) {
-                    Write-Error "Could not find SEPPmail.Cloud Outbound-Connecor"
+                    Write-Error "Could not find SEPPmail Outbound-Connecor"
                 }
             }
-            catch {
-            Write-Error "Could not detect SEPPmail-Cloud Connectors, aborting"
+        catch {
+            Write-Error "Could not detect SEPPmail Connectors, aborting"
             break
-            }#>
-            $TenantAcceptedDomains = Get-AcceptedDomain
+            }
+        $TenantAcceptedDomains = Get-AcceptedDomain
         }
    
     process {
@@ -1207,7 +1209,7 @@ function Get-SC365MessageTrace {
 
         switch ($maildirection)
         {
-            {($_ -eq 'InBound') -and ($ibc.identity -eq "[SEPPmail.cloud] Inbound-Parallel")} 
+            {(($_ -eq 'InBound') -and ($ibc.identity -match "\[SEPPmail\]") -and ($ibc.ConnectorType -eq 'OnPremises'))} 
             {
                 # Im Parallel Mode kommt die Mail 2x, einmal von externem Host und einmal von SEPpmail, Index 0 und 1
                 
@@ -1239,7 +1241,7 @@ function Get-SC365MessageTrace {
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExtSendDetail -Value $MTDExtExtSend.Detail
                 $Outputobject | Add-Member -MemberType NoteProperty -Name InboundConnectorName -Value $ibcName
             }
-            {($_ -eq 'InBound') -and ($ibc.identity -eq "[SEPPmail.cloud] Inbound-Inline")} 
+            {(($_ -eq 'InBound') -and ($ibc.identity -match "\[SEPPmail\]")  -and ($ibc.ConnectorType -eq 'Partner'))} 
             {
                 $MessageTraceDetail = Get-MessagetraceDetail -MessageTraceId $MessageTrace.MessageTraceId -Recipient $Recipient
                 #$MTDReceived = $MessageTraceDetail|where-object {($_.Event -eq 'Received') -or ($_.Event -eq 'Empfangen')} 
@@ -1262,14 +1264,16 @@ function Get-SC365MessageTrace {
                 }
                 $Outputobject | Add-Member -MemberType NoteProperty -Name InboundConnectorName -Value $ibcName
             }
-            {($_ -eq 'OutBound') -and ($obc.identity -eq "[SEPPmail.cloud] Outbound-Parallel")}
+            {(($_ -eq 'OutBound') -and ($obc.identity -match "\[SEPPmail\]") -and ($ibc.ConnectorType -eq 'OnPremises'))}
             {
                 # We take one of 2 Send/Receive Messagetraces from SEPPmail and get the details
 
                 # Now this one has 3 Parts. 0= Recieve from Mailboxhost, 1 = SumbitMessage (Exo internal), 2 = Send to SEPPmail
+
                 $MTDSEPPReceive = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient -Event 'receive'
-                # $MTDSEPPSubmit = $MessageTraceDetailSEPPmail[1] Not interesting for us
                 $MTDSEPPExtSend = Get-MessagetraceDetail -MessageTraceId $MessageTrace[1].MessageTraceId -Recipient $Recipient |where-object Event -like  '*SEND*'                
+
+                # $MTDSEPPSubmit = $MessageTraceDetailSEPPmail[1] Not interesting for us
                 $MTDExtReceive = Get-MessagetraceDetail -MessageTraceId $MessageTrace[0].MessageTraceId -Recipient $Recipient -Event 'receive'
                 $MTDExtExtSend = Get-MessagetraceDetail -MessageTraceId $MessageTrace[0].MessageTraceId -Recipient $Recipient |where-object Event -like  '*SEND*'
                 try {
@@ -1297,7 +1301,7 @@ function Get-SC365MessageTrace {
                 $Outputobject | Add-Member -MemberType NoteProperty -Name OutboundConnectorName -Value $obcName
                 $Outputobject | Add-Member -MemberType NoteProperty -Name ExternalSendLatency -Value (((($MTDExtExtSend.Data -Split '<') -replace ('>','')) -split (';') | select-String 'S:ExternalSendLatency').ToString()).Split('=')[-1]
             }
-            {($_ -eq 'OutBound') -and ($obc.identity -eq "[SEPPmail.cloud] Outbound-Inline")}
+            {(($_ -eq 'OutBound') -and ($obc.identity -match "\[SEPPmail\]") -and ($ibc.ConnectorType -eq 'Partner'))}
             {
                 Write-Progress -Activity "Loading message data" -Status "MessageTrace" -PercentComplete 40 -CurrentOperation "Get-Messagetrace"
                 $MessageTraceDetail = Get-MessagetraceDetail -MessageTraceId $MessageTrace.MessageTraceId -Recipient $Recipient
@@ -1324,8 +1328,8 @@ function Get-SC365MessageTrace {
                 Write-Progress -Activity "Loading message data" -Status "StatusMessage" -PercentComplete 100 -CurrentOperation "Done"
             }
             Default {
-                $OutputObject |  Add-Member -MemberType NoteProperty -Name "SEPPmail.cloud Integration" -Value 'none found'
-                Write-Verbose "E-Mail direction was $_, could not detect SEPPmail.cloud."
+                $OutputObject |  Add-Member -MemberType NoteProperty -Name "SEPPmail Integration" -Value 'none found'
+                Write-Verbose "E-Mail direction was $_, could not detect SEPPmail"
             }
         }
     }
