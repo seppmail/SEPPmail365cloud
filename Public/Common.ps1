@@ -501,7 +501,7 @@ function New-SC365ExOReport {
                 Write-Information -MessageData "Opening $finalPath with default browser"
                 Invoke-Expression "& '$finalpath'"
             }
-            if (($IsMacOs) -or (isLinux)) {
+            if (($IsMacOs) -or ($isLinux)) {
                 "Report is stored on your disk at $finalpath. Open with your favorite browser."
                 if ($jsonBackup) {
                     "Json Backup is stored on your disk at $jsonPath. Open with your favorite editor."
