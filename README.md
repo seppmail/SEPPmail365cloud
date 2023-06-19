@@ -73,9 +73,6 @@ Remove-SC365Setup
   - [Advanced Setup Options](#advanced-setup-options)
     - [Creating Connectors and disabled rules for time-controlled integration](#creating-connectors-and-disabled-rules-for-time-controlled-integration)
     - [Place TransportRules at the top of the rule-list](#place-transportrules-at-the-top-of-the-rule-list)
-    - [Use AllowLists for specific customer situations](#use-allowlists-for-specific-customer-situations)
-      - [Allowlisting SEPPmail.cloud in the Defender Enhanced Filtering List (Parallel Mode)](#allowlisting-seppmailcloud-in-the-defender-enhanced-filtering-list-parallel-mode)
-      - [Allowlisting SEPPmail.cloud in the Anti-SPAM filter list, aka HostedConnectionFilterPolicy (Parallel Mode)](#allowlisting-seppmailcloud-in-the-anti-spam-filter-list-aka-hostedconnectionfilterpolicy-parallel-mode)
   - [Issues and solutions](#issues-and-solutions)
     - [Computer has User home directory on a fileshare (execution policy error)](#computer-has-user-home-directory-on-a-fileshare-execution-policy-error)
     - [Special Case : Connectors with "/" or "\\" in the name](#special-case--connectors-with--or--in-the-name)
@@ -242,8 +239,8 @@ You need to setup inbound and outbound-connectors and transport rules, so run th
 New-SC365Connectors -SEPPmailCloudDomain 'contoso.ch' -routing 'inline' -region 'ch'
 
 New-SC365Rules -routing 'inline' -SEPPmailCloudDomain 'contoso.eu'
-
 ```
+
 ### Example for routingmode: inline/inboundonly
 
 ```powershell
@@ -313,26 +310,6 @@ By default out transport rules will be placed at the bottom of all other transpo
 
 ```powershell
 New-SC365Rules -PlacementPriority Top
-```
-
-### Use AllowLists for specific customer situations
-
-#### Allowlisting SEPPmail.cloud in the Defender Enhanced Filtering List (Parallel Mode)
-
-We saw situations where the EnhancedFiltering Allowlist needed to be filled with SEPPmail.cloud IP addresses.
-Use the example below to deploy those IP addresses properly.
-
-```powershell
-New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'inline' -region 'de' -inboundEFSkipIPs
-```
-
-#### Allowlisting SEPPmail.cloud in the Anti-SPAM filter list, aka HostedConnectionFilterPolicy (Parallel Mode)
-
-We saw situations where the Hosted Connection Filter Policy needed to be filled with SEPPmail.cloud IP addresses.
-Use the example below to deploy those IP addresses properly.
-
-```powershell
-New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'inline' -region 'de' -option AntiSpamAllowListing
 ```
 
 ## Issues and solutions
