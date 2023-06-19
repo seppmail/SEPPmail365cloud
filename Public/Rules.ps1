@@ -113,7 +113,7 @@ function New-SC365Rules
 			  Mandatory = $false,
 			HelpMessage = 'Rule 100 will only send E-Mails to SEPPmail.cloud which requires cryptographic processing'
 		)]
-		[bool]$CryptoContentOnly=$true,
+		[bool]$CryptoContentOnly = $true,
 
 		[Parameter(
 			Mandatory = $false,
