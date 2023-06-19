@@ -71,7 +71,7 @@ Remove-SC365Setup
   - [Review the changes](#review-the-changes)
   - [Test your mailflow](#test-your-mailflow)
   - [Advanced Setup Options](#advanced-setup-options)
-    - [Creating Connectors and disabled Rules for time-controlled integration](#creating-connectors-and-disabled-rules-for-time-controlled-integration)
+    - [Creating Connectors and disabled rules for time-controlled integration](#creating-connectors-and-disabled-rules-for-time-controlled-integration)
     - [Place TransportRules at the top of the rule-list](#place-transportrules-at-the-top-of-the-rule-list)
     - [Use AllowLists for specific customer situations](#use-allowlists-for-specific-customer-situations)
       - [Allowlisting SEPPmail.cloud in the Defender Enhanced Filtering List (Parallel Mode)](#allowlisting-seppmailcloud-in-the-defender-enhanced-filtering-list-parallel-mode)
@@ -282,12 +282,12 @@ Send an e-mail from inside-out and outside-in to see if the mailflow is working.
 
 The module allows some extra-tweaks for advanced configurations
 
-### Creating Connectors and disabled Rules for time-controlled integration
+### Creating Connectors and disabled rules for time-controlled integration
 
 For sensitive environments, where mailflow may only be changed in specific time frames, it is possible to create rules and connectors "disabled". Both CmdLets New-SC365Connectors and New-SC365Rules have a -disabled switch. See examples below:
 
 ```powershell
-New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'parallel' -region 'de'
+New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'parallel' -region 'de' -disabled
 New-SC365Rules -disabled
 ```
 
