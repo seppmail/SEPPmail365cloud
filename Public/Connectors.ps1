@@ -96,14 +96,6 @@ function Get-SC365Connectors
 .EXAMPLE
     PS C:\> New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'parallel' -region 'de'
     Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
-.EXAMPLE
-    PS C:\> New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'parallel' -region 'de' -InboundEFSkipIPs
-    Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
-    In addition the IP-Addresses of SEPPmail.cloud are listed in the "Enhanced Filter Skip list". This should not be neeed with Version 1.2.0+ as we do ARC-signing!
-.EXAMPLE
-    PS C:\> New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'parallel' -region 'de' -option AntiSpamAllowListing
-    Creates Connectors for the maildomain contoso.eu, seppmail.cloud environment ist Germany and customers uses Microsoft mailfilter. MX points to Microsoft.
-    In addition the IP-addresses of SEPPmail.cloud are listed in the Default Hosted Connection Filter Policy. This will impact SPAM of detection of MS Defender, USE WITH CARE!
 .INPUTS
     
 .OUTPUTS
@@ -166,31 +158,6 @@ function New-SC365Connectors
             HelpMessage = 'For routingtype `"inline`", if only inbound service is used.'
         )]
         [switch]$inBoundOnly,
-
-        [Parameter(
-            Mandatory = $false,
-            ParameterSetname = 'BothDirections',
-            Helpmessage = 'Force set IP-addresses of sending SEPPmail.cloud servers in EFSkipIPs in inbound connector.'
-            )]
-        [Parameter(
-            Mandatory = $false,
-            ParameterSetname = 'InBoundOnly',
-            Helpmessage = 'Force set IP-addresses of sending SEPPmail.cloud servers in EFSkipIPs in inbound connector'
-            )]
-        [switch]$InboundEFSkipIPs = $false,
-
-        [Parameter(
-            Mandatory = $false,
-            ParameterSetName = 'BothDirections',
-            HelpMessage = 'Which configuration option to use'
-        )]
-        [Parameter(
-            Mandatory = $false,
-            ParameterSetName = 'InBoundOnly',
-            HelpMessage = 'Which configuration option to use'
-        )]
-        [ValidateSet('AntiSpamAllowListing')]
-        [String[]]$option,
 
         [Parameter(
             Mandatory = $false,
@@ -506,15 +473,6 @@ function New-SC365Connectors
                 $param.TlsSenderCertificateName = $TenantIdCertificateName
                 Write-verbose "Inbound TlsSenderCertificateName is: $param.TLSSenderCertificatename"
                 
-                #region EFSkipIP in inbound connector
-                if ($InboundEFSkipIPs){
-                    [String[]]$EfSkipIPArray = $regionConfig.IPv4AllowList + $regionConfig.IPv6AllowList
-                    $param.EFSkipIPs = $EfSkipIPArray
-                } else {
-                    Write-verbose "Inbound Connector $param.Name will be build WITHOUT IP-addresses in EFSkipIPs."
-                }
-                #endregion EFSkip In ibc
-
                 #region Create Inbound Connector
                 Write-Verbose "Creating SEPPmail.cloud Inbound Connector $($param.Name)!"
                 if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Inbound Connector'))
