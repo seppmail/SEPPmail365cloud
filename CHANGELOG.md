@@ -1,5 +1,19 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 1.3.6 - Bugfix and maintenance release
+
+### Maintenance
+
+- New-SC365Setup: Customers having the tenant default accepted domain set to the *.onmicrosoft.com domain, will now get a specific error when using New-SC365Setup that they need to specify a custom domain.
+- New-SC365Connectors: Removed -inboundEFSkipIP and -Options parameter from New-SC365Connectors as they make no sense in the SEPPmail.cloud environment
+- New-SC365Rules: In Parallel Mode, routing crypto-based content via SEPPmail.cloud is now default. This can be switched off with -CryptoContentOnly $false.
+- New-SC365Rules: Rule 100 now uses Header and Envelope to identify e-mails (was header-only)
+
+### Bugfixes
+
+- New-SC365ExoReport: On Linux systems it was not possible to create a JSON export.
+- Fix documentation (readme.md) for creating connectors disabled.
+
 ## 1.3.5 - Feature Release
 
 ### Enhancements
