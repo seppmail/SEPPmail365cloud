@@ -655,8 +655,8 @@ function Remove-SC365Setup {
     # Creates a setup for one domain in inline mode and in region Germany/EU inbound only.
 #>
 function New-SC365Setup {
-    [CmdletBinding(
-        SupportsShouldProcess = $true,
+    [CmdLetBinding(
+        SupportsShouldProcess=$true,
         ConfirmImpact = 'Medium',
         HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md'
     )]
@@ -706,7 +706,7 @@ function New-SC365Setup {
             Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
         }
 
-        # If user tries to use *.onmicrosoft.com domain ==> Error out
+        # If user tries to use *.onmicrosoft.com domain ==> BREAK
         if ($SEPPmailCloudDomain -like '*.onmicrosoft.com') {
             Write-Error "Domain $SEPPmailcloudDomain is not intended for E-Mail sending and cannot be booked for the SEPPmail-cloud Service. Specify a custom domain of your tenant and retry."
             break
@@ -760,9 +760,9 @@ function New-SC365Setup {
     Process {
         try {
             if ($force) {
-                if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain, 'Removing existing setup')) {
+                #if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain, 'Remove-SC365Setup')) {
                     Remove-SC365Setup
-                }
+                #}
             }    
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
@@ -772,15 +772,15 @@ function New-SC365Setup {
 
         try {
             if ($InBoundOnly -eq $true) {
-                Write-Information '--- Creating inbound connector ---' -InformationAction Continue
-                if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain, 'Creating Inbound Connector')) {
+                #if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain, 'New-SC365Connectors')) {
+                    Write-Information '--- Creating inbound connector ---' -InformationAction Continue
                     New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region -inboundonly:$true
-                }
+                #}
             } else {
-                Write-Information '--- Creating in and outbound connectors ---' -InformationAction Continue
-                if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain), 'Creating In and Outbound Connector') {
+                #if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain), 'New-SC365Connectors') {
+                    Write-Information '--- Creating in and outbound connectors ---' -InformationAction Continue
                     New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region
-                }
+                #}
             }
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
@@ -788,10 +788,10 @@ function New-SC365Setup {
         }
         try {
             if ($inboundonly -eq $false) {
-                Write-Information '--- Creating transport rules ---' -InformationAction Continue
-                if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain), 'Creating transport rules') {
+                #if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain), 'Creating transport rules') {
+                    Write-Information '--- Creating transport rules ---' -InformationAction Continue
                     New-SC365Rules -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing
-                }
+                #}
             }
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
@@ -799,11 +799,9 @@ function New-SC365Setup {
         }
     }
     End{
-        if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain)) {
-            Write-Information "--- Successfully created SEPPmail.cloud Setup for $seppmailclouddomain in region $region in $routing mode ---" -InformationAction Continue
-            Write-Information "--- Wait a few minutes until changes are applied in the Microsoft cloud ---" -InformationAction Continue
-            Write-Information "--- Afterwards, start testing E-Mails in and out ---" -InformationAction Continue
-        }
+        Write-Information "--- Successfully created SEPPmail.cloud Setup for $seppmailclouddomain in region $region in $routing mode ---" -InformationAction Continue
+        Write-Information "--- Wait a few minutes until changes are applied in the Microsoft cloud ---" -InformationAction Continue
+        Write-Information "--- Afterwards, start testing E-Mails in and out ---" -InformationAction Continue
     }
 }
 

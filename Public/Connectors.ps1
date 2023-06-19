@@ -116,7 +116,7 @@ function New-SC365Connectors
     [CmdletBinding(
          SupportsShouldProcess = $true,
          ConfirmImpact = 'Medium',
-         DefaultparameterSetname = 'BothDirections',
+         DefaultParameterSetname = 'BothDirections',
          HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
      )]
     param
