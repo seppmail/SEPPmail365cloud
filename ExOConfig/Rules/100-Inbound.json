@@ -23,7 +23,7 @@
           "Priority"                                : 0,
           "SetAuditSeverity"                        : "Low",
           "Mode"                                    : "Enforce",
-          "SenderAddressLocation"                   : "Header"
+          "SenderAddressLocation"                   : "HeaderOrEnvelope"
         }
     },
     "Option":
