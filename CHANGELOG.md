@@ -1,6 +1,6 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
-## 1.3.6 - Bugfix and maintenance release
+## 1.3.6-RC1 - Bugfix and maintenance release
 
 ### Maintenance
 
