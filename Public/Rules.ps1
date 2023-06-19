@@ -155,12 +155,14 @@ function New-SC365Rules
 		}
 
 		$outboundConnectors = Get-OutboundConnector -IncludeTestModeConnectors $true | Where-Object { $_.Name -match "^\[SEPPmail.cloud\]" }
-		if(!($outboundConnectors))
-		{
-			throw [System.Exception] "No SEPPmail.cloud outbound connector found. InBoundOnly Mode ? Run `"New-SC365Connectors`" to add the proper SEPPmail.cloud connectors"
-		}
-		if ($($outboundConnectors.Enabled) -ne $true) {
-			throw [System.Exception] "SEPPmail.cloud outbound-connector is disabled, cannot create rules. Create connectors without -Disable switch, or enable them in the admin portal."
+		if ($PSCmdlet.ShouldProcess('Exchange Online', "Check existence of Outbound Connector")) {
+			if(!($outboundConnectors))
+			{
+				throw [System.Exception] "No SEPPmail.cloud outbound connector found. InBoundOnly Mode ? Run `"New-SC365Connectors`" to add the proper SEPPmail.cloud connectors"
+			}
+			if ($($outboundConnectors.Enabled) -ne $true) {
+				throw [System.Exception] "SEPPmail.cloud outbound-connector is disabled, cannot create rules. Create connectors without -Disable switch, or enable them in the admin portal."
+			}	
 		}
 	}
 

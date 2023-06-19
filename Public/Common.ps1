@@ -760,9 +760,7 @@ function New-SC365Setup {
     Process {
         try {
             if ($force) {
-                #if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain, 'Remove-SC365Setup')) {
                     Remove-SC365Setup
-                #}
             }    
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
@@ -772,15 +770,11 @@ function New-SC365Setup {
 
         try {
             if ($InBoundOnly -eq $true) {
-                #if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain, 'New-SC365Connectors')) {
                     Write-Information '--- Creating inbound connector ---' -InformationAction Continue
                     New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region -inboundonly:$true
-                #}
             } else {
-                #if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain), 'New-SC365Connectors') {
                     Write-Information '--- Creating in and outbound connectors ---' -InformationAction Continue
                     New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region
-                #}
             }
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
@@ -788,10 +782,9 @@ function New-SC365Setup {
         }
         try {
             if ($inboundonly -eq $false) {
-                #if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain), 'Creating transport rules') {
                     Write-Information '--- Creating transport rules ---' -InformationAction Continue
                     New-SC365Rules -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing
-                #}
+
             }
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
