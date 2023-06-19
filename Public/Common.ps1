@@ -706,7 +706,7 @@ function New-SC365Setup {
             Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
         }
  
-        if ((!($SeppmailcloudDomain)) -or (!($Region)) -or (!($routing)) ) {
+        if ((!($SEPPmailCloudDomain)) -or (!($region)) -or (!($routing)) ) {
             try {
                 $deploymentInfo = Get-SC365DeploymentInfo
             } catch {
@@ -746,6 +746,10 @@ function New-SC365Setup {
                 }
              }    
         }
+        if ($SEPPmailCloudDomain -like '*.onmicrosoft.com') {
+            Write-Error "Domain $SEPPmailcloudDomain is not intended for E-Mail sending and cannot be booked for the SEPPmail-cloud Service. Specify a custom domain like 'contoso.eu' and retry."
+            break
+        }
     }
     Process {
         try {
@@ -754,7 +758,7 @@ function New-SC365Setup {
             }    
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
-            Write-Error "Setup removal failed. Try removing SEPPmail.cloud Rules and Connectors from Portal of with native CmdLets."
+            Write-Error "Setup removal failed. Try removing SEPPmail.cloud Rules and Connectors from the Microsoft portal admin.microsoft.com or with native Exchange Online PowerShell Module CmdLets."
             break
         }
 
