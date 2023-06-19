@@ -85,7 +85,7 @@ function Get-SC365DeploymentInfo {
         #region Select DefaultDomain
             if (!($SEPPmailCloudDomain)) {
                 [String]$DNSHostDomain = $tenantAcceptedDomains |Where-Object 'Default' -eq $true |select-Object -ExpandProperty DomainName
-                Write-Verbose "Extracted Default-Domain with name $SEPPmailcloudDomain from TenantDefaultDomains"
+                Write-Verbose "Extracted Default-Domain with name $DNSHostDomain from TenantDefaultDomains"
                 }
             else {
                 foreach ($dom in $SEPPmailCloudDomain) {
@@ -705,16 +705,25 @@ function New-SC365Setup {
         } else {
             Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
         }
- 
+
+        # If user tries to use *.onmicrosoft.com domain ==> Error out
+        if ($SEPPmailCloudDomain -like '*.onmicrosoft.com') {
+            Write-Error "Domain $SEPPmailcloudDomain is not intended for E-Mail sending and cannot be booked for the SEPPmail-cloud Service. Specify a custom domain of your tenant and retry."
+            break
+        }
         if ((!($SEPPmailCloudDomain)) -or (!($region)) -or (!($routing)) ) {
             try {
                 $deploymentInfo = Get-SC365DeploymentInfo
             } catch {
-                Throw [System.Exception] "Could not autodetect SEPPmail.cloud Deployment Status, use manual parameters"
+                Throw [System.Exception] "Could not autodetect SEPPmail.cloud deployment status, use manual parameters -SEPPmailCloudDomain, -region and -routing"
             }
-            
+            # Customers where TDAD is set to *.onmicrosoft.com  ==> BREAK
+            if ($DeploymentInfo.SEPPmailCloudDomain -like '*.onmicrosoft.com') {
+                Write-Error "Domain $($DeploymentInfo.SEPPmailCloudDomain) is set as the tenant default accepted domain. $($DeploymentInfo.SEPPmailCloudDomain) is not intended for E-Mail sending and cannot be booked for the SEPPmail-cloud Service. Specify a custom domain of your tenant and retry or change the Default accepted domain in your Exchange Online tenant."
+                break
+            }
             if ($DeploymentInfo.DeployMentStatus -eq $false) {
-                Write-Error "SEPPmail.cloud setup not (fully) deployed. Use Cloud-Portal and fix deployment."
+                Write-Error "SEPPmail.cloud setup for domain $deploymentinfo.SEPPmailCloudDomain is not (fully) deployed. Use Cloud-Portal and fix deployment."
                 break
             } else {
                 if ($Deploymentinfo) {
@@ -746,15 +755,14 @@ function New-SC365Setup {
                 }
              }    
         }
-        if ($SEPPmailCloudDomain -like '*.onmicrosoft.com') {
-            Write-Error "Domain $SEPPmailcloudDomain is not intended for E-Mail sending and cannot be booked for the SEPPmail-cloud Service. Specify a custom domain like 'contoso.eu' and retry."
-            break
-        }
+
     }
     Process {
         try {
             if ($force) {
-                Remove-SC365Setup
+                if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain, 'Removing existing setup')) {
+                    Remove-SC365Setup
+                }
             }    
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
@@ -765,10 +773,14 @@ function New-SC365Setup {
         try {
             if ($InBoundOnly -eq $true) {
                 Write-Information '--- Creating inbound connector ---' -InformationAction Continue
-                New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region -inboundonly:$true
+                if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain, 'Creating Inbound Connector')) {
+                    New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region -inboundonly:$true
+                }
             } else {
                 Write-Information '--- Creating in and outbound connectors ---' -InformationAction Continue
-                New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region
+                if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain), 'Creating In and Outbound Connector') {
+                    New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region
+                }
             }
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
@@ -777,7 +789,9 @@ function New-SC365Setup {
         try {
             if ($inboundonly -eq $false) {
                 Write-Information '--- Creating transport rules ---' -InformationAction Continue
-                New-SC365Rules -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing
+                if ($PSCmdLet.ShouldProcess($SEPPmailCloudDomain), 'Creating transport rules') {
+                    New-SC365Rules -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing
+                }
             }
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
