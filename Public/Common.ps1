@@ -150,7 +150,7 @@ function Get-SC365DeploymentInfo {
         }
         else {
             if ($mxFull.Count -eq 1) {
-                $mx = $mxFull
+                $mx = $mxFull | Select-Object -ExpandProperty highestpriorityMailHost -Unique
             } 
             if ($mxFull.Count -gt 1) {
                 $mx = $mxFull[0] | Select-Object -ExpandProperty highestpriorityMailHost -Unique
