@@ -40,6 +40,22 @@
     MailHost            : 
     RelayHost           : contoso-com.relay.seppmail.cloud
     GateHost            : contoso-com.gate.seppmail.cloud
+.EXAMPLE
+    Get-SC365DeploymentInfo -SEPPmailCLoudDomain contoso.eu
+
+    DeployMentStatus    : True
+    SEPPmailCloudDomain : contoso.eu
+    Region              : de
+    Routing             : inline
+    InBoundOnly         : False
+    CBCDeployed         : True
+    CBCConnectorHost    : 271dd771-832d-4913-80d7-9c21616accd4.de.seppmail.cloud
+    CBCDnsEntry         : c60abc9d247a2bf21cbc3344eef199eb738876b2.cbc.seppmail.cloud
+    InlineMXMatch       : True
+    MailHost            : 
+    RelayHost           : contoso-eu.relay.seppmail.cloud
+    GateHost            : contoso-eu.gate.seppmail.cloud
+
 #>
 function Get-SC365DeploymentInfo {
     [CmdletBinding()]
@@ -240,10 +256,13 @@ function Get-SC365DeploymentInfo {
 .EXAMPLE
     PS C:\> New-SC365ExoReport -LiteralPath c:\temp\expreport.html
     Literalpath requires a full and valid path
+.EXAMPLE
+    PS C:\> New-SC365ExoReport -jsonBackup -FilePath '~/Desktop'
+    JSONBackup writes a JSON file with all relevant configuration of the Exchange Online Tenanant in addition to the HTML report.
 .INPUTS
     FilePath
 .OUTPUTS
-    HTML Report
+    HTML Report and JSON backup file
 .NOTES
     See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
@@ -1363,7 +1382,7 @@ function Get-SC365MessageTrace {
 .NOTES
     See https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md for more
 #>
-Function Show-sc365Tenant {
+Function Show-SC365Tenant {
     [CmdLetBinding(
         HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
     )]
@@ -1404,7 +1423,7 @@ Function Show-sc365Tenant {
 .LINK
     none
 .EXAMPLE
-    Get-Sc365SetupTime 
+    Get-SC365SetupTime 
     Montag, 20. März 2023 10:56:04
 .EXAMPLE
     Get-Sc365SetupTime -verbose
