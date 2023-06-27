@@ -1,6 +1,6 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
-## 1.3.6-RC1 - Bugfix and maintenance release
+## 1.3.6 - Bugfix and maintenance release
 
 ### Maintenance
 
@@ -13,6 +13,7 @@
 
 - New-SC365ExoReport: On Linux systems it was not possible to create a JSON export.
 - Fix documentation (readme.md) for creating connectors disabled.
+- Get-SC365DeploymentInfo raised error ... something -split on mx records... 
 
 ## 1.3.5 - Feature Release
 
