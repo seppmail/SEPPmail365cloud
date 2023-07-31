@@ -222,7 +222,33 @@ function Get-SC365DeploymentInfo {
                $CBCDeployed = $false
                Write-Warning "Could not find TXT Entry for TenantID $TenantID of domain $DNSHostCloudDomain. Setup will most likely fail! Go to the SEPPmail.cloud-portal and check the deployment status."
             }
-        #endregion CBC availability
+        #endregion CBC 
+        
+        #region Advanced DNS Queries
+        
+        ## TXT records (Swissign check and SPF)
+        $txtRecords = (Resolve-dns -querytype TXT $DNSHostdomain).Answers
+        if ($txtRecords) { 
+            $swisssignCheck = ($txtRecords|Where-Object EscapedText -like 'swisssign-check*').EscapedText
+            $spf = ($txtRecords|Where-Object EscapedText -like 'v=spf*').EscapedText
+        }
+        ## WebService hosts
+        [String]$SecurEmailCNAME = (Resolve-dns -querytype CNAME -Query ('securemail.' + $DNSHostdomain)).Answers.CanonicalName.Value
+
+        ## Letsencrypt
+        [String]$LetsEncryptCNAME = (Resolve-dns -querytype CNAME -Query ('_acme-challenge.securemail.' + $DNSHostdomain)).Answers.CanonicalName.Value
+
+        ## DKIM (default._domainkey)
+        [String]$dkimRecord = (resolve-dns -QueryType TXT -query ('default._domainkey.' + $DNSHostDomain)).Answers.EscapedText
+
+        ## Wildcard records
+        if ((resolve-dns -query ('jioak84-nlkjec.' + $DNSHostDomain)).Answers.EscapedText) {
+            $WildcardRecord = $true
+        }
+        else {
+            $WildcardRecord = $false
+        }
+        #endregion
     }
     end {
         $DeplyoymentInfo.DeploymentStatus = $DeploymentStatus
@@ -237,7 +263,13 @@ function Get-SC365DeploymentInfo {
         if (($routing -eq 'inline') -and (!($inBoundOnly))) {$DeplyoymentInfo.RelayHost = $relayHost}
         if ($routing -eq 'inline') {$DeplyoymentInfo.GateHost = $gateHost}
         if ($routing -eq 'parallel') {$DeplyoymentInfo.MailHost = $MailHost}
-
+        # DNS Records
+        $DeploymentInfo.swisssignCheckTXT = $swisssignCheck
+        $DeploymentInfo.spfTXT = $spf
+        $DeploymentInfo.DnsSecurEmailCNAME = $SecurEmailCNAME
+        $DeploymentInfo.DnsLetsEncryptCNAME = $LetsEncryptCNAME
+        $DeploymentInfo.DnsDKIMTXT = $DKIMRecord
+        $DeploymentInfo.DnsWildCardActive = $wildcardRecord
         return $DeplyoymentInfo
     }
 }
