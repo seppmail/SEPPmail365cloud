@@ -88,7 +88,6 @@ function Get-SC365DeploymentInfo {
             CBCDeployed         = $Null
             CBCConnectorHost    = $null
             CBCDnsEntry         = $null
-            CBCDnsTimeStamp     = $null
             InlineMXMatch       = $null
             MailHost            = $null
             GateHost            = $null
