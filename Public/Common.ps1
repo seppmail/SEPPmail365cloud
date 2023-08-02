@@ -79,7 +79,7 @@ function Get-SC365DeploymentInfo {
         $routing = $null
         $inBoundOnly = $null
 
-        $DeplyoymentInfo = [PSCustomObject]@{
+        $DeploymentInfo = [PSCustomObject]@{
             DeploymentStatus    = $null
             SEPPmailCloudDomain = $Null
             Region              = $null
@@ -93,8 +93,13 @@ function Get-SC365DeploymentInfo {
             MailHost            = $null
             GateHost            = $null
             RelayHost           = $null
+            swisssignCheckTXT   = $null
+            spfTXT              = $null
+            DnsSecurEmailCNAME  = $null
+            DnsLetsEncryptCNAME = $null
+            DnsDKIMTXT          = $null
+            DnsWildCardActive   = $null
         }
-
     }
     
     process {
@@ -229,8 +234,8 @@ function Get-SC365DeploymentInfo {
         ## TXT records (Swissign check and SPF)
         $txtRecords = (Resolve-dns -querytype TXT $DNSHostdomain).Answers
         if ($txtRecords) { 
-            $swisssignCheck = ($txtRecords|Where-Object EscapedText -like 'swisssign-check*').EscapedText
-            $spf = ($txtRecords|Where-Object EscapedText -like 'v=spf*').EscapedText
+            $swisssignCheck = ($txtRecords|Where-Object EscapedText -like 'swisssign-check*').EscapedText.Trim('{','}')
+            $spf = ($txtRecords|Where-Object EscapedText -like 'v=spf*').EscapedText.Trim('{','}')
         }
         ## WebService hosts
         [String]$SecurEmailCNAME = (Resolve-dns -querytype CNAME -Query ('securemail.' + $DNSHostdomain)).Answers.CanonicalName.Value
@@ -251,18 +256,18 @@ function Get-SC365DeploymentInfo {
         #endregion
     }
     end {
-        $DeplyoymentInfo.DeploymentStatus = $DeploymentStatus
-        $DeplyoymentInfo.Region = $region
-        $DeplyoymentInfo.Routing = $routing
-        $DeplyoymentInfo.InboundOnly  = $inBoundOnly
-        $DeplyoymentInfo.SEPPmailCloudDomain = $DNSHostDomain
-        $DeplyoymentInfo.CBCDeployed = $CBCDeployed
-        if ($region) {$DeplyoymentInfo.CBCConnectorHost = ($tenantId + ((Get-Variable $region).Value.TlsCertificate).Replace('*',''))}
-        if ($CBCDeployed -eq $true) {$DeplyoymentInfo.CBCDnsEntry = ($TenantIDHash + '.cbc.seppmail.cloud')}
-        if ($routing -eq 'inline') {$DeplyoymentInfo.InlineMXMatch = $MxMatch}
-        if (($routing -eq 'inline') -and (!($inBoundOnly))) {$DeplyoymentInfo.RelayHost = $relayHost}
-        if ($routing -eq 'inline') {$DeplyoymentInfo.GateHost = $gateHost}
-        if ($routing -eq 'parallel') {$DeplyoymentInfo.MailHost = $MailHost}
+        $DeploymentInfo.DeploymentStatus = $DeploymentStatus
+        $DeploymentInfo.Region = $region
+        $DeploymentInfo.Routing = $routing
+        $DeploymentInfo.InboundOnly  = $inBoundOnly
+        $DeploymentInfo.SEPPmailCloudDomain = $DNSHostDomain
+        $DeploymentInfo.CBCDeployed = $CBCDeployed
+        if ($region) {$DeploymentInfo.CBCConnectorHost = ($tenantId + ((Get-Variable $region).Value.TlsCertificate).Replace('*',''))}
+        if ($CBCDeployed -eq $true) {$DeploymentInfo.CBCDnsEntry = ($TenantIDHash + '.cbc.seppmail.cloud')}
+        if ($routing -eq 'inline') {$DeploymentInfo.InlineMXMatch = $MxMatch}
+        if (($routing -eq 'inline') -and (!($inBoundOnly))) {$DeploymentInfo.RelayHost = $relayHost}
+        if ($routing -eq 'inline') {$DeploymentInfo.GateHost = $gateHost}
+        if ($routing -eq 'parallel') {$DeploymentInfo.MailHost = $MailHost}
         # DNS Records
         $DeploymentInfo.swisssignCheckTXT = $swisssignCheck
         $DeploymentInfo.spfTXT = $spf
@@ -270,7 +275,7 @@ function Get-SC365DeploymentInfo {
         $DeploymentInfo.DnsLetsEncryptCNAME = $LetsEncryptCNAME
         $DeploymentInfo.DnsDKIMTXT = $DKIMRecord
         $DeploymentInfo.DnsWildCardActive = $wildcardRecord
-        return $DeplyoymentInfo
+        return $DeploymentInfo
     }
 }
 

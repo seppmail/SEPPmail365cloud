@@ -1,5 +1,11 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 1.3.7 - Maintenance release
+
+### Maintenance
+
+- Get-SC365Deploymentinfo does some enhanced queries to check also non-ExchangeOnline specific cloud service details such as certificate for GINA domains, Swisssign record, DKIM Key, and wildcard capability.
+
 ## 1.3.6 - Bugfix and maintenance release
 
 ### Maintenance
