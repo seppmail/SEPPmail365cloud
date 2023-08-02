@@ -72,7 +72,7 @@ function Get-SC365Rules {
 	PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu' -routing parallel -disabled
 	Sets the transport rules up, but keeps them inactive. Useful for a smoother integration.
 .EXAMPLE
-	PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu' -routing parallel CryptoContentOnly:$false
+	PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu' -routing parallel -CryptoContentOnly:$false
 	Sets the transport rules up, and routes ALL inbound traffic to SEPPmail.cloud
 .INPUTS
 	none

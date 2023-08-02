@@ -69,6 +69,7 @@ Remove-SC365Setup
     - [Example for routingmode: inline](#example-for-routingmode-inline)
     - [Example for routingmode: inline/inboundonly](#example-for-routingmode-inlineinboundonly)
     - [Example for routingmode: parallel](#example-for-routingmode-parallel)
+    - [Example for routingmode: parallel and multiple domains](#example-for-routingmode-parallel-and-multiple-domains)
   - [Review the changes](#review-the-changes)
   - [Test your mailflow](#test-your-mailflow)
   - [Advanced Setup Options](#advanced-setup-options)
@@ -233,16 +234,14 @@ You need to setup inbound and outbound-connectors and transport rules, so run th
 
 ```powershell
 New-SC365Connectors -SEPPmailCloudDomain 'contoso.ch' -routing 'inline' -region 'ch'
-
 New-SC365Rules -routing 'inline' -SEPPmailCloudDomain 'contoso.ch'
 ```
 
 ### Example for routingmode: inline/inboundonly
 
 ```powershell
-New-SC365Connectors -SEPPmailCloudDomain 'contoso.ch' -routing 'inline' -region 'ch' -inboundonly
-
-# No rules required for inbound only setups
+New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'inline' -region 'ch' -inboundonly
+New-SC365Rules -routing 'inline' -SEPPmailCloudDomain 'contoso.eu'
 ```
 
 ### Example for routingmode: parallel
@@ -253,6 +252,30 @@ New-SC365Connectors -SEPPmailCloudDomain 'contoso.eu' -routing 'parallel' -regio
 # Important: Rules can only be created if the connectors are enabled. They are enabled by default. If you use the example below, integration with SEPPmail.cloud will immediately work.
 New-SC365Rules -routing parallel -SEPPmailCloudDomain 'contoso.eu'
 ```
+
+### Example for routingmode: parallel and multiple domains
+
+If you have configured multiple domains in your M365 tenant, you may want to use one, some or all of them for seppmail.cloud. Below find a setup for multi-domains.
+
+```powershell
+# Use the tenant-default-domain here !
+New-SC365Connectors -SEPPmailCloudDomain 'fabrikam.eu' -routing 'parallel' -region 'de'
+
+# Important: Rules can only be created if the connectors are enabled. They are enabled by default. If you use the example below, integration with SEPPmail.cloud will immediately work.
+New-SC365Rules -SEPPmailCloudDomain 'fabrikam.eu','fabrikam.de','fabrikam.ch','fabrikam.at' -routing 'parallel' 
+
+### Example for routingmode: parallel and ALL E-Mail traffic via SEPPmail.cloud
+
+By default parallel mode routes only E-Mails which require cryptographic processing via SEPPmail cloud. You can change this with the 
+
+```powershell
+New-SC365Connectors -SEPPmailCloudDomain 'fabrikam.eu' -routing 'parallel' -region 'de'
+
+# Important: Rules can only be created if the connectors are enabled. They are enabled by default. If you use the example below, integration with SEPPmail.cloud will immediately work.
+New-SC365Rules -SEPPmailCloudDomain 'fabrikam.eu' -routing 'parallel' -CryptoContentOnly:$false
+#Sets the transport rules up, and routes ALL inbound traffic to SEPPmail.cloud
+```
+
 
 ## Review the changes
 
