@@ -70,6 +70,7 @@ Remove-SC365Setup
     - [Example for routingmode: inline/inboundonly](#example-for-routingmode-inlineinboundonly)
     - [Example for routingmode: parallel](#example-for-routingmode-parallel)
     - [Example for routingmode: parallel and multiple domains](#example-for-routingmode-parallel-and-multiple-domains)
+    - [Example for routingmode: parallel and ALL E-Mail traffic via SEPPmail.cloud](#example-for-routingmode-parallel-and-all-e-mail-traffic-via-seppmailcloud)
   - [Review the changes](#review-the-changes)
   - [Test your mailflow](#test-your-mailflow)
   - [Advanced Setup Options](#advanced-setup-options)
@@ -263,6 +264,7 @@ New-SC365Connectors -SEPPmailCloudDomain 'fabrikam.eu' -routing 'parallel' -regi
 
 # Important: Rules can only be created if the connectors are enabled. They are enabled by default. If you use the example below, integration with SEPPmail.cloud will immediately work.
 New-SC365Rules -SEPPmailCloudDomain 'fabrikam.eu','fabrikam.de','fabrikam.ch','fabrikam.at' -routing 'parallel' 
+```
 
 ### Example for routingmode: parallel and ALL E-Mail traffic via SEPPmail.cloud
 
@@ -272,10 +274,10 @@ By default parallel mode routes only E-Mails which require cryptographic process
 New-SC365Connectors -SEPPmailCloudDomain 'fabrikam.eu' -routing 'parallel' -region 'de'
 
 # Important: Rules can only be created if the connectors are enabled. They are enabled by default. If you use the example below, integration with SEPPmail.cloud will immediately work.
-New-SC365Rules -SEPPmailCloudDomain 'fabrikam.eu' -routing 'parallel' -CryptoContentOnly:$false
-#Sets the transport rules up, and routes ALL inbound traffic to SEPPmail.cloud
-```
 
+# Sets the transport rules up, and routes ALL inbound traffic to SEPPmail.cloud
+New-SC365Rules -SEPPmailCloudDomain 'fabrikam.eu' -routing 'parallel' -CryptoContentOnly:$false
+```
 
 ## Review the changes
 
