@@ -81,6 +81,9 @@ Remove-SC365Setup
     - [Special Case : Connectors with "/" or "\\" in the name](#special-case--connectors-with--or--in-the-name)
     - [Special Cases - Still mail-loops after re-setup with Version 1.3.0+](#special-cases---still-mail-loops-after-re-setup-with-version-130)
     - [Well-Known Error: New-SC365Rukes asks for rulenames](#well-known-error-new-sc365rukes-asks-for-rulenames)
+    - [Testing ARC-Sealing (fail with reason 47)](#testing-arc-sealing-fail-with-reason-47)
+      - [Powershell command to check that we are added to the trusted domains](#powershell-command-to-check-that-we-are-added-to-the-trusted-domains)
+      - [Where to check with a test mail that everything went fine](#where-to-check-with-a-test-mail-that-everything-went-fine)
 
 
 # The SEPPmail365cloud PowerShell Module README.MD
@@ -353,12 +356,31 @@ We had a version of the SEPPmail.cloud connectors in place which used slashes in
 1. Rename connectors in the admin.microsoft.com portal
 2. Delete them after renaming in the admin portal.
 
-### Special Cases - Still mail-loops after re-setup with Version 1.3.0+ 
+### Special Cases - Still mail-loops after re-setup with Version 1.3.0+
 
 If you set up everything according to the description above, and still have mail-loops, check if the recipient is also in the SEPPmail.cloud, the recipient tenant MUST also use the newest connectors (CBC). Reach out to he recipients admin and force them to update their setup.
 
 ### Well-Known Error: New-SC365Rukes asks for rulenames
 
 We saw this on several windows machines, but could not trace it down so far. If you get this error send us an e-Mail to support.
+
+### Testing ARC-Sealing (fail with reason 47)
+
+In a parallel setup, a working ARC-Sealing mechanism is imperative for a working mailflow. Use the below steps and guidance to check if your ARC-Sealing works.
+
+#### Powershell command to check that we are added to the trusted domains
+
+```powershell
+Get-ArcConfig
+```
+
+#### Where to check with a test mail that everything went fine
+
+Make sure to find a header with ARC-Message-Signature which starts with i=X, *.seppmail.cloud; spf=...
+This headers tells if SPF and DKIM were good when the mail arrived to us. To make sure Microsoft interpreted it correctly, with the first Authentication-Results from the top of the headers. Here, a failed spf or dkim is no problem as long as it ends up with either compauth=pass reason=100 (SPF and DKIM good, regardless of ARC) or compauth=pass reason=130 (SPF and/or DKIM failed, but a trusted ARC tells us everything is fine).
+
+More info can be found in the [Microsoft documentation on ARC Sealing](https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/use-arc-exceptions-to-mark-trusted-arc-senders?view=o365-worldwide)
+
+To understand the compauth reason numbers see [Microsoft documentation on authentication result header fields](https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/message-headers-eop-mdo?view=o365-worldwide#authentication-results-message-header-fields)
 
 <p style="text-align: center;">--- End of document ---</p>
