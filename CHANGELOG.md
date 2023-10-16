@@ -5,6 +5,7 @@
 ### Maintenance
 
 - Get-SC365Deploymentinfo does some enhanced queries to check also non-ExchangeOnline specific cloud service details such as certificate for GINA domains, Swisssign record, DKIM Key, and wildcard capability.
+- Added ARC-Sealing documentation to readme (end)
 
 ## 1.3.6 - Bugfix and maintenance release
 
