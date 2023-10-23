@@ -34,8 +34,13 @@ if ($sc365notests -ne $true) {
             break
         }
     }
-    #Check Environment
-    If ($psversiontable.PsVersion.ToString() -notlike '7.*') {
+    #Check PowerShell Version
+    $minVersion = [System.Management.Automation.SemanticVersion]::Parse("7.2.0")
+    [String]$InstVersionString = $PSVersionTable.PSVersion.ToString()
+    $instVersion = [System.Management.Automation.SemanticVersion]::Parse($InstVersionString)
+    if ($instVersion -ge $minVersion) {
+        Write-Verbose "PowerShell version is $instVersion and newer than required version $minVersion"
+    } else {
         Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|           ! WRONG POWERSHELL VERSION !               |" -ForegroundColor Red -BackgroundColor Black
@@ -48,6 +53,7 @@ if ($sc365notests -ne $true) {
         Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
         Break
     }
+
     # Check Exo Module Version 
     if (!((Get-Module -Name ExchangeOnlineManagement -ListAvailable).Where({$_.Version -ge [version]'3.0.0'}))) {
         Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
