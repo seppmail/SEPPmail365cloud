@@ -9,10 +9,11 @@
 - Added Info on how to handle e-mail [EXTERNAL tagging]
 - Added documentation for parallel example with multiple domains
 - Added documentation on how to handle "-CryptoContentOnly" parameter in New-SC365Rules
+- Added test for PowerShell version minimum 7.2.0
 
 ### Bugfixes
 
-- Fixed Rule 700 - maildirection was wrong
+- Fixed Rule 700 - mail direction was wrong
 
 ## 1.3.6 - Bugfix and maintenance release
 
