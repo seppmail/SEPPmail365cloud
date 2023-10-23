@@ -89,7 +89,7 @@ Remove-SC365Setup
 
 ## Introduction
 
-The SEPPmail365cloud PowerShell module has been built to simplyfy the integration Exchange Online (ExO) instances into the SEPPmail.cloud (SMC).
+The SEPPmail365cloud PowerShell module has been built to simplify the integration Exchange Online (ExO) instances into the SEPPmail.cloud (SMC).
 The module requires you to connect to your ExO environment as administrator (or at least with Exchange administrative rights) via PowerShell Core and creates all necessary connectors and rules, based on the e-mail-routing type and region for you with a few commands.
 
 ## Prerequisites
