@@ -76,21 +76,21 @@ Remove-SC365Setup
   - [Advanced Setup Options](#advanced-setup-options)
     - [Creating Connectors and disabled rules for time-controlled integration](#creating-connectors-and-disabled-rules-for-time-controlled-integration)
     - [Place TransportRules at the top of the rule-list](#place-transportrules-at-the-top-of-the-rule-list)
+    - [Tag E-Mails with an \[EXTERNAL\] marker in parallel mode](#tag-e-mails-with-an-external-marker-in-parallel-mode)
   - [Issues and solutions](#issues-and-solutions)
     - [Computer has User home directory on a fileshare (execution policy error)](#computer-has-user-home-directory-on-a-fileshare-execution-policy-error)
     - [Special Case : Connectors with "/" or "\\" in the name](#special-case--connectors-with--or--in-the-name)
     - [Special Cases - Still mail-loops after re-setup with Version 1.3.0+](#special-cases---still-mail-loops-after-re-setup-with-version-130)
-    - [Well-Known Error: New-SC365Rukes asks for rulenames](#well-known-error-new-sc365rukes-asks-for-rulenames)
+    - [Well-Known Error: New-SC365Rules asks for rule names](#well-known-error-new-sc365rules-asks-for-rule-names)
     - [Testing ARC-Sealing (fail with reason 47)](#testing-arc-sealing-fail-with-reason-47)
       - [Powershell command to check that we are added to the trusted domains](#powershell-command-to-check-that-we-are-added-to-the-trusted-domains)
       - [Where to check with a test mail that everything went fine](#where-to-check-with-a-test-mail-that-everything-went-fine)
-
 
 # The SEPPmail365cloud PowerShell Module README.MD
 
 ## Introduction
 
-The SEPPmail365cloud PowerShell module has been built to integrate Exchange Online (ExO) instances into the SEPPmail.cloud (SMC).
+The SEPPmail365cloud PowerShell module has been built to simplyfy the integration Exchange Online (ExO) instances into the SEPPmail.cloud (SMC).
 The module requires you to connect to your ExO environment as administrator (or at least with Exchange administrative rights) via PowerShell Core and creates all necessary connectors and rules, based on the e-mail-routing type and region for you with a few commands.
 
 ## Prerequisites
@@ -334,6 +334,20 @@ By default out transport rules will be placed at the bottom of all other transpo
 New-SC365Rules -SEPPmailCloudDomain 'contoso.eu ' -PlacementPriority Top
 ```
 
+### Tag E-Mails with an [EXTERNAL] marker in parallel mode
+
+Customers which use the SMC inline, can configure the SMC to tag all e-mails inbound as [EXTERNAL] (or similar). This is not possible in parallel mode.
+
+If you use prepend disclaimer on your inbound traffic, Microsoft will break the structure of the encrypted mail and our cloud will not be able to decrypt the mail anymore.
+
+By activating the "Stop processing more rules" option on the transport rule [SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail, you make sure that the disclaimer is only added after the decryption. Unfortunately, this will still break the S/MIME or PGP signatures. This is why we recommend to only change the subject of the e-mail.
+
+If you use parallel routing and want to mark e-mails coming from outside your organization, please use a transport rule to prepend the subject with [EXTERNAL] and/or use the special tag from Microsoft according to the following example:
+
+```powershell
+Set-ExternalInOutlook -Enabled $true
+```
+
 ## Issues and solutions
 
 ### Computer has User home directory on a fileshare (execution policy error)
@@ -360,7 +374,7 @@ We had a version of the SEPPmail.cloud connectors in place which used slashes in
 
 If you set up everything according to the description above, and still have mail-loops, check if the recipient is also in the SEPPmail.cloud, the recipient tenant MUST also use the newest connectors (CBC). Reach out to he recipients admin and force them to update their setup.
 
-### Well-Known Error: New-SC365Rukes asks for rulenames
+### Well-Known Error: New-SC365Rules asks for rule names
 
 We saw this on several windows machines, but could not trace it down so far. If you get this error send us an e-Mail to support.
 
