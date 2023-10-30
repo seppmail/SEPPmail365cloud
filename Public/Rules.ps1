@@ -61,7 +61,7 @@ function Get-SC365Rules {
 .SYNOPSIS
 	Create transport rules for routingmode "parallel"
 .DESCRIPTION
-	Creates all necessary transport rules in Exchange Online to send E-Mails through seppmail.cloud for cryptographic processing.
+	Creates all necessary transport rules in Exchange Online to send e-mails through seppmail.cloud for cryptographic processing.
 .EXAMPLE
 	PS C:\> New-SC365Rules -SEPPmailCloudDomain 'contoso.eu','contoso.com' -routing inline
 	Creates the rules for specific domains. Includes only defined e-mail domains from processing by SEPPmail.cloud
@@ -104,7 +104,7 @@ function New-SC365Rules
 		[String]$routing,
 
 		[Parameter(Mandatory = $true,
-			HelpMessage = 'E-Mail domains you have registered in the SEPPmail.Cloud')]
+			HelpMessage = 'e-mail domains you have registered in the SEPPmail.Cloud')]
 		[String[]]$SEPPmailCloudDomain,
 
 		[Parameter(Mandatory = $false,
@@ -114,7 +114,7 @@ function New-SC365Rules
 
 		[Parameter(
 			  Mandatory = $false,
-			HelpMessage = 'Rule 100 will only send E-Mails to SEPPmail.cloud which requires cryptographic processing'
+			HelpMessage = 'Rule 100 will only send e-mails to SEPPmail.cloud which requires cryptographic processing'
 		)]
 		[bool]$CryptoContentOnly = $true,
 
@@ -244,14 +244,22 @@ function New-SC365Rules
 										$Setting.ExceptIfSCLOver = $SCLInboundValue
 									}
 									if ($cryptoContentOnly) {
-										Write-Verbose 'Adding Setting to send only crptographic needed E-Mails to SEPPmail.cloud'
+										Write-Verbose 'Adding Setting to send only crptographic needed e-mails to SEPPmail.cloud'
 										$Setting.HeaderContainsMessageHeader = 'content-type'
 										$Setting.HeaderContainsWords = "application/x-pkcs7-mime","application/pkcs7-mime","application/x-pkcs7-signature","application/pkcs7-signature","multipart/signed","application/pgp-signature","multipart/encrypted","application/pgp-encrypted","application/octet-stream"
 									}
 									New-TransportRule @setting #|Out-Null
 								}
+								"[SEPPmail.cloud] - 110 Route incoming tagged e-mails to SEPPmail" {
+									Write-Verbose "Including all managed domains $FilteredCloudDomain"
+									$Setting.RecipientDomainIs = $FilteredCloudDomain
+									if ($cryptoContentOnly) {
+										$setting.SubjectOrBodyContainsWords += '-----BEGIN PGP'
+									}
+									New-TransportRule @setting #|Out-Null
+								}
 								"[SEPPmail.cloud] - 200 Route outgoing e-mails to SEPPmail" {
-									Write-Verbose "Including only Outbound E-Mails from domains $FilteredCloudDomain"
+									Write-Verbose "Including only Outbound e-mails from domains $FilteredCloudDomain"
 									$Setting.SenderDomainIs = $FilteredCloudDomain
 									New-TransportRule @setting #|Out-Null
 								}
