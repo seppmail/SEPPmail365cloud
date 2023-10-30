@@ -1,5 +1,13 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 1.3.8 - Maintenance release
+
+### Maintenance
+
+- Added rule 110 in parallel mode for 2 reasons:
+  - PGP signed and/or encrypted e-mails are now also routet to SEPPmail.cloud
+  - inbound E-Mails with spoofing tags [signed OK] and [secure] are now also routet to SEPPmail.cloud to remove the tags. This will avoid that people send e-mails with those keywords and recipients believe those e-mails are secure.
+
 ## 1.3.7 - Maintenance release
 
 ### Maintenance
