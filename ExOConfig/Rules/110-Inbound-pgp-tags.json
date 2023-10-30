@@ -1,0 +1,34 @@
+{
+    "routing":
+    {
+        "inline" :
+        {
+            
+        },
+        "parallel" :
+        {
+          "Name"                                    : "[SEPPmail.cloud] - 110 Route incoming PGP mails and security tagged e-mails to SEPPmail",
+          "Comments"                                : "E-mails sent from outside the organization which have a  ---BEGIN PGP body, or have a [secure] or [signed OK] tag are sent to the SEPPmail.cloud for crypto-processing.",
+          "RouteMessageOutboundConnector"           : "[SEPPmail.cloud] Outbound-Parallel",
+          "SMPriority"                              : 1,
+          "FromScope"                               : "NotInOrganization",
+          "SentToScope"                             : "InOrganization",
+          "SetHeaderName"                           : "X-SM-maildirection",
+          "SetHeaderValue"                          : "inbound",
+          "SubjectOrBodyContainsWords"              : "-----BEGIN PGP, [signed OK], [secure]",
+          "ExceptIfHeaderMatchesMessageHeader"      : "X-SM-internal",
+          "ExceptIfHeaderMatchesPatterns"           : "yes",
+          "ExceptIfHeaderContainsMessageHeader"     : "X-SM-incoming",
+          "ExceptIfHeaderContainsWords"             : "yes",
+          "ExceptIfSCLOver"                         : 5,
+          "Priority"                                : 0,
+          "SetAuditSeverity"                        : "Low",
+          "Mode"                                    : "Enforce",
+          "SenderAddressLocation"                   : "HeaderOrEnvelope"
+        }
+    },
+    "Option":
+        {
+            
+        }
+}
