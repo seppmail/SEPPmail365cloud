@@ -7,6 +7,9 @@
 - Added rule 110 in parallel mode for 2 reasons:
   - PGP signed and/or encrypted e-mails are now also routet to SEPPmail.cloud
   - inbound E-Mails with spoofing tags [signed OK] and [secure] are now also routet to SEPPmail.cloud to remove the tags. This will avoid that people send e-mails with those keywords and recipients believe those e-mails are secure.
+- The welcome screen now shows the loaded module version
+- To be absolutely sure there is no case sensitivity issue at ExchangeOnline, we set the ARC Config to small letters seppmail.cloud instead of SEPPmail.cloud
+- Extended ExoReport to show EFSkipLastIP and EFSkipIPs on inbound connector settings
 
 ## 1.3.7 - Maintenance release
 

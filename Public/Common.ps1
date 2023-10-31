@@ -442,6 +442,12 @@ function New-SC365ExOReport {
             Foreach ($AcceptedDomain in $oTemp.DomainName) {
                     $O += (Get-MxRecordReport -Domain $AcceptedDomain|Select-Object -Unique|Select-Object HighestPriorityMailhost,HighestPriorityMailhostIpAddress,Domain|Convertto-HTML -Fragment)
             }
+
+            # Get ARCConfig Info
+            $hO1 = '<p><h3>Tusted ARC Sealers</h3><p>'
+            $O1 = $Null
+            $O1 = (Get-ARCConfig |Convertto-HTML -Fragment)
+            
             #endregion
 
             #region Security 
@@ -488,7 +494,7 @@ function New-SC365ExOReport {
             
             Write-Verbose "InboundConnectors"
             $hL = '<p><h3>Inbound Connectors</h3><p>'
-            $L = Get-ExoHTMLData -ExoCmd 'Get-InboundConnector |Select-Object Identity,Enabled,SenderDomains,SenderIPAddresses,OrganizationalUnitRootInternal,TlsSenderCertificateName,OriginatingServer,IsValid'
+            $L = Get-ExoHTMLData -ExoCmd 'Get-InboundConnector |Select-Object Identity,Enabled,SenderDomains,SenderIPAddresses,OrganizationalUnitRootInternal,TlsSenderCertificateName,OriginatingServer,EFSkipLastIP,EFSkipIPs,IsValid'
             
             Write-Verbose "OutboundConnectors"
             $hM = '<p><h3>Outbound Connectors</h3><p>'
@@ -511,7 +517,7 @@ function New-SC365ExOReport {
             $hEndOfReport = '<p><h2>--- End of Report ---</h2><p>'
             $style = Get-Content -Path $PSScriptRoot\..\HTML\SEPPmailReport.css
             $finalreport = Convertto-HTML -Body "$LogoHTML $Top $RepCreationDatetime $RepCreatedBy $moduleVersion $TenantInfo`
-                   $hSplitLine $hGeneral $hSplitLine $hA $a $hB $b $hO $o`
+                   $hSplitLine $hGeneral $hSplitLine $hA $a $hB $b $hO $o $ho1 $o1`
                   $hSplitLine $hSecurity $hSplitLine $hC $c $hd $d $hE $e $hP $P $hH $H $hK $k $hJ $j $hJ1 $J1 `
                  $hSplitLine $hOtherConn $hSplitLine $hG $g $hI $i `
                 $hSplitLine $hConnectors $hSplitLine $hL $l $hM $m `

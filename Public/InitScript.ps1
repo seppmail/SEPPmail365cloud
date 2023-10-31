@@ -1,6 +1,11 @@
+# Detect installed module version
+$ModuleRootPath = Split-Path -Path $PSScriptRoot -Parent
+$ManiFestFile = Import-PowerShellDataFile -Path $ModuleRootPath/Seppmail365cloud.psd1
+$ModuleVersion = $ManiFestFile.Moduleversion.ToString()
+
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "| Welcome to the SEPPmail.cloud PowerShell setup module               |" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "| Welcome to the SEPPmail.cloud PowerShell setup module version $ModuleVersion |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "| Please read the documentation on GitHub if you are unfamiliar       |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "| with the module and its CmdLets before continuing !                 |" -ForegroundColor Green -BackgroundColor DarkGray

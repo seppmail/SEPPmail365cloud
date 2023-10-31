@@ -296,7 +296,7 @@ function New-SC365Connectors
             }
             if (!($ath)) {
                 Write-Verbose "ARC header is empty, adding SEPPmail.cloud"
-                Set-ArcConfig -Identity default -ArcTrustedSealers 'SEPPmail.cloud'|Out-Null
+                Set-ArcConfig -Identity default -ArcTrustedSealers 'seppmail.cloud'|Out-Null
             }
             if (($ath.Contains('SEPPmail.cloud'))) {
                 Write-Verbose "ARC header `'$ath`' exists and contains SEPPmail.cloud, no action required"
