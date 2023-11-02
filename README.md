@@ -1,5 +1,45 @@
 ![](./Visuals/SMC-rm.png)
 
+- [The SEPPmail365cloud PowerShell Module README.MD](#the-seppmail365cloud-powershell-module-readmemd)
+  - [Introduction](#introduction)
+  - [Prerequisites](#prerequisites)
+  - [Operating Systems](#operating-systems)
+  - [Security](#security)
+  - [Module Installation](#module-installation)
+    - [Installation of the Module](#installation-of-the-module)
+    - [Additional steps on macOS and Linux (experimental)](#additional-steps-on-macos-and-linux-experimental)
+  - [Things to know before you start changing your E-Mail-routing](#things-to-know-before-you-start-changing-your-e-mail-routing)
+    - [Routing modes](#routing-modes)
+      - [Routing mode "inline"](#routing-mode-inline)
+      - [Routing mode "parallel"](#routing-mode-parallel)
+    - [Cloud Regions](#cloud-regions)
+  - [Using the SEPPmail365cloud PowerShell module](#using-the-seppmail365cloud-powershell-module)
+    - [Get to know your Microsoft Exchange Online environment](#get-to-know-your-microsoft-exchange-online-environment)
+    - [Clean up before installing](#clean-up-before-installing)
+  - [Setup the integration for BASIC environments](#setup-the-integration-for-basic-environments)
+  - [Setup the integration for ADVANCED environments](#setup-the-integration-for-advanced-environments)
+    - [Example for routingmode: inline](#example-for-routingmode-inline)
+    - [Example for routingmode: inline/inboundonly](#example-for-routingmode-inlineinboundonly)
+    - [Example for routingmode: parallel](#example-for-routingmode-parallel)
+    - [Example for routingmode: parallel and multiple domains](#example-for-routingmode-parallel-and-multiple-domains)
+    - [Example for routingmode: parallel and ALL E-Mail traffic via SEPPmail.cloud](#example-for-routingmode-parallel-and-all-e-mail-traffic-via-seppmailcloud)
+  - [Review the changes](#review-the-changes)
+  - [Test your mailflow](#test-your-mailflow)
+  - [Advanced Setup Options](#advanced-setup-options)
+    - [Creating Connectors and disabled rules for time-controlled integration](#creating-connectors-and-disabled-rules-for-time-controlled-integration)
+    - [Place TransportRules at the top of the rule-list](#place-transportrules-at-the-top-of-the-rule-list)
+    - [Tag E-Mails with an \[EXTERNAL\] marker in parallel mode](#tag-e-mails-with-an-external-marker-in-parallel-mode)
+  - [Issues and solutions](#issues-and-solutions)
+    - [Computer has User home directory on a fileshare (execution policy error)](#computer-has-user-home-directory-on-a-fileshare-execution-policy-error)
+    - [Special Case : Connectors with "/" or "\\" in the name](#special-case--connectors-with--or--in-the-name)
+    - [Special Cases - Still mail-loops after re-setup with Version 1.3.0+](#special-cases---still-mail-loops-after-re-setup-with-version-130)
+    - [Well-Known Error: New-SC365Rules asks for rule names](#well-known-error-new-sc365rules-asks-for-rule-names)
+    - [Testing ARC-Sealing (fail with reason 47)](#testing-arc-sealing-fail-with-reason-47)
+      - [Powershell command to check that we are added to the trusted domains](#powershell-command-to-check-that-we-are-added-to-the-trusted-domains)
+      - [Where to check with a test mail that everything went fine](#where-to-check-with-a-test-mail-that-everything-went-fine)
+    - [Loading the ExchangeOnlineManagement Module with reduced memory](#loading-the-exchangeonlinemanagement-module-with-reduced-memory)
+
+
 ## Latest Changes
 
 Changes in the module versions are documented in the ![CHANGELOG](./CHANGELOG.md)
@@ -47,43 +87,6 @@ To remove all SEPPmail.cloud connectors and rules, run:
 ```powershell
 Remove-SC365Setup
 ```
-- [The SEPPmail365cloud PowerShell Module README.MD](#the-seppmail365cloud-powershell-module-readmemd)
-  - [Introduction](#introduction)
-  - [Prerequisites](#prerequisites)
-  - [Operating Systems](#operating-systems)
-  - [Security](#security)
-  - [Module Installation](#module-installation)
-    - [Installation of the Module](#installation-of-the-module)
-    - [Additional steps on macOS and Linux (experimental)](#additional-steps-on-macos-and-linux-experimental)
-  - [Things to know before you start changing your E-Mail-routing](#things-to-know-before-you-start-changing-your-e-mail-routing)
-    - [Routing modes](#routing-modes)
-      - [Routing mode "inline"](#routing-mode-inline)
-      - [Routing mode "parallel"](#routing-mode-parallel)
-    - [Cloud Regions](#cloud-regions)
-  - [Using the SEPPmail365cloud PowerShell module](#using-the-seppmail365cloud-powershell-module)
-    - [Get to know your Microsoft Exchange Online environment](#get-to-know-your-microsoft-exchange-online-environment)
-    - [Clean up before installing](#clean-up-before-installing)
-  - [Setup the integration for BASIC environments](#setup-the-integration-for-basic-environments)
-  - [Setup the integration for ADVANCED environments](#setup-the-integration-for-advanced-environments)
-    - [Example for routingmode: inline](#example-for-routingmode-inline)
-    - [Example for routingmode: inline/inboundonly](#example-for-routingmode-inlineinboundonly)
-    - [Example for routingmode: parallel](#example-for-routingmode-parallel)
-    - [Example for routingmode: parallel and multiple domains](#example-for-routingmode-parallel-and-multiple-domains)
-    - [Example for routingmode: parallel and ALL E-Mail traffic via SEPPmail.cloud](#example-for-routingmode-parallel-and-all-e-mail-traffic-via-seppmailcloud)
-  - [Review the changes](#review-the-changes)
-  - [Test your mailflow](#test-your-mailflow)
-  - [Advanced Setup Options](#advanced-setup-options)
-    - [Creating Connectors and disabled rules for time-controlled integration](#creating-connectors-and-disabled-rules-for-time-controlled-integration)
-    - [Place TransportRules at the top of the rule-list](#place-transportrules-at-the-top-of-the-rule-list)
-    - [Tag E-Mails with an \[EXTERNAL\] marker in parallel mode](#tag-e-mails-with-an-external-marker-in-parallel-mode)
-  - [Issues and solutions](#issues-and-solutions)
-    - [Computer has User home directory on a fileshare (execution policy error)](#computer-has-user-home-directory-on-a-fileshare-execution-policy-error)
-    - [Special Case : Connectors with "/" or "\\" in the name](#special-case--connectors-with--or--in-the-name)
-    - [Special Cases - Still mail-loops after re-setup with Version 1.3.0+](#special-cases---still-mail-loops-after-re-setup-with-version-130)
-    - [Well-Known Error: New-SC365Rules asks for rule names](#well-known-error-new-sc365rules-asks-for-rule-names)
-    - [Testing ARC-Sealing (fail with reason 47)](#testing-arc-sealing-fail-with-reason-47)
-      - [Powershell command to check that we are added to the trusted domains](#powershell-command-to-check-that-we-are-added-to-the-trusted-domains)
-      - [Where to check with a test mail that everything went fine](#where-to-check-with-a-test-mail-that-everything-went-fine)
 
 # The SEPPmail365cloud PowerShell Module README.MD
 
@@ -395,5 +398,9 @@ This headers tells if SPF and DKIM were good when the mail arrived to us. To mak
 More info can be found in the [Microsoft documentation on ARC Sealing](https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/use-arc-exceptions-to-mark-trusted-arc-senders?view=o365-worldwide)
 
 To understand the compauth reason numbers see [Microsoft documentation on authentication result header fields](https://learn.microsoft.com/en-us/microsoft-365/security/office-365-security/message-headers-eop-mdo?view=o365-worldwide#authentication-results-message-header-fields)
+
+### Loading the ExchangeOnlineManagement Module with reduced memory
+
+Microsoft posted an article on how to load the ExchangeOnlineManagement module with a minimum footprint on memory. If you have a machine with high memory consumption follow this [article from the Exchange Team blog](https://techcommunity.microsoft.com/t5/exchange-team-blog/reducing-memory-consumption-of-the-exchange-online-powershell-v3/ba-p/3970086).
 
 <p style="text-align: center;">--- End of document ---</p>
