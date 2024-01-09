@@ -362,7 +362,7 @@ If your computer has the users directory on a fileshare, Powershell still instal
 
 ```powershell
 Save-module seppmail365cloud -Path c:\temp
-import-modue c:\temp\seppmail365cloud
+import-module c:\temp\seppmail365cloud
 ```
 
 ### Special Case : Connectors with "/" or "\\" in the name
