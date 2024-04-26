@@ -1,5 +1,13 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+
+## 1.3.9 - Maintenance Release
+
+### Maintenance
+
+- Require ExchangeOnlineManagement Version 3.4.0 as minimum
+- Require PowerShell 7.4.0 as minimum version
+
 ## 1.3.8 - Maintenance release
 
 ### Maintenance

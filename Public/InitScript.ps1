@@ -28,7 +28,7 @@ if ($sc365notests -ne $true) {
             Write-Error "Could not install requirem Module 'DNSClient'. Please install manually from the PowerShell Gallery"
         }
     }
-    if (!(Get-Module ExchangeOnlineManagement -ListAvailable|Where-Object Version -like '3.*')) {
+    if (!(Get-Module ExchangeOnlineManagement -ListAvailable|Where-Object Version -like '3.4')) {
         try {
             Write-Information "Installing required module ExchangeOnlineManagement" -InformationAction Continue
             Install-Module ExchangeOnlineManagement -WarningAction SilentlyContinue
