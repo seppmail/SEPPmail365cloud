@@ -8,3 +8,4 @@ gitinfo*
 .vscode
 .gitlab/*
 .gitlab
+.git
