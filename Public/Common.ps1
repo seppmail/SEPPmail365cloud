@@ -230,12 +230,25 @@ function Get-SC365DeploymentInfo {
         
         #region Advanced DNS Queries
         
-        ## TXT records (Swissign check and SPF)
+        # TXT records (Swissign check and SPF)
         $txtRecords = (Resolve-dns -querytype TXT $DNSHostdomain).Answers
         if ($txtRecords) { 
-            $swisssignCheck = ($txtRecords|Where-Object EscapedText -like 'swisssign-check*').EscapedText.Trim('{','}')
-            $spf = ($txtRecords|Where-Object EscapedText -like 'v=spf*').EscapedText.Trim('{','}')
+            $swisssignTXTRecord = $txtRecords|Where-Object EscapedText -like 'swisssign-check*'
+            if ($swisssignTXTRecord) {
+                $swisssignCheck = $swisssignTXTRecord.EscapedText.Trim('{','}')
+            }
+            else {
+                Write-Warning "Swisssign TXT (swissign-check) record is missing - SC-CERT deployment will fail!"
+            }
+            $spfTXTrecord = $txtRecords|Where-Object EscapedText -like 'v=spf*'
+            if ($spfTXTrecord) {
+                $spf = $spfTXTrecord.EscapedText.Trim('{','}')
+            }
+            else {
+                Write-Warning "SPF TXT (v=spf*) record is missing"
+            }
         }
+
         ## WebService hosts
         [String]$SecurEmailCNAME = (Resolve-dns -querytype CNAME -Query ('securemail.' + $DNSHostdomain)).Answers.CanonicalName.Value
 
