@@ -28,6 +28,16 @@ if ($sc365notests -ne $true) {
             Write-Error "Could not install required Module 'DNSClient'. Please install manually from the PowerShell Gallery"
         }
     }
+    if (!(Get-Module PSWriteHtml -ListAvailable)) {
+        try {
+            Write-Information "Installing required module PSWriteHtml" -InformationAction Continue
+            Install-Module PSWriteHtml -WarningAction SilentlyContinue
+            Import-Module PSWriteHtml -Force
+        } 
+        catch {
+            Write-Error "Could not install required Module 'PSWriteHtml'. Please install manually from the PowerShell Gallery"
+        }
+    }
     if (!(Get-Module ExchangeOnlineManagement -ListAvailable|Where-Object Version -like '3.6.0')) {
         try {
             Write-Information "Installing required module ExchangeOnlineManagement" -InformationAction Continue

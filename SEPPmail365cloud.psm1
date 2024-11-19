@@ -25,7 +25,7 @@ if ($sc365notest -ne $true) {
         try {
             $isDehydrated = (Get-OrganizationConfig).IsDehydrated
             if ($isDehydrated) {
-                Write-Verbose "Organisation is not enabled for customizations -- is 'Dehyrated'. Turning this on now"
+                Write-Verbose "Organisation is not enabled for customizations -- is 'Dehdyrated'. Turning this on now"
                 Enable-OrganizationCustomization  #-confirm:$false
             }        
         } catch {
