@@ -194,6 +194,11 @@ function New-SC365Connectors
  
         if ($routing -eq 'p') {$routing = 'parallel'}
 		if ($routing -eq 'i') {$routing = 'inline'}
+        
+        # Add Warning for INLINE Connectors
+        if ($routing -eq 'inline') {
+            Write-Warning "You are about to create a SEPPmail INLINE Setup which will affect ALL Domains of your Microsoft Tenant."
+        }
 
         if ($SEPPmailCloudDomain) {
             if ((Confirm-SC365TenantDefaultDomain -ValidationDomain $SEPPmailCloudDomain) -eq $true) {
