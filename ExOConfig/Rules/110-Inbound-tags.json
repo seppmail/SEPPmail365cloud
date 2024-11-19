@@ -15,7 +15,7 @@
           "SentToScope"                             : "InOrganization",
           "SetHeaderName"                           : "X-SM-maildirection",
           "SetHeaderValue"                          : "inbound",
-          "SubjectOrBodyContainsWords"              : ["[signed OK]","[secure]"],
+          "SubjectContainsWords"                    : ["[signed OK]","[secure]"],
           "ExceptIfHeaderMatchesMessageHeader"      : "X-SM-internal",
           "ExceptIfHeaderMatchesPatterns"           : "yes",
           "ExceptIfHeaderContainsMessageHeader"     : "X-SM-incoming",
