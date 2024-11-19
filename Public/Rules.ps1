@@ -199,7 +199,11 @@ function New-SC365Rules
 					}
 					until ($?)
 					if ($recreateSMRules -like 'y') {
-						$existingSMCTransportRules|ForEach-Object {Remove-Transportrule -Identity $_.Identity -Confirm:$false}
+						$existingSMCTransportRules|ForEach-Object {
+							if ($PSCmdlet.ShouldProcess($_.Name, "Removing transport rule")) {
+								Remove-Transportrule -Identity $_.Identity -Confirm:$false
+							}
+						}
 					}
 					else {
 						$createRules = $false
