@@ -25,10 +25,10 @@ if ($sc365notests -ne $true) {
             Import-Module DNSClient-PS -Force
         } 
         catch {
-            Write-Error "Could not install requirem Module 'DNSClient'. Please install manually from the PowerShell Gallery"
+            Write-Error "Could not install required Module 'DNSClient'. Please install manually from the PowerShell Gallery"
         }
     }
-    if (!(Get-Module ExchangeOnlineManagement -ListAvailable|Where-Object Version -like '3.4')) {
+    if (!(Get-Module ExchangeOnlineManagement -ListAvailable|Where-Object Version -like '3.6.0')) {
         try {
             Write-Information "Installing required module ExchangeOnlineManagement" -InformationAction Continue
             Install-Module ExchangeOnlineManagement -WarningAction SilentlyContinue
@@ -40,7 +40,7 @@ if ($sc365notests -ne $true) {
         }
     }
     #Check PowerShell Version
-    $minVersion = [System.Management.Automation.SemanticVersion]::Parse("7.2.0")
+    $minVersion = [System.Management.Automation.SemanticVersion]::Parse("7.4.6")
     [String]$InstVersionString = $PSVersionTable.PSVersion.ToString()
     $instVersion = [System.Management.Automation.SemanticVersion]::Parse($InstVersionString)
     if ($instVersion -ge $minVersion) {
@@ -50,7 +50,7 @@ if ($sc365notests -ne $true) {
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|           ! WRONG POWERSHELL VERSION !               |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|           PLEASE install PowerShell CORE 7.2+        |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|           PLEASE install PowerShell CORE 7.4.6+      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|           The module will not work on                |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|           Windows Powershell 5.1  :-( :-(            |" -ForegroundColor Red -BackgroundColor Black
@@ -65,10 +65,12 @@ if ($sc365notests -ne $true) {
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|   WRONG Version of ExchangeOnlineManagement Module   |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|          Install version 3.0.0 ++ of the             |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|          Install version 3.6.0 ++ of the             |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|         ExchangeOnlineManagement Module with:        |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|  `"Install-Module ExchangeOnlineManagement -Force`"    |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|                         or                           |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "| `"Install-PSResource ExchangeOnlineManagement -Force`" |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|     # EXIT and RESTART THE POWERSHELL SESSION #      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
