@@ -149,11 +149,11 @@ function New-SC365Rules
 			}
 		}
  
-		# Filter onmicrosoft domains
+		# Filter onmicrosoft domains and define Domain List for TransportRule Rule-Config
 		try {
 			$FilteredCloudDomain = Remove-SC365OnMicrosoftDomain -DomainList $SEPPmailCloudDomain
 		} catch {
-			Write-Warning "Could not remove onMicrosoft.com domains"
+			Write-Warning "Could not remove onMicrosoft.com domains from DomainList for further processing"
 			$FilteredCloudDomain = $SEPPmailCloudDomain
 		}
 
@@ -201,7 +201,7 @@ function New-SC365Rules
 					if ($recreateSMRules -like 'y') {
 						$existingSMCTransportRules|ForEach-Object {
 							if ($PSCmdlet.ShouldProcess($_.Name, "Removing transport rule")) {
-								Remove-Transportrule -Identity $_.Identity -Confirm:$false
+								Remove-TransportRule -Identity $_.Identity -Confirm:$false
 							}
 						}
 					}
@@ -236,8 +236,8 @@ function New-SC365Rules
 							switch ($setting.Name)
 							{
 								"[SEPPmail.cloud] - 060 Add header X-SM-ruleversion" {
-									Write-Verbose "Add rule version $Moduleversion"
-									$Setting.SetHeaderValue = $Moduleversion.ToString()
+									Write-Verbose "Add rule version $moduleVersion"
+									$Setting.SetHeaderValue = $moduleVersion.ToString()
 									New-TransportRule @setting #|Out-Null
 								}
 								"[SEPPmail.cloud] - 100 Route incoming e-mails to SEPPmail" {

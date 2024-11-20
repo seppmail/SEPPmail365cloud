@@ -743,7 +743,7 @@ function New-SC365Setup {
             )]
             [Alias('domain')]
             [ValidateNotNullOrEmpty()]
-            [String]$SEPPmailCloudDomain,
+            [String[]]$SEPPmailCloudDomain,
     
         [Parameter(
             Mandatory=$false,
@@ -785,6 +785,7 @@ function New-SC365Setup {
             Write-Error "Domain $SEPPmailcloudDomain is not intended for E-Mail sending and cannot be booked for the SEPPmail-cloud Service. Specify a custom domain of your tenant and retry."
             break
         }
+        Write-Verbose "Not enough parameters given, reading from Tenant, otherwise use data from console"
         if ((!($SEPPmailCloudDomain)) -or (!($region)) -or (!($routing)) ) {
             try {
                 $deploymentInfo = Get-SC365DeploymentInfo
@@ -842,13 +843,22 @@ function New-SC365Setup {
             break
         }
 
+        # For Connectors - use Tenant Default Domain
+        # For TransportRules, use all domains in the array
+        if ($SEPPmailCloudDomain.count -le 1) {
+            $ConnectorDomain = $SEPPmailCloudDomain
+        } else {
+            $ConnectorDomain = $TenantDefaultDomain
+        }
+
+
         try {
             if ($InBoundOnly -eq $true) {
                     Write-Information '--- Creating inbound connector ---' -InformationAction Continue
-                    New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region -inboundonly:$true
+                    New-SC365Connectors -SEPPmailCloudDomain $ConnectorDomain -routing $routing -region $region -inboundonly:$true
             } else {
                     Write-Information '--- Creating in and outbound connectors ---' -InformationAction Continue
-                    New-SC365Connectors -SEPPmailCloudDomain $SEPPmailCloudDomain -routing $routing -region $region
+                    New-SC365Connectors -SEPPmailCloudDomain $ConnectorDomain -routing $routing -region $region
             }
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
