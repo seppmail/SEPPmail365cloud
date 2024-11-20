@@ -210,7 +210,13 @@ function New-SC365Connectors
                     Write-Error "Domain is NOT Part of the tenant"
                     break
                 }
-            }    
+            }
+            Write-Verbose "Adding SEPPmail Support-Addresses to allowedSenders in HostedContentFilterPolicy"
+            [string[]]$existingAllowedSenders = (Get-HostedContentFilterPolicy -Identity 'Default'|select-Object AllowedSenders).Allowedsenders.Sender|Select-Object -ExpandProperty Address
+            [string[]]$SEPPmailAllowedSenders = @('support@seppmail.de','support@seppmail.com','support@seppmail.ch','servicedesk@seppmail.com')
+            $allowedSenders = ($existingAllowedSenders + $SEPPmailAllowedSenders |Select-Object -Unique)
+
+            Set-HostedContentFilterPolicy -Identity "Default" -AllowedSenders $allowedSenders
         } else {
             $SEPPmailCloudDomain = $tenantAcceptedDomains|Where-Object {$_.Default -eq $true}
         }
