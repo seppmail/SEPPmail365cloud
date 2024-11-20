@@ -1,6 +1,6 @@
 # Detect installed module version
 $ModuleRootPath = Split-Path -Path $PSScriptRoot -Parent
-$ManiFestFile = Import-PowerShellDataFile -Path $ModuleRootPath/Seppmail365cloud.psd1
+$ManiFestFile = Import-PowerShellDataFile -Path $ModuleRootPath/SEPPmail365cloud.psd1
 $ModuleVersion = $ManiFestFile.Moduleversion.ToString()
 
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
@@ -94,7 +94,7 @@ Write-Verbose 'Initialize argument completer scriptblocks'
 $script:paramDomSB = {
     # Read Accepted Domains for domain selection
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
-    $tenantAccetedDomains.Domain | Where-Object {
+    $tenantAcceptedDomains.Domain | Where-Object {
         $_ -like "$wordToComplete*"
             } | ForEach-Object {
                 "'$_'"
