@@ -397,6 +397,9 @@ function New-SC365ExOReport {
                 throw [System.Exception] "$LiteralPath does not exist. Enter a valid literal path like ~\exoreport.html or c:\temp\expreport.html"
             }
         }
+        if ($jsonBackup) {
+            $jsonPath = (Join-Path -Path (split-path $FinalPath -Parent) -ChildPath (split-path $FinalPath -leafbase)) + '.json'
+        }
         #endregion
 
         #Region Design parameters
@@ -440,14 +443,13 @@ function New-SC365ExOReport {
             EnableRowReorder = $false
             HideFooter = $true
             AutoSize = $false
-            TextWhenNoData = 'Could not fetch this value'
+            TextWhenNoData = 'No data in Exchange Online tenant available.'
         }
         $helpTextStyle = @{
             FontSize = 11
             Color = $colorSEPPmailLightGrey
         }
         #endregion
-
 
     }
 
@@ -515,7 +517,7 @@ function New-SC365ExOReport {
                 VarNam = 'ArcSlr'
                 WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-ArcConfig'
                 RawCmd = 'Get-ArcConfig'
-                TabDat = '*'
+                TabDat = ''
                 HdgTxt = 'Trusted ARC Sealer Configuration'
                 HlpInf = 'ARC is used to run SEPPmail.cloud or the SEPPmail Appliance in parallel mode with Exchange Online'
             }
@@ -657,7 +659,7 @@ function New-SC365ExOReport {
                 try {
                     Set-Variable -Name $rawVariableName -Value (Invoke-Expression $InfoData.RawCmd) -Scope Script
                 } catch {
-                    Set-Variable -Name $rawVariableName -Value 'Could not read data - maybe permission issue' -Scope Script
+                    Set-Variable -Name $rawVariableName -Value "$($_.Exception.Message)" -Scope Script
                 }
 
                 # Execute the RawCmd and pipe it to Select-Object with TabDat members
@@ -674,7 +676,7 @@ function New-SC365ExOReport {
                     try {
                         Set-Variable -Name $processedVariableName -Value (Invoke-Expression "$($InfoData.RawCmd) | Select-Object -Property $($InfoData.TabDat)") -Scope Script
                     } catch {
-                        Set-Variable -Name $rawVariableName -Value 'Could not read data - maybe permission issue' -Scope Script
+                        Set-Variable -Name $rawVariableName -Value "$($_.Exception.Message)" -Scope Script
                     }
                 }
             }
@@ -683,7 +685,7 @@ function New-SC365ExOReport {
             #endregion
 
             #region Generate the HTML report
-            New-HTML -FilePath $finalpath {
+            $finalReport = New-HTML -HtmlData {
                 New-HTMLImage -Source 'https://downloads.seppmail.com/wp-content/uploads/logo_seppmail_V1_Screen_M.png'  -Width '20%'
                 #New-HTMLLogo -LogoPath '/Users/romanstadlmair/Desktop/NewReport/' -LeftLogoName 'SEPPmailLogo.png' -LeftLogoString '/Users/romanstadlmair/Desktop/NewReport/SEPPmailLogo.png'
                 New-HTMLSection @sectionStyle -Headertext "Exchange Online Status Report for: $($OrgCfg.DisplayName)" -Content {    
@@ -697,6 +699,7 @@ function New-SC365ExOReport {
                             'SEPPmail365cloud Module Version' = $myInvocation.MyCommand.Version
                             'Microsoft Tenant ID' = Get-SC365TenantID -maildomain (Get-AcceptedDomain|where-object InitialDomain -eq $true|select-object -expandproperty Domainname)
                         }
+                        if ($jsonBackup) {$RawData.'Link to JSON File on Disk' = $JsonPath}
                         $RawDataNoHeader = [PSCustomObject]$RawData
                         New-HTMLTable -DataTable $rawDataNoHeader @TableStyle -TextWhenNoData 'Could not fetch this value' -EnableRowReorder   
                     }
@@ -742,7 +745,7 @@ function New-SC365ExOReport {
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.ArcSlr.HlpInf)} -FontStyle italic -LineBreak 
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.ArcSlr.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "--------------------------------------------------------------------------------------------------------------------------------------------------------"}
-                        New-HTMLText -Text $arcConfig.ArcTrustedSealers -FontSize 14 -LineBreak
+                        New-HTMLText -Text $arcSlr.ArcTrustedSealers -FontSize 14 -LineBreak
 
                         New-HTMLHeading -Heading h2 -HeadingText $ExoData.dkmSig.HdgTxt  -Color $ColorSEPPmailGreen -Underline
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.dkmSig.HlpInf)}
@@ -871,19 +874,21 @@ function New-SC365ExOReport {
             #endregion
             # Write Report to Disk
 
-            Write-Verbose "If JSONBackup is selected, write a JSON Backup"
+            Write-Verbose "Write the Files to Disk"
             try {
+                $finalReport|Out-File -FilePath $FinalPath -Force
+                Write-Verbose "If JSONBackup is selected, write a JSON Backup"
                 if ($jsonBackup) {
                     # Store json in the same location as HTML
                     #FIXME erzeuge RAWDATA
                     foreach ($ExoDataKey in $ExoData.Keys) {
                         $InfoData = $ExoData[$ExoDataKey]
-                        $VarNam = $InfoData.VarNam
-                        $script:JsonData += (Get-Variable -Name $VarNam | Select-Object -ExpandProperty Value)|Convertto-Json
+                        $VarNamRawJSON = "$($InfoData.VarNam)" + "Raw"
+                        $script:JsonData += (Get-Variable -Name $VarNamRawJSON | Select-Object -ExpandProperty Value)|Convertto-Json -Depth 5
                     }                 
-                    $jsonpath = (Join-Path -Path (split-path $FinalPath -Parent) -ChildPath (split-path $FinalPath -leafbase)) + '.json'
-                    $jsondata = Set-Content -Value $JsonData -Path $jsonPath -force
+                    $jsonData = Set-Content -Value $JsonData -Path $jsonPath -force
                 }
+
             }
             catch{
                 Write-Warning "Could not write report to $FinalPath"
