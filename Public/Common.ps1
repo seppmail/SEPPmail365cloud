@@ -654,21 +654,29 @@ function New-SC365ExOReport {
                 $j++
                 # Execute the RawCmd and store the raw result in a variable with 'Raw' postfix
                 $rawVariableName = "$($InfoData.VarNam)Raw"
-                Set-Variable -Name $rawVariableName -Value (Invoke-Expression $InfoData.RawCmd) -Scope Script
+                try {
+                    Set-Variable -Name $rawVariableName -Value (Invoke-Expression $InfoData.RawCmd) -Scope Script
+                } catch {
+                    Set-Variable -Name $rawVariableName -Value 'Could not read data - maybe permission issue' -Scope Script
+                }
 
                 # Execute the RawCmd and pipe it to Select-Object with TabDat members
                 $processedVariableName = $InfoData.VarNam
+                Write-Progress -Activity 'Receiving Exchange Online Information by:'`
+                    -Status "Processing $($infoData.RawCmd)" `
+                    -PercentComplete (($j / $totalItems) * 100)
 
                 if ([string]::IsNullOrWhiteSpace($InfoData.TabDat)) {
                     # If TabDat is empty, use the raw variable value
                     Set-Variable -Name $processedVariableName -Value (Get-Variable -Name $rawVariableName -ValueOnly) -Scope Script
                 } else {
                     # Otherwise, process RawCmd with Select-Object and TabDat properties
-                    Set-Variable -Name $processedVariableName -Value (Invoke-Expression "$($InfoData.RawCmd) | Select-Object -Property $($InfoData.TabDat)") -Scope Script
+                    try {
+                        Set-Variable -Name $processedVariableName -Value (Invoke-Expression "$($InfoData.RawCmd) | Select-Object -Property $($InfoData.TabDat)") -Scope Script
+                    } catch {
+                        Set-Variable -Name $rawVariableName -Value 'Could not read data - maybe permission issue' -Scope Script
+                    }
                 }
-                Write-Progress -Activity 'Receiving Exchange Online Information by:'`
-                    -Status "Processing $($infoData.RawCmd)" `
-                    -PercentComplete (($j / $totalItems) * 100)
             }
             Write-Progress -Activity 'Receiving Exchange Online Information' -Status "Completed" -Completed
 
