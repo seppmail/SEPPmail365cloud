@@ -7,45 +7,88 @@
         {
             "IPv4AllowList": [
                 "86.119.9.0/29",
-                "86.119.57.0/29"
+                "86.119.57.0/29",
+                "217.20.196.64/27"
                 ],
+            "IPv4DeliverHosts": [
+                "86.119.57.6",
+                "217.20.196.90",
+                "86.119.57.5"
+            ],
             "IPv6AllowList": [
                 "2001:620:5ca1:200b::/64",
                 "2001:620:5ca1:4018::/64"
             ],
-            "TlsCertificate": "*.ch.seppmail.cloud",
-            "GateIPs": [
-                "86.119.35.35",                                                                                                                                
-                "86.119.30.226"
+            "IPv6DeliverHosts": [
+                "2001:620:5ca1:4018:f816:3eff:fec2:5cd6",
+                "2001:620:5ca1:4018:f816:3eff:fe7a:389c"
             ],
-            "RelayIPs": [
+            "IPv4GateIPs": [
+                "86.119.35.35",                                                                                                                                
+                "217.20.196.81"
+            ],
+            "IPv6GateIPs": [
+                "2001:620:5ca1:2f0:f816:3eff:fe00:aa60",
+                "2001:620:5ca1:1f0:f816:3eff:fe96:d78e"
+            ],
+            "IPv4RelayIPs": [
                 "86.119.38.33",                                                                                                                                 
-                "86.119.29.141"
+                "217.20.196.83"
+            ],
+            "IPv6RelayIPs": [
+                "2001:620:5ca1:1f0:f816:3eff:fef0:1d65",
+                "2001:620:5ca1:2f0:f816:3eff:fe33:d5c4"
             ],
             "MailIPs": [
-                "86.119.25.244", 
+                "217.20.196.82", 
                 "86.119.37.4"
-            ]
+            ],
+            "TlsCertificate": "*.ch.seppmail.cloud"
         },
         "de":
         {
             "IPv4AllowList": [
                 "162.55.72.192/27"
             ],
+            "IPv4DeliverHosts": [
+                "162.55.72.218",
+                "162.55.72.219",
+                "162.55.72.220"
+            ],
             "IPv6AllowList": [
                 "2a01:4f8:a0:900b::/64",
                 "2a01:4f8:272:5fe6::/64"
             ],
-            "TlsCertificate": "*.de.seppmail.cloud",
-            "GateIPs": [
-                "49.12.23.112"                                                                                                                               
+            "IPv6DeliverHosts": [
+                "2a01:4f8:a0:900b::219",
+                "2a01:4f8:272:5fe6::218",
+                "2a01:4f8:a0:900b::220"
             ],
-            "RelayIPs": [
-                "162.55.156.227"                                                                                                                                 
+            "IPv4GateIPs": [
+                "49.12.23.112",
+                "167.233.8.136"                                                                                                                               
             ],
-            "MailIPs": [
-                "162.55.155.177" 
-            ]
+            "IPv6GateIPs": [
+                "2a01:4f8:1c1d:6b8::1",
+                "2a01:4f8:c011:544::1"
+            ],
+            "IPv4RelayIPs": [
+                "162.55.72.221",                                                                                                                                 
+                "162.55.72.222"                                                                                                                                 
+            ],
+            "IPv6RelayIPs": [
+                "2a01:4f8:a0:900b::221",
+                "2a01:4f8:272:5fe6::222"                                                                                                                                 
+            ],
+            "IPv4MailIPs": [
+                "162.55.155.177",
+                "49.12.22.120"
+            ],
+            "IPv6MailIPs": [
+                "2a01:4f8:c011:2b6::1",
+                "2a01:4f8:1c1d:577::1"
+            ],
+            "TlsCertificate": "*.de.seppmail.cloud"
         },
         "prv":
         {
@@ -60,16 +103,25 @@
                 "2a01:4f8:1c17:f104::1",
                 "2a01:4f8:1c17:c547::1"
             ],
-            "TlsCertificate": "*.prv.seppmail.cloud",
-            "GateIPs": [
+            "IPv4GateIPs": [
                 "49.12.21.237"                                                                                                                                
             ],
-            "RelayIPs": [
+            "IPv6GateIPs": [
+                "2a01:4f8:c011:78a::1"                                                                                                                                
+            ],
+            "IPv4RelayIPs": [
                 "116.202.109.112"                                                                                                                                 
             ],
-            "MailIPs": [
+            "IPv6RelayIPs": [
+                "2a01:4f8:1c17:718f::1"                                                                                                                                 
+            ],
+            "IPv4MailIPs": [
                 "49.12.100.186"
-            ]
+            ],
+            "IPv6MailIPs": [
+                "2a01:4f8:c012:9dff::1"
+            ],
+            "TlsCertificate": "*.prv.seppmail.cloud"
         }
     }
 }
