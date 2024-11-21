@@ -363,7 +363,6 @@ function New-SC365ExOReport {
             throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet" }
         else {
             Write-Information "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
-            Write-verbose 'Defining Function fo read Exo Data and return an info Message in HTML even if nothing is retrieved'
         }
 
         #region Filetest only if not $Literalpath is selected
@@ -400,6 +399,55 @@ function New-SC365ExOReport {
         }
         #endregion
 
+        #Region Design parameters
+        $colorSEPPmailGreen = '#C7D400'
+        $colorSEPPmailGrey = '#575757'
+        $colorSEPPmailLightGrey = '#BEBEBE'
+
+        $sectionStyle = @{
+            Direction = 'column' 
+            Margin = 2
+            HeaderText = 'Exchange Online Status Report'
+            HeaderBackGroundColor = $ColorSEPPmailgreen
+            HeaderTextColor = $ColorSEPPmailGrey
+            HeaderTextSize = 20
+            BackgroundColor = $colorSEPPmailLightGrey
+            BorderRadius = '5px'
+        }
+        $contentHeaderStyle = @{
+            HeaderTextAlignment = 'center'
+            HeaderTextColor = $ColorSEPPmailGreen 
+            HeaderBackGroundColor = $colorSEPPmailGrey
+            HeaderTextSize = 18
+        }
+
+        $contentBodyStyle = @{
+            Margin = 7
+            BorderRadius = '5px'
+            JustifyContent = 'center'
+            CanCollaps = $true
+            BackgroundColor = 'White'
+        }
+        $tableStyle = @{
+            Style = 'display' # 'cell-border', compact, display, hover, nowrap, order-column, row-border, stripe
+            Buttons = 'copyHtml5','csvHtml5','excelHtml5','pdfHtml5','print'
+            DisablePaging = $false
+            DisableSearch = $false
+            DisableOrdering = $false
+            DisableResponsiveTable = $false
+            SearchBuilderLocation=  'bottom'
+            EnableColumnReorder = $true
+            EnableRowReorder = $false
+            HideFooter = $true
+            AutoSize = $false
+            TextWhenNoData = 'Could not fetch this value'
+        }
+        $helpTextStyle = @{
+            FontSize = 11
+            Color = $colorSEPPmailLightGrey
+        }
+        #endregion
+
 
     }
 
@@ -412,137 +460,421 @@ function New-SC365ExOReport {
                 #"Whatis is $Whatif and `$pscmdlet.ShouldProcess is $($pscmdlet.ShouldProcess) "
                 #For later Use
             }
-            $mv = $myInvocation.MyCommand.Version
-            $Top = "<p><h1>Exchange Online Report</h1><p>"
-            $now = Get-Date
+
+            #region Collecting Report Header CreateUser
             if ($PSVersionTable.OS -like 'Microsoft Windows*') {
                 $repUser = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
             } else {
                 $repUser = (hostname) + '/' + (whoami)
             }
-            $RepCreationDateTime = "<p><body>Report created on: $now</body><p>"
-            $RepCreatedBy = "<p><body>Report created by: $repUser</body><p>"
-            $ReportFilename = Split-Path $FinalPath -Leaf
-            $moduleVersion = "<p><body>SEPPmail365cloud Module Version: $mv</body><p>"
-            $reportTenantID = Get-SC365TenantID -maildomain (Get-AcceptedDomain|where-object InitialDomain -eq $true|select-object -expandproperty Domainname)
-            $TenantInfo = "<p><body>Microsoft O/M365 AzureAD Tenant ID: $reportTenantID</body><p>"
-            Write-Verbose "Collecting Accepted Domains"
-            $hSplitLine = '<p><h2>---------------------------------------------------------------------------------------------------------------------------</h2><p>'
-            #region General infos
-            $hGeneral =  '<p><h2>General Exchange Online and Subscription Information</h2><p>'
-            
-            $hA = '<p><h3>Accepted Domains</h3><p>'
-            $A = Get-ExoHTMLData -ExoCmd 'Get-AcceptedDomain |select-object Domainname,DomainType,Default,EmailOnly,ExternallyManaged,OutboundOnly|Sort-Object -Descending Default'
-            # Find out Office Configuration
-            Write-Verbose "Collecting M365 Configuration"
-            $hB = '<p><h3>ExO Configuration Details</h3><p>'
-            $B = Get-ExoHTMLData -ExoCmd 'Get-OrganizationConfig |Select-Object DisplayName,ExchangeVersion,AllowedMailboxRegions,DefaultMailboxRegion,DisablePlusAddressInRecipients'
+            #endregion
 
-            # Find out possible Sending Limits for LFT
-            Write-Verbose "Collecting Send and Receive limits for SEPPmail LFT configuration"
-            $hP = '<p><h3>Send and Receive limits (for SEPPmail LFT configuration)</h3><p>'
-            $P = Get-ExoHTMLData -ExoCmd  'Get-TransportConfig |Select-Object MaxSendSize,MaxReceiveSize'
-
-            # Find out possible Office Message Encryption Settings
-            Write-Verbose "Collecting Office Message Encryption Settings"
-            $hP = '<p><h3>Office Message Encryption Settings</h3><p>'
-            $P = Get-ExoHTMLData -ExoCmd 'Get-OMEConfiguration|Select-Object PSComputerName,TemplateName,OTPEnabled,SocialIdSignIn,ExternalMailExpiryInterval,Identity,IsValid'
-            
-            # Get MX Record Report for each domain
-            $hO = '<p><h3>MX Record for each Domain</h3><p>'
-            $O = $Null
-            $oTemp = Get-AcceptedDomain
-            Foreach ($AcceptedDomain in $oTemp.DomainName) {
-                    $O += (Get-MxRecordReport -Domain $AcceptedDomain|Select-Object -Unique|Select-Object HighestPriorityMailhost,HighestPriorityMailhostIpAddress,Domain|Convertto-HTML -Fragment)
+            #region NEW Way of Collecting Data
+            $ExoData = [ordered]@{}
+            $ExoData['AccDom']=[ordered]@{
+                VarNam = 'AccDom'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/get-accepteddomain'
+                RawCmd = 'Get-AcceptedDomain'
+                TabDat = 'Domainname,DomainType,Default,EmailOnly,ExternallyManaged,OutboundOnly,WhenCreated,WhenChanged'
+                HdgTxt = 'Accepted Domains'
+                HlpInf = 'The list of configured E-Mail-domains in this Tenant. The Tenant-Default-Domain is listed first. If the onmicrosoft.com domain is default, its highlighted in red.'
             }
+            $ExoData['RemDom']=[ordered]@{
+                VarNam = 'RemDom'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/get-remotedomain'
+                RawCmd = 'Get-RemoteDomain'
+                TabDat = 'DomainName,ContentType,IsInternal,SmtpDaneMandatoryModeEnabled,WhenCreated,WhenChanged'
+                HdgTxt = 'Remote Domains'
+                HlpInf = 'Remote Domains are used to control mail flow with more precision, apply message formatting and messaging policies and specify acceptable character sets for messages sent to and received from the remote domain'
+            }
+            $ExoData['OrgCfg']=[ordered]@{
+                VarNam = 'OrgCfg'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/get-OrganizationConfig'
+                RawCmd = 'Get-OrganizationConfig'
+                TabDat = 'DisplayName,ExchangeVersion,SendFromAliasEnabled,AllowedMailboxRegions,DefaultMailboxRegion,DisablePlusAddressInRecipients,WhenCreated,WhenChanged'
+                HdgTxt = 'Organizational Config'
+                HlpInf = 'Some data around the physical location of your M365-Tenant'
+            }
+            $ExoData['TspCfg']=[ordered]@{
+                VarNam = 'TspCfg'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-TransportConfig'
+                RawCmd = 'Get-TransportConfig'
+                TabDat = 'MaxSendSize,MaxReceiveSize,WhenCreated,WhenChanged'
+                HdgTxt = 'Transport Configuration'
+                HlpInf = 'View organization-wide transport configuration settings'
+            }
+            $ExoData['MxrRep']=[ordered]@{
+                VarNam = 'MxrRep'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-MXRecordReport'
+                RawCmd = '$accDom.DomainName |ForEach-Object {Get-MXRecordReport -Domain $_}'
+                TabDat = 'Domain,HighestPriorityMailhostIpAddress,HighestPriorityMailhost,IsAcceptedDomain,Organization,PointsToService,RecordExists'
+                HdgTxt = 'MX-Record Report'
+                HlpInf = 'MX-Record DNS entries and IP-addresses of every accepted domain'
+            }
+            $ExoData['ArcSlr']=[ordered]@{
+                VarNam = 'ArcSlr'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-ArcConfig'
+                RawCmd = 'Get-ArcConfig'
+                TabDat = '*'
+                HdgTxt = 'Trusted ARC Sealer Configuration'
+                HlpInf = 'ARC is used to run SEPPmail.cloud or the SEPPmail Appliance in parallel mode with Exchange Online'
+            }
+            $ExoData['DkmSig']=[ordered]@{
+                VarNam = 'dkmsig'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-DkimSigningConfig'
+                RawCmd = 'Get-DkimSigningConfig'
+                TabDat = 'Domain,Enabled,Status,Selector1CNAME,Selector2CNAME,WhenCreated,WhenChanged'
+                HdgTxt = 'DKIM Signing Configuration'
+                HlpInf = 'DKIM Keys per Domain, DNS entries contains a public key used to verify the digital signature of an email. Makes only sense if MX record points to Microsoft.'
+            }
+            $ExoData['DanSts']=[ordered]@{
+                VarNam = 'dansts'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-Arc'
+                RawCmd = 'Get-SmtpDaneInboundStatus -DomainName (($accDom|Where-Object {$_.Default -eq $true}).DomainName)'
+                TabDat = ''
+                HdgTxt = 'DANE Inbound Status for Default Domain'
+                HlpInf = 'A DANE record is a DNSSEC-protected TLSA record that specifies the expected TLS certificate or certificate authority information for securely connecting to a server.'
+            }
+            $ExoData['ibdCon']=[ordered]@{
+                VarNam = 'ibCcon'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-InboundConnector'
+                RawCmd = 'Get-InboundConnector'
+                TabDat = 'Identity,Enabled,ConnectorType,SenderDomains,SenderIPAddresses,TlsSenderCertificateName,EFSkipLastIP,EFSkipIPs,WhenCreated,WhenChanged'
+                HdgTxt = 'Inbound Connectors'
+                HlpInf = 'Connectivity for E-Mails flowing Inbound to Exchange Online'
+            }
+            $ExoData['obdCon']=[ordered]@{
+                VarNam = 'obdCon'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-OutboundConnector'
+                RawCmd = 'Get-OutboundConnector -IncludeTestModeConnectors:$true'
+                TabDat = 'Identity,Enabled,ConnectorType,SmartHosts,TlsDomain,TlsSettings,RecipientDomains,WhenCreated,WhenChanged'
+                HdgTxt = 'Outbound Connectors'
+                HlpInf = 'Connectivity for E-Mails flowing Outbound from Exchange Online'
+            }
+            $ExoData['malFlw']=[ordered]@{
+                VarNam = 'malFlw'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-MailFlowStatusReport'
+                RawCmd = 'Get-MailFlowStatusReport -StartDate (Get-Date) -EndDate ((Get-Date).AddDays(1))'
+                TabDat = ''
+                HdgTxt = 'Mail Flow Status Report'
+                HlpInf = 'E-Mails categorized by by severity, of the last 24 hours'
+            }
+            $ExoData['trnRls']=[ordered]@{
+                VarNam = 'tnrRls'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-TransportRule'
+                RawCmd = 'Get-TransportRule'
+                TabDat = 'Name,State,Mode,Priority,FromScope,SentToScope,StopRuleProcessing,ManuallyModified,Description,WhenCreated,WhenChanged'
+                HdgTxt = 'E-Mail Transport Rules'
+                HlpInf = 'Transport rules control mailflow by conditions and are important for the SEPPmail integration.'
+            }
+            $ExoData['apsPol']=[ordered]@{
+                VarNam = 'apsPol'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-AntiPhishPolicy'
+                RawCmd = 'Get-AntiPhishPolicy'
+                TabDat = 'Identity,isDefault,IsValid,AuthenticationFailAction,WhenCreated,WhenChanged'
+                HdgTxt = 'Anti-Phishig Policies'
+                HlpInf = 'Anti-Phish Policies are a security measure designed to protect against phishing attacks by identifying and blocking emails'
+            }
+            $ExoData['MwfPol']=[ordered]@{
+                VarNam = 'MwfPol'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-MalwareFilterPolicy'
+                RawCmd = 'Get-MalwareFilterPolicy'
+                TabDat = 'Identity,Action,IsDefault,Filetypes,WhenCreated,WhenChanged'
+                HdgTxt = 'Anti-Malware Policies'
+                HlpInf = 'Anti-Malware Policies are a security configuration that scans and blocks email messages containing malicious software, such as viruses or ransomware.'
+            }
+            $ExoData['hctFpl']=[ordered]@{
+                VarNam = 'hctFpl'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-HostedContentFilterPolicy'
+                RawCmd = 'Get-HostedContentFilterPolicy'
+                TabDat = 'Name,IsDefault,ObjectState,MarkAsSpamSpfRecordHardFail,QuarantineRetentionPeriod,EndUserSpamNotificationFrequency,TestModeAction,IsValid,BulkSpamAction,PhishSpamAction,OriginatingServer,WhenCreated,WhenChanged'
+                HdgTxt = 'Hosted Content Filter Policies'
+                HlpInf = 'The HostedContentFilterPolicy in Exchange Online is a configuration that determines the filtering actions and thresholds for email content, including spam detection, safe sender lists, and quarantining, to protect against unwanted or malicious emails'
+            }
+            $ExoData['hcnFpl']=[ordered]@{
+                VarNam = 'hcnFpl'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-HostedConnectionFilterPolicy'
+                RawCmd = 'Get-HostedConnectionFilterPolicy'
+                TabDat = ''
+                HdgTxt = 'Hosted Connection Filter Policies'
+                HlpInf = 'The HostedConnectionFilterPolicy in Exchange Online is a configuration that controls the connection filtering settings for incoming email, such as blocking or allowing specific IP addresses and domains, to manage spam and phishing protection.'
+            }
+            $ExoData['blkSnd']=[ordered]@{
+                VarNam = 'blkSnd'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-BlockedSenderAddress'
+                RawCmd = 'Get-BlockedSenderAddress'
+                TabDat = ''
+                HdgTxt = 'Blocked Sender Address List'
+                HlpInf = 'The BlockedSenderAddress list in Exchange Online specifies individual email addresses that are explicitly blocked from sending messages to recipients in your organization, helping to prevent spam or unwanted emails from those addresses.'
+            }
+            $ExoData['hobFpl']=[ordered]@{
+                VarNam = 'hobFpl'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-HostedOutboundSpamFilterPolicy'
+                RawCmd = 'Get-HostedOutboundSpamFilterPolicy'
+                TabDat = 'Name,IsDefault,Enabled,ActionWhenThresholdReached,WhenCreated,WhenChanged'
+                HdgTxt = 'Hosted Outbound SPAMfilter Policies'
+                HlpInf = 'The HostedOutboundSpamFilterPolicy in Exchange Online controls the filtering and management of outbound emails to detect and block potential spam or malicious messages sent from your organization, protecting your domains reputation.'
+            }
+            $ExoData['qarPol']=[ordered]@{
+                VarNam = 'qarPol'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-QuarantinePolicy'
+                RawCmd = 'Get-QuarantinePolicy'
+                TabDat = 'Name,IsValid,QuarantinePolicyType,QuarantineRetentionDays,EndUserQuarantinePermissions,ESNEnabled,WhenCreated,WhenChanged'
+                HdgTxt = 'Quarantine Policies'
+                HlpInf = 'A quarantine policy in Exchange Online defines how quarantined emails are handled, including permissions for users to view, release, or report messages, and specifies notification settings for administrators and end users.'
+            }
+            $ExoData['iorCon']=[ordered]@{
+                VarNam = 'iorCon'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-IntraOrganizationConnector'
+                RawCmd = 'Get-IntraOrganizationConnector'
+                TabDat = ''
+                HdgTxt = 'Intra Organization Connectors'
+                HlpInf = 'Intra-Organization Connectors in Exchange Online enable seamless mail flow, free/busy calendar sharing, and other organizational data sharing between different Exchange Online organizations or between Exchange Online and on-premises Exchange environments in a hybrid setup.'
+            }
+            $ExoData['hybMdc']=[ordered]@{
+                VarNam = 'hybMdc'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-HybridMailflowDatacenterIPs'
+                RawCmd = 'Get-HybridMailflowDatacenterIPs'
+                TabDat = ''
+                HdgTxt = 'Hybrid Mailflow Datacenter IPs'
+                HlpInf = 'List of IP addresses used by Microsoft datacenters for managing hybrid mail flow in an Exchange hybrid deployment'
+            }
+            <#$ExoData['nnnNnn']=[ordered]@{
+                VarNam = 'nnnNnn'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/nnn'
+                RawCmd = ''
+                TabDat = ''
+                HdgTxt = ''
+                HlpInf = ''
+            }#>
+            $totalItems = $ExoData.Count
+            $j = 0
+            foreach ($ExoDataKey in $ExoData.Keys) {
+                $InfoData = $ExoData[$ExoDataKey]
+                $j++
+                # Execute the RawCmd and store the raw result in a variable with 'Raw' postfix
+                $rawVariableName = "$($InfoData.VarNam)Raw"
+                Set-Variable -Name $rawVariableName -Value (Invoke-Expression $InfoData.RawCmd) -Scope Script
 
-            # Get ARCConfig Info
-            $hO1 = '<p><h3>Tusted ARC Sealers</h3><p>'
-            $O1 = $Null
-            $O1 = (Get-ARCConfig |Convertto-HTML -Fragment)
-            
+                # Execute the RawCmd and pipe it to Select-Object with TabDat members
+                $processedVariableName = $InfoData.VarNam
+
+                if ([string]::IsNullOrWhiteSpace($InfoData.TabDat)) {
+                    # If TabDat is empty, use the raw variable value
+                    Set-Variable -Name $processedVariableName -Value (Get-Variable -Name $rawVariableName -ValueOnly) -Scope Script
+                } else {
+                    # Otherwise, process RawCmd with Select-Object and TabDat properties
+                    Set-Variable -Name $processedVariableName -Value (Invoke-Expression "$($InfoData.RawCmd) | Select-Object -Property $($InfoData.TabDat)") -Scope Script
+                }
+                Write-Progress -Activity 'Receiving Exchange Online Information by:'`
+                    -Status "Processing $($infoData.RawCmd)" `
+                    -PercentComplete (($j / $totalItems) * 100)
+            }
+            Write-Progress -Activity 'Receiving Exchange Online Information' -Status "Completed" -Completed
+
             #endregion
 
-            #region Security 
-            $hSecurity = '<p><h2>Security related Information</h2><p>'
-            $hC = '<p><h3>DKIM Settings</h3><p>'
-            $C = Get-ExoHTMLData -ExoCmd 'Get-DkimSigningConfig|Select-Object Domain,Enabled,Status,Selector1CNAME,Selector2CNAME|sort-object Enabled -Descending'
-            
-            Write-Verbose "Collecting Phishing and Malware Policies"
-            $hD = '<p><h3>Anti Phishing Policies</h3><p>'
-            $D = Get-ExoHTMLData -ExoCmd 'Get-AntiPhishPolicy|Select-Object Identity,isDefault,IsValid,AuthenticationFailAction'
-            
-            $hE = '<p><h3>Anti Malware Policies</h3><p>'
-            $E = Get-ExoHTMLData -ExoCmd 'Get-MalwareFilterPolicy|Select-Object Identity,Action,IsDefault,Filetypes'
+            #region Generate the HTML report
+            New-HTML -FilePath $finalpath {
+                New-HTMLImage -Source 'https://downloads.seppmail.com/wp-content/uploads/logo_seppmail_V1_Screen_M.png'  -Width '20%'
+                #New-HTMLLogo -LogoPath '/Users/romanstadlmair/Desktop/NewReport/' -LeftLogoName 'SEPPmailLogo.png' -LeftLogoString '/Users/romanstadlmair/Desktop/NewReport/SEPPmailLogo.png'
+                New-HTMLSection @sectionStyle -Headertext "Exchange Online Status Report for: $($OrgCfg.DisplayName)" -Content {    
+                    New-HTMLContent @contentHeaderStyle @ContentbodyStyle -HeaderText 'Report Information' -Direction 'column' -Collapsed -Content {
+                        $RawData =[ordered]@{
+                            'Report created' = (Get-Date)
+                            'Report created by' = $repUser
+                            'FileName' = Split-Path $FinalPath -Leaf
+                            'FilePath' = Split-Path $FinalPath -Parent
+                            'Fullpath' = $FinalPath
+                            'SEPPmail365cloud Module Version' = $myInvocation.MyCommand.Version
+                            'Microsoft Tenant ID' = Get-SC365TenantID -maildomain (Get-AcceptedDomain|where-object InitialDomain -eq $true|select-object -expandproperty Domainname)
+                        }
+                        $RawDataNoHeader = [PSCustomObject]$RawData
+                        New-HTMLTable -DataTable $rawDataNoHeader @TableStyle -TextWhenNoData 'Could not fetch this value' -EnableRowReorder   
+                    }
+                    New-HTMLContent @ContentHeaderStyle @contentBodyStyle -HeaderText 'General Setup' -Direction 'column' -Content {
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.AccDom.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "$($ExoData.AccDom.HlpInf)"}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.AccDom.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        Write-Verbose "Add Logic to detect if the default accepted domain is the onmicrosoft.com domain"
+                        if (!($accDom|Get-Member -Name onmicrosoftIsDefault)) {
+                            $accDom|Add-Member -MemberType NoteProperty -Name onmicrosoftIsDefault -Value 'False'
+                        }
+                        Foreach ($domain in $accDom) {
+                            if (($domain.Default -eq $True) -and ($domain.DomainName -like '*.onmicrosoft.com') ){
+                                $domain.onmicrosoftIsDefault = 'True'
+                            }
+                        }
+                        New-HTMLTable -DataTable $accDom @tablestyle -ExcludeProperty 'onmicrosoftIsDefault' -DefaultSortColumn 'Default' -DefaultSortOrder 'Descending' -SearchBuilder {
+                            New-HTMLTableCondition -Name 'Default' -ComparisonType string -Operator eq -Value 'True' -Row -FontWeight bold
+                            New-HTMLTableCondition -Name 'onmicrosoftIsDefault' -ComparisonType bool -Operator eq -Value $true -row -Color red
+                        }
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.RemDom.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "$($ExoData.RemDom.HlpInf)"}                
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.RemDom.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $RemDom @tablestyle -ExcludeProperty 'onmicrosoftIsDefault' -DefaultSortColumn 'Default' -DefaultSortOrder 'Descending'
+                    
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.OrgCfg.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "$($ExoData.OrgCfg.HlpInf)"}                
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.OrgCfg.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $OrgCfg @tableStyle
+                    
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.TspCfg.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "$($ExoData.TspCfg.HlpInf)"}                
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.TspCfg.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $TspCfg @tableStyle 
+                    
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.MxrRep.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "$($ExoData.MxrRep.HlpInf)"}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.MxrRep.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $MxrRep @tableStyle -DefaultSortColumn 'HighestPriorityMailhostIpAddress'
+                    }
+                    New-HTMLContent @ContentHeaderStyle @contentBodyStyle -HeaderText 'SMTP Security' -Direction 'row'-Content {
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.ArcSlr.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.ArcSlr.HlpInf)} -FontStyle italic -LineBreak 
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.ArcSlr.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "--------------------------------------------------------------------------------------------------------------------------------------------------------"}
+                        New-HTMLText -Text $arcConfig.ArcTrustedSealers -FontSize 14 -LineBreak
 
-            $hk = '<p><h3>Content Filter Policy</h3><p>'
-            $k= Get-ExoHTMLData -ExoCmd 'Get-HostedContentFilterPolicy|Select-Object QuarantineRetentionPeriod,EndUserSpamNotificationFrequency,TestModeAction,IsValid,BulkSpamAction,PhishSpamAction,OriginatingServer'
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.dkmSig.HdgTxt  -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.dkmSig.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.dkmSig.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $dkmSig @tableStyle -SearchBuilder {
+                            New-HTMLTableCondition -Name 'Enabled' -ComparisonType string -Operator eq -Value 'False' -Color 'red' -row -FontWeight bold 
+                        }
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.danSts.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.DanSts.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.danSts.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "--------------------------------------------------------------------------------------------------------------------------------------------------------"}
+                        New-HTMLText -Text $DanSts -FontSize 14 -LineBreak
+                    }
+                    New-HTMLContent @contentHeaderStyle @ContentBodyStyle -Headertext 'External Connectivity' -Direction 'column' -Content {
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.ibcCon.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.ibcCon.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.ibcCon.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        #FIXME in Parallel Modus Muss EFSKIPIP leer sein und EFSKIPLastIP $true
+                        Write-verbose "Add Logic to detect if the correct EFIP logic is set"
+                        if (!($ibcCon|Get-Member -Name EfSkipConfig)) {$ibcCon|Add-Member -MemberType NoteProperty -Name EfSkipConfig -Value 'undefined'}
+                        Foreach ($ib in $ibcCon) {
+                            if ($ib.Identity -like '*SEPPmail*') {
+                                if ((!($ib.EFSkipIPs)) -and ($ib.EFSkipLastIP -eq $true)){
+                                    $ib.EfSkipConfig = 'parallel'
+                                }
+                                if ((!(!($ib.EFSkipIPs))) -and ($ib.EFSkipLastIP -eq $true)){
+                                    $ib.EfSkipConfig = 'EFSkipIPs not empty'
+                                }
+                                if ((!($ib.EFSkipIPs)) -and ($ib.EFSkipLastIP -eq $false)){
+                                    $ib.EfSkipConfig = 'EFSkipLastIP is $false'
+                                }
+                                if ((!(!($ib.EFSkipIPs))) -and ($ib.EFSkipLastIP -eq $false)){
+                                    $ib.EfSkipConfig = 'EFSkipLastIP is $false AND EFSkipIPs not empty'
+                                }    
+                            }
+                        }
+                        New-HTMLTable -DataTable $ibcCon @tableStyle -SearchBuilder {
+                            New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row 
+                            New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'CodeTwo' -BackgroundColor GoldenYellow -Row
+                            New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'Exclaimer' -BackgroundColor GoldenYellow -Row
+                            #FixME - nur starten wenn SetupMode -eq 'Parallel'
+                            New-HTMLTableCondition -Name 'EfSkipConfig' -ComparisonType string -Operator ne -Value 'parallel' -row -Color red
+                        }
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.obdCon.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.obdCon.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.obdCon.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $obdCon @tableStyle -SearchBuilder {
+                            New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'CodeTwo' -BackgroundColor GoldenYellow -Row
+                            New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'Exclaimer' -BackgroundColor GoldenYellow -Row
+                            New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row 
+                        }
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.malFlw.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.malFlw.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.malFlw.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        #Mailflowstatusreport und Paging auf 20 Einträge (eingeklappt oder anpassen)
+                        New-HTMLTable -DataTable $malFlw @tableStyle -PagingLength 20
+                    }
+                    New-HTMLContent @contentHeaderStyle @ContentBodyStyle -HeaderText 'Transport Rules' -Direction 'column' -Content {
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.tnrRls.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.tnrRls.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.tnrRls.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $tnrRls @tablestyle -DefaultSortColumn 'Name' -SearchBuilder {
+                            New-HTMLTableCondition -Name 'Name' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row
+                        }
+                    }
+                    New-HTMLContent @contentHeaderStyle @ContentBodyStyle -HeaderText 'Defender Configuration' -Direction 'column' -Content {
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.apsPol.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.apsPol.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.apsPol.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $apsPol @tablestyle -DefaultSortColumn 'IsDefault' -DefaultSortOrder 'Descending' -SearchBuilder {
+                            New-HTMLTableCondition -Name 'isDefault' -ComparisonType string -Operator eq -Value 'True' -FontWeight bold -row
+                        }
+                    
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.MwfPol.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.mwfPol.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.MwfPol.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $MwfPol @tablestyle -DefaultSortColumn 'IsDefault' -DefaultSortOrder 'Descending' -SearchBuilder {
+                            New-HTMLTableCondition -Name 'isDefault' -ComparisonType string -Operator eq -Value 'True' -FontWeight bold -row
+                        }
+                    
+                    
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.hctFpl.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.hctFpl.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.HctFpl.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $hctFpl @tablestyle -DefaultSortColumn 'IsDefault' -DefaultSortOrder 'Descending' -SearchBuilder {
+                            New-HTMLTableCondition -Name 'isDefault' -ComparisonType string -Operator eq -Value 'True' -FontWeight bold -row    
+                            New-HTMLTableCondition -Name 'MarkAsSpamSpfRecordHardFail' -ComparisonType string -Operator eq -Value 'On' -Row -Color Red -FontWeight bold
+                        }
 
-            Write-Verbose "Blocked Sender Addresses"
-            $hH = '<p><h3>Show Senders which are locked due to outbound SPAM</h3><p>'
-            $h = Get-ExoHTMLData -ExoCmd 'Get-BlockedSenderAddress'
-            
-            Write-Verbose "Get Outbound SPAM Filter Policy"
-            $hJ = '<p><h3>Outbound SPAM Filter Policy</h3><p>'
-            $J = Get-ExoHTMLData -ExoCmd 'Get-HostedOutboundSpamFilterPolicy|Select-Object Name,IsDefault,Enabled,ActionWhenThresholdReached'
-            
-            Write-Verbose "Get Filter Policy"
-            $hJ1 = '<p><h3>SPAM Filter Policy</h3><p>'
-            $J1 = Get-ExoHTMLData -ExoCmd 'Get-HostedConnectionFilterPolicy|select-Object Name,IsDefault,Enabled,IPAllowList,IPBlockList'
-            #endregion Security
-
-            #region other connectors
-            $hOtherConn = '<p><h2>Hybrid and other Connectors</h2><p>'
-            Write-Verbose "Get-HybridMailflow"
-            $hG = '<p><h3>Hybrid Mailflow Information</h3><p>'
-            $g = Get-ExoHTMLData -ExoCmd 'Get-HybridMailflow'
-
-            Write-Verbose "Get-IntraorgConnector"
-            $hI = '<p><h3>Intra Org Connector Settings</h3><p>'
-            $I = Get-ExoHTMLData -ExoCmd 'Get-IntraOrganizationConnector|Select-Object Identity,TargetAddressDomains,DiscoveryEndpoint,IsValid'
+                        ##FIXME Im Parallel Modus darf die Default Policy NICHT aktiv sein ==> ROT
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.hcnFpl.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.hcnFpl.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.HcnFpl.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $hcnFpl @tablestyle -DefaultSortColumn 'IsDefault' -DefaultSortOrder 'Descending'  -SearchBuilder {
+                            New-HTMLTableCondition -Name 'isDefault' -ComparisonType string -Operator eq -Value 'True' -FontWeight bold -row
+                        }
+                    
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.blkSnd.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.hcnFpl.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.blkSnd.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $blkSnd @tablestyle
+                    
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.qarPol.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.qarPol.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.qarPol.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $qarPol @tablestyle -DefaultSortColumn 'IsDefault' -DefaultSortOrder 'Descending'
+                    
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.hobFpl.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.hobFpl.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.hobFpl.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $hobFpl @tablestyle -DefaultSortColumn 'IsDefault' -DefaultSortOrder 'Descending'
+                    }
+                    New-HTMLContent @contentHeaderStyle @ContentBodyStyle -Headertext 'Hybrid Information' -Direction 'column' -Collapsed -Content {
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.iorCon.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.iorCon.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.iorCon.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $iorCon @tablestyle
+                    
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.hybMdc.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.hybMdc.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.hybMdc.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $hybMdc.DatacenterIPs @tableStyle
+                    }
+            }
+            }
             #endregion
-
-            #region connectors
-            $hConnectors = '<p><h2>Existing Exchange Connectors</h2><p>'
-            
-            Write-Verbose "InboundConnectors"
-            $hL = '<p><h3>Inbound Connectors</h3><p>'
-            $L = Get-ExoHTMLData -ExoCmd 'Get-InboundConnector |Select-Object Identity,Enabled,SenderDomains,SenderIPAddresses,OrganizationalUnitRootInternal,TlsSenderCertificateName,OriginatingServer,EFSkipLastIP,EFSkipIPs,IsValid'
-            
-            Write-Verbose "OutboundConnectors"
-            $hM = '<p><h3>Outbound Connectors</h3><p>'
-            $M = Get-ExoHTMLData -ExoCmd 'Get-OutboundConnector -IncludeTestModeConnectors:$true|Select-Object Identity,Enabled,SmartHosts,TlsDomain,TlsSettings,RecipientDomains,OriginatingServer,IsValid'
-            #endregion connectors
-            
-            #region mailflow rules
-            $hTransPortRules = '<p><h2>Existing Mailflow Rules</h2><p>'
-            Write-Verbose "TransportRules"
-            $hN = '<p><h3>Existing Transport Rules</h3><p>'
-            $N = Get-ExoHTMLData -ExoCmd 'Get-TransportRule | select-object Name,State,Mode,Priority,FromScope,SentToScope,StopRuleProcessing'
-            #endregion transport rules
-
-            $HeaderLogo = [Convert]::ToBase64String((Get-Content -path $PSScriptRoot\..\HTML\SEPPmailLogo_T.png -AsByteStream))
-
-            $LogoHTML = @"
-<img src="data:image/jpg;base64,$($HeaderLogo)" style="left:150px alt="Exchange Online System Report">
-"@
-
-            $hEndOfReport = '<p><h2>--- End of Report ---</h2><p>'
-            $style = Get-Content -Path $PSScriptRoot\..\HTML\SEPPmailReport.css
-            $finalreport = Convertto-HTML -Body "$LogoHTML $Top $RepCreationDatetime $RepCreatedBy $moduleVersion $TenantInfo`
-                   $hSplitLine $hGeneral $hSplitLine $hA $a $hB $b $hO $o $ho1 $o1`
-                  $hSplitLine $hSecurity $hSplitLine $hC $c $hd $d $hE $e $hP $P $hH $H $hK $k $hJ $j $hJ1 $J1 `
-                 $hSplitLine $hOtherConn $hSplitLine $hG $g $hI $i `
-                $hSplitLine $hConnectors $hSplitLine $hL $l $hM $m `
-            $hSplitLine $hTransPortRules $hSplitLine $hN $n $hEndofReport " -Title "SEPPmail365 Exo Report" -Head $style
-
             # Write Report to Disk
+
+            Write-Verbose "If JSONBackup is selected, write a JSON Backup"
             try {
-                $finalReport|Out-File -FilePath $FinalPath -Force
                 if ($jsonBackup) {
                     # Store json in the same location as HTML
+                    #FIXME erzeuge RAWDATA
+                    foreach ($ExoDataKey in $ExoData.Keys) {
+                        $InfoData = $ExoData[$ExoDataKey]
+                        $VarNam = $InfoData.VarNam
+                        $script:JsonData += (Get-Variable -Name $VarNam | Select-Object -ExpandProperty Value)|Convertto-Json
+                    }                 
                     $jsonpath = (Join-Path -Path (split-path $FinalPath -Parent) -ChildPath (split-path $FinalPath -leafbase)) + '.json'
-                    Set-Content -Value $JsonData -Path $jsonPath -force
+                    $jsondata = Set-Content -Value $JsonData -Path $jsonPath -force
                 }
             }
             catch{
