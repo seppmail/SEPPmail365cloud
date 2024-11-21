@@ -1,5 +1,57 @@
 
 # Generic function to avoid code duplication
+<#
+.SYNOPSIS
+Sets properties on an input object based on a configuration JSON file.
+
+.DESCRIPTION
+The `Set-SC365PropertiesFromConfigJson` function takes an input object and updates its properties using values from a provided JSON object.
+It handles general properties, as well as properties specific to routing, options, and regions, ensuring configuration consistency across components.
+
+.PARAMETER InputObject
+The object whose properties will be updated based on the JSON configuration.
+
+.PARAMETER Json
+A JSON object containing the configuration settings. The function expects the JSON to include general properties and optionally, 
+nested `Routing`, `Option`, or `Region` sections.
+
+.PARAMETER Routing
+An optional parameter specifying the routing type. If provided, the function will apply settings from the corresponding 
+`Routing` section in the JSON object.
+
+.PARAMETER Option
+An optional array of configuration options. The function applies properties from the `Option` section in the JSON 
+for the specified options.
+
+.PARAMETER Region
+An optional parameter specifying the geographic region. If provided, the function applies settings from the 
+`Region` section in the JSON object.
+
+.OUTPUTS
+None
+The function modifies the `InputObject` in place.
+
+.EXAMPLE
+PS> $config = Get-Content "config.json" | ConvertFrom-Json
+PS> $obj = New-Object PSObject
+PS> Set-SC365PropertiesFromConfigJson -InputObject $obj -Json $config -Routing "Hybrid" -Option @("Option1", "Option2") -Region "NorthAmerica"
+
+This example updates the properties of `$obj` using the configuration in `config.json`, applying settings for the `Hybrid` routing type, 
+`Option1` and `Option2`, and the `NorthAmerica` region.
+
+.NOTES
+- This function assumes the JSON structure includes general properties and optionally, nested sections for `Routing`, `Option`, and `Region`.
+- The function skips certain predefined keys (`Name`, `Option`, `Routing`, `Region`) for general property updates.
+
+.REQUIREMENTS
+- PowerShell 5.1 or later.
+- A properly structured JSON configuration file.
+
+.LINK
+For information on managing JSON data in PowerShell, see:
+https://learn.microsoft.com/en-us/powershell/scripting/learn/deep-dives/json
+
+#>
 function Set-SC365PropertiesFromConfigJson
 {
     [CmdLetBinding()]
@@ -43,9 +95,50 @@ function Set-SC365PropertiesFromConfigJson
     }
 }
 
-# Essentially a factory function for either an empty
-# settings object, filled with necessary attributes to identify
-# the O365 object (i.e. the Name), or version specific settings.
+<#
+.SYNOPSIS
+Retrieves inbound connector settings for a specified routing type.
+
+.DESCRIPTION
+The `Get-SC365InboundConnectorSettings` function reads inbound connector settings from a JSON configuration file 
+and retrieves the settings specific to the provided routing type. The function ensures case-insensitivity for 
+routing type lookups and returns the relevant configuration as a hashtable.
+
+.PARAMETER Routing
+Specifies the routing type for which inbound connector settings are to be retrieved. 
+This parameter is mandatory.
+
+.PARAMETER Option
+Specifies additional options for the function. This parameter is optional.
+
+.OUTPUTS
+Hashtable
+A hashtable containing the inbound connector settings for the specified routing type.
+
+.EXAMPLE
+PS> Get-SC365InboundConnectorSettings -Routing "HybridRouting"
+
+This example retrieves the inbound connector settings for the routing type `HybridRouting`.
+
+.EXAMPLE
+PS> Get-SC365InboundConnectorSettings -Routing "DirectRouting" -Option $customOption
+
+This example retrieves the inbound connector settings for the routing type `DirectRouting`, 
+taking into account additional custom options provided via the `Option` parameter.
+
+.NOTES
+- The function reads the JSON file `InBound.json` located in the `ExOConfig\Connectors\` directory relative to the script root.
+- Ensure the JSON file is properly formatted and includes a `routing` section with routing-specific settings.
+- The `ToLower()` method ensures case-insensitive lookup for the routing type.
+
+.REQUIREMENTS
+- PowerShell 5.1 or later.
+- A valid `InBound.json` file located in the `ExOConfig\Connectors\` directory.
+
+.LINK
+For more information on configuring inbound connectors in Exchange Online, visit:
+https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow
+#>
 function Get-SC365InboundConnectorSettings
 {
     [CmdletBinding()]
@@ -62,7 +155,53 @@ function Get-SC365InboundConnectorSettings
 
     return $ret
 }
+<#
+.SYNOPSIS
+Retrieves outbound connector settings for a specified routing type.
 
+.DESCRIPTION
+The `Get-SC365OutboundConnectorSettings` function loads and returns outbound connector configuration settings
+from a JSON file based on the specified routing type. It parses the JSON file and retrieves the relevant settings 
+for the provided routing option, ensuring case-insensitivity for routing type lookup.
+
+.PARAMETER Routing
+Specifies the routing type for which outbound connector settings are to be retrieved. 
+This parameter is mandatory and must be provided.
+
+.PARAMETER Option
+Specifies additional configuration options that may influence the settings retrieval.
+This parameter is optional.
+
+.OUTPUTS
+Hashtable
+A hashtable containing the outbound connector settings for the specified routing type.
+
+.EXAMPLE
+PS> Get-SC365OutboundConnectorSettings -Routing "HybridRouting"
+
+This example retrieves the outbound connector settings for the routing type `HybridRouting`.
+
+.EXAMPLE
+PS> Get-SC365OutboundConnectorSettings -Routing "DirectRouting" -Option $customOption
+
+This example retrieves the outbound connector settings for the routing type `DirectRouting`, 
+taking into account the additional custom option.
+
+.NOTES
+- The function reads outbound connector settings from the `OutBound.json` file located in the 
+`$PSScriptRoot\..\ExOConfig\Connectors\` directory.
+- The JSON file must be properly formatted and include a `routing` section with routing-specific settings.
+- The `ToLower()` method ensures case-insensitive lookup for the routing type.
+
+.REQUIREMENTS
+- PowerShell 5.1 or later.
+- A valid `OutBound.json` file located in the `ExOConfig\Connectors\` directory.
+
+.LINK
+For more information on Exchange Online connectors, visit:
+https://learn.microsoft.com/en-us/exchange/mail-flow-best-practices/use-connectors-to-configure-mail-flow
+
+#>
 function Get-SC365OutboundConnectorSettings
 {
     [CmdletBinding()]
@@ -103,6 +242,41 @@ function Get-SC365TransportRuleSettings
         return $ret    
     }
 }
+<#
+.SYNOPSIS
+Retrieves the cloud configuration for a specified geographic region.
+
+.DESCRIPTION
+The `Get-SC365CloudConfig` function loads and returns cloud configuration settings for a specific region by reading and parsing a JSON file. 
+The function retrieves the relevant configuration based on the provided region and ensures that the region name is case-insensitive.
+
+.PARAMETER Region
+The geographic region for which the cloud configuration is to be retrieved. 
+This parameter is mandatory and must be provided as a string.
+
+.OUTPUTS
+PSObject
+An object containing the cloud configuration settings for the specified region.
+
+.EXAMPLE
+PS> Get-SC365CloudConfig -Region "ch"
+
+This example retrieves the cloud configuration settings for the `NorthAmerica` region.
+
+.EXAMPLE
+PS> Get-SC365CloudConfig -Region "eu"
+
+This example retrieves the cloud configuration settings for the `Europe` region. The region name is not case-sensitive.
+
+.NOTES
+- The function reads from a file named `GeoRegion.json` located in the `CloudConfig` directory relative to the script root.
+- Ensure that the JSON file is properly formatted and includes a `GeoRegion` section with region-specific configuration.
+
+.REQUIREMENTS
+- PowerShell 5.1 or later.
+- A valid `GeoRegion.json` file located at `$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json`.
+
+#>
 function Get-SC365CloudConfig
 {
     [CmdletBinding()]
@@ -117,6 +291,38 @@ function Get-SC365CloudConfig
     $ret = (ConvertFrom-Json (Get-Content -Path "$PSScriptRoot\..\ExOConfig\CloudConfig\GeoRegion.json" -Raw)).GeoRegion.($region.ToLower())
     return $ret
 }
+<#
+.SYNOPSIS
+Converts a raw numeric value into a human-readable file size format (kB, MB, GB, TB).
+
+.DESCRIPTION
+The `Convertto-SC365Numberformat` function takes an integer input representing a raw numeric value (e.g., bytes)
+and converts it into a human-readable format, such as kilobytes (kB), megabytes (MB), gigabytes (GB), or terabytes (TB),
+based on the size of the input number.
+
+.PARAMETER RawNumber
+An integer value representing the size to be converted. The value is categorized into the appropriate unit 
+based on its length and then formatted to two decimal places.
+
+.OUTPUTS
+String
+A formatted string indicating the size in the appropriate unit (e.g., "1.23 MB").
+
+.EXAMPLE
+PS> Convertto-SC365Numberformat -RawNumber 123456
+
+This example converts 123,456 into the string "120.56 kB".
+
+.EXAMPLE
+PS> Convertto-SC365Numberformat -RawNumber 1234567890
+
+This example converts 1,234,567,890 into the string "1.15 GB".
+
+.NOTES
+- The function uses the `switch` statement to determine the appropriate size category.
+- The thresholds for determining the unit are based on the number of digits in the input number.
+
+#>
 function Convertto-SC365Numberformat 
 {
     param (
@@ -130,7 +336,42 @@ function Convertto-SC365Numberformat
     }
     return $ConvertedNumber
 }
+<#
+.SYNOPSIS
+Generates a hash value from a given input string using a specified hashing algorithm.
 
+.DESCRIPTION
+The `Get-SC365StringHash` function computes a hash value for an input string using the specified algorithm. 
+It supports common hashing algorithms such as MD5, RIPEMD160, SHA1, SHA256, SHA384, and SHA512. 
+The function outputs the computed hash as a hexadecimal string.
+
+.PARAMETER String
+The input string to be hashed. This parameter is mandatory and can accept input from the pipeline.
+
+.PARAMETER HashName
+Specifies the hashing algorithm to use. 
+Valid values are "MD5", "RIPEMD160", "SHA1", "SHA256", "SHA384", and "SHA512". 
+The default is "SHA1" if no value is specified.
+
+.OUTPUTS
+String
+The function returns a hexadecimal string representing the hash of the input.
+
+.EXAMPLE
+PS> Get-SC365StringHash -String "HelloWorld"
+
+This example computes the SHA1 hash of the string "HelloWorld" and outputs the hash value.
+
+.EXAMPLE
+PS> "MyString" | Get-SC365StringHash -HashName SHA256
+
+This example pipes the string "MyString" to the function and computes its SHA256 hash.
+
+.NOTES
+- This function uses the .NET `System.Security.Cryptography` library to perform hashing.
+- Ensure the input string is not null or empty to avoid errors.
+
+#>
 Function Get-SC365StringHash {
     [cmdletbinding()]
     [OutputType([String])]
@@ -157,6 +398,50 @@ Function Get-SC365StringHash {
     }
 }
 
+<#
+.SYNOPSIS
+Removes domains with the `.onmicrosoft.com` suffix from a given list of domains.
+
+.DESCRIPTION
+The `Remove-SC365OnMicrosoftDomain` function filters out all domains in the input `DomainList` that have the `.onmicrosoft.com` suffix. 
+It returns a new list containing only the domains that do not match this suffix. This is useful for cleaning up domain lists when
+you want to exclude temporary or system-generated Microsoft 365 domains.
+
+.PARAMETER DomainList
+A mandatory parameter that accepts an array list of domain names to process. 
+The list must be provided as a `[System.Collections.ArrayList]` object.
+
+.RETURNS
+[System.Collections.ArrayList]
+A new array list containing only the domains that do not have the `.onmicrosoft.com` suffix.
+
+.EXAMPLE
+PS> $domains = [System.Collections.ArrayList]@('example.com', 'tenant.onmicrosoft.com', 'anotherdomain.com')
+PS> $filteredDomains = Remove-SC365OnMicrosoftDomain -DomainList $domains
+PS> $filteredDomains
+
+This example filters out the `tenant.onmicrosoft.com` domain, returning:
+example.com
+anotherdomain.com
+
+.EXAMPLE
+PS> $domains = [System.Collections.ArrayList]@('domain1.com', 'domain2.onmicrosoft.com')
+PS> Remove-SC365OnMicrosoftDomain -DomainList $domains
+
+This example returns only `domain1.com`.
+
+.NOTES
+- The function uses the `-NotLike` operator to filter out `.onmicrosoft.com` domains.
+- The function returns a new array list while leaving the original `DomainList` unchanged.
+
+.REQUIREMENTS
+- PowerShell 5.1 or later.
+
+.LINK
+For more information on Microsoft 365 domains, see:
+https://learn.microsoft.com/en-us/microsoft-365/
+
+#>
 Function Remove-SC365OnMicrosoftDomain {
     [CmdletBinding()]
     Param
@@ -174,7 +459,8 @@ Function Remove-SC365OnMicrosoftDomain {
     return $NewDomainList    
 }
 
-function Get-ExoHTMLData {
+#Beginning with v 1.4.0 this function is obsolete
+<#function Get-ExoHTMLData {
     param (
         [Parameter(
               Mandatory = $true,
@@ -201,8 +487,40 @@ function Get-ExoHTMLData {
     catch {
         Write-Warning "Could not fetch data from command '$exoCmd'"
     }    
-}
+}#>
 
+<#
+.SYNOPSIS
+Generates a unique report filename based on the current time and the default domain name.
+
+.DESCRIPTION
+The `New-SelfGeneratedReportName` function creates a unique, self-generated report filename. 
+The filename includes the current time in `HHm-ddMMyyy` format and the default email domain name, 
+retrieved from the output of the `Get-AcceptedDomain` cmdlet. The filename is appended with `.html`.
+
+.EXAMPLE
+PS> New-SelfGeneratedReportName
+
+This will return a string similar to `1507-10112024defaultdomain.com.html`, where:
+- `1507` represents the current time in hours and minutes.
+- `10112024` represents the date in `ddMMyyyy` format.
+- `defaultdomain.com` is the default email domain.
+
+.PARAMETER None
+The function does not accept parameters.
+
+.RETURNS
+String
+A string representing the self-generated filename.
+
+.NOTES
+- Ensure the `Get-AcceptedDomain` cmdlet is available and provides a `default` property to identify the default domain.
+- The function requires the `-ExpandProperty` flag in `Select-Object` to retrieve the `Domainname` property.
+
+.REQUIREMENTS
+- PowerShell 5.1 or later
+- Exchange Online PowerShell module or other modules providing the `Get-AcceptedDomain` cmdlet.
+#>
 function New-SelfGeneratedReportName {
     Write-Verbose "Creating self-generated report filename."
     return ("{0:HHm-ddMMyyy}" -f (Get-Date)) + (Get-AcceptedDomain|where-object default -eq $true|select-object -expandproperty Domainname) + '.html'
