@@ -7,10 +7,10 @@ Write-Host "+-------------------------------------------------------------------
 Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "| Welcome to the SEPPmail.cloud PowerShell setup module version $ModuleVersion |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "| Please read the documentation on GitHub if you are unfamiliar       |" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "| Please read the documentation if you are unfamiliar                 |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "| with the module and its CmdLets before continuing !                 |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "| https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md    |" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "| https://docs.seppmail.com/en/cloud/c07_cloud_powershell.html        |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "| Press <CTRL><Klick> to open the Link                                |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
