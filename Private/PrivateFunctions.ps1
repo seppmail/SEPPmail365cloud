@@ -323,7 +323,7 @@ This example converts 1,234,567,890 into the string "1.15 GB".
 - The thresholds for determining the unit are based on the number of digits in the input number.
 
 #>
-function Convertto-SC365Numberformat 
+function ConvertTo-SC365NumberFormat 
 {
     param (
         [Int64]$rawnumber
@@ -583,7 +583,6 @@ The function returns a hashtable with the following keys:
 
 .LINK
 Semantic Versioning Specification: https://semver.org/
-
 #>
 function ConvertTo-SemanticVersion {
     param (
