@@ -526,6 +526,83 @@ function New-SelfGeneratedReportName {
     return ("{0:HHm-ddMMyyy}" -f (Get-Date)) + (Get-AcceptedDomain|where-object default -eq $true|select-object -expandproperty Domainname) + '.html'
 }
 
+<#
+.SYNOPSIS
+Parses a semantic version string and converts it into a structured object.
+
+.DESCRIPTION
+The `ConvertTo-SemanticVersion` function takes a version string that conforms to the Semantic Versioning (SemVer) standard 
+and parses it into its components: Major, Minor, Patch, PreRelease, and BuildMetadata. If the input string is not a valid 
+semantic version, the function throws an error.
+
+The SemVer format includes:
+- A version core: `MAJOR.MINOR.PATCH`
+- Optional pre-release information: `-<pre-release>`
+- Optional build metadata: `+<build-metadata>`
+
+.EXAMPLE
+ConvertTo-SemanticVersion -VersionString "1.2.3-alpha+build123"
+
+Returns:
+@{
+    Major = 1
+    Minor = 2
+    Patch = 3
+    PreRelease = "alpha"
+    BuildMetadata = "build123"
+}
+
+.EXAMPLE
+ConvertTo-SemanticVersion -VersionString "4.5.6"
+
+Returns:
+@{
+    Major = 4
+    Minor = 5
+    Patch = 6
+    PreRelease = $null
+    BuildMetadata = $null
+}
+
+.INPUTS
+[string]
+You must provide a semantic version string as input. The string must conform to the SemVer format.
+
+.OUTPUTS
+[hashtable]
+The function returns a hashtable with the following keys:
+- `Major` ([int]): The major version number.
+- `Minor` ([int]): The minor version number.
+- `Patch` ([int]): The patch version number.
+- `PreRelease` ([string]): The pre-release label, or `$null` if not specified.
+- `BuildMetadata` ([string]): The build metadata, or `$null` if not specified.
+
+.NOTES
+- The function validates the format of the input string using a regular expression.
+- If the input does not conform to the SemVer format, an exception is thrown.
+
+.LINK
+Semantic Versioning Specification: https://semver.org/
+
+#>
+function ConvertTo-SemanticVersion {
+    param (
+        [string]$VersionString
+    )
+
+    if ($VersionString -match '^(\d+)\.(\d+)\.(\d+)(?:-([\w\-\.]+))?(?:\+([\w\-\.]+))?$') {
+        return @{
+            Major        = [int]$matches[1]
+            Minor        = [int]$matches[2]
+            Patch        = [int]$matches[3]
+            PreRelease   = $matches[4]
+            BuildMetadata = $matches[5]
+        }
+    } else {
+        throw "Invalid semantic version format: $VersionString"
+    }
+}
+
 # SIG # Begin signature block
 # MIIVzAYJKoZIhvcNAQcCoIIVvTCCFbkCAQExDzANBglghkgBZQMEAgEFADB5Bgor
 # BgEEAYI3AgEEoGswaTA0BgorBgEEAYI3AgEeMCYCAwEAAAQQH8w7YFlLCE63JNLG
