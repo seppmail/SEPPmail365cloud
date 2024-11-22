@@ -60,7 +60,7 @@ RequiredModules = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
 ScriptsToProcess = @(
-    './Public/InitScript.ps1'
+    './Scripts/InitScript.ps1'
 )
 
 # Type files (.ps1xml) to be loaded when importing this module
@@ -146,7 +146,7 @@ PrivateData = @{
         # RequireLicenseAcceptance = $false
 
         # External dependent modules of this module
-        ExternalModuleDependencies = @('ExchangeOnlineManagement','DNSCLient-PS')
+        ExternalModuleDependencies = @('ExchangeOnlineManagement','DNSCLient-PS','PSWriteHTML')
 
     } # End of PSData hashtable
 
