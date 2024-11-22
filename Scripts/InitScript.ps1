@@ -67,8 +67,8 @@ if ($sc365notests -ne $true) {
     }
     #Check PowerShell Version
     [string]$requiredPSVersion = '7.4.6'
-    [String]$InstPSVersion = ((($PSVersionTable.PSVersion.ToString())) -Split '\.')[0..2] -join '.')
-    if (($PSVersiontable.PSEdition -eq "Desktop") -and (!($PSVersionTable.Platform))) {
+    [String]$InstPSVersion = ((($PSVersionTable.PSVersion.ToString())) -Split '\.')[0..2] -join '.'
+    if (($PSVersionTable.PSEdition -eq "Desktop") -and (!($PSVersionTable.Platform))) {
         $minVersion = ConvertTo-SemanticVersion -VersionString $requiredPSVersion
         $instVersion = ConvertTo-SemanticVersion -VersionString $instPSVersion
     } else {
