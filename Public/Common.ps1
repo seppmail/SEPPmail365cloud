@@ -201,14 +201,16 @@ function Get-SC365DeploymentInfo {
             $ch = Get-SC365CloudConfig -region 'ch'
             $de = Get-SC365CloudConfig -region 'de'
             $prv = Get-SC365CloudConfig -region 'prv'
+            $dev = Get-SC365CloudConfig -region 'dev'
             if ($routing -eq 'inline') {
-                [String[]]$GateIP = ((Resolve-Dns -Query $GateHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddresstoString
+                [String[]]$GateIP = ((Resolve-Dns -Query $GateHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddressToString
                 Foreach ($IP in $GateIP) {if ($ch.GateIPs.Contains($Ip)) {$region = 'ch';break}}
                 Foreach ($IP in $GateIP) {if ($de.GateIPs.Contains($Ip)) {$region = 'de';break}}
                 Foreach ($IP in $GateIP) {if ($prv.GateIPs.Contains($Ip)) {$region = 'prv';break}}
+                Foreach ($IP in $GateIP) {if ($prv.GateIPs.Contains($Ip)) {$region = 'dev';break}}
             }
             if ($routing -eq 'parallel') {
-               $MailIP = ((Resolve-Dns -Query $MailHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddresstoString
+               $MailIP = ((Resolve-Dns -Query $MailHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddressToString
                Foreach ($ip in $mailIp) {if ($ch.MailIPs.Contains($Ip)) { $region = 'ch';break}}
                Foreach ($ip in $mailIp) {if ($de.MailIPs.Contains($Ip)) { $region = 'de';break}}
                Foreach ($ip in $mailIp) {if ($prv.MailIPs.Contains($IP)) { $region = 'prv';break}}
@@ -216,7 +218,7 @@ function Get-SC365DeploymentInfo {
         #endregion Cloud-IP-Addresses
 
         #region Check CBC Availability
-            [String]$TenantID = Get-SC365TenantID -maildomain $DnsHostDomain -OutVariable "TenantID"
+            [String]$TenantID = Get-SC365TenantID -MailDomain $DnsHostDomain -OutVariable "TenantID"
             $TenantIDHash = Get-SC365StringHash -String $TenantID
             [string]$hashedDomain =  $TenantIDHash + '.cbc.seppmail.cloud'
             if (((resolve-dns -query $hashedDomain -QueryType TXT).Answers)) {
@@ -234,11 +236,11 @@ function Get-SC365DeploymentInfo {
         $txtRecords = (Resolve-dns -querytype TXT $DNSHostdomain).Answers
         if ($txtRecords) { 
             $swisssignTXTRecord = $txtRecords|Where-Object EscapedText -like 'swisssign-check*'
-            if ($swisssignTXTRecord) {
-                $swisssignCheck = $swisssignTXTRecord.EscapedText.Trim('{','}')
+            if ($swissSignTXTRecord) {
+                $swissSignCheck = $swissSignTXTRecord.EscapedText.Trim('{','}')
             }
             else {
-                Write-Warning "Swisssign TXT (swissign-check) record is missing - SC-CERT deployment will fail!"
+                Write-Warning "Swisssign TXT (swissSign-check) record is missing - SC-CERT deployment will fail!"
             }
             $spfTXTrecord = $txtRecords|Where-Object EscapedText -like 'v=spf*'
             if ($spfTXTrecord) {

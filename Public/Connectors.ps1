@@ -136,7 +136,7 @@ function New-SC365Connectors
             ParameterSetName = 'InBoundOnly',
             HelpMessage = 'Geographcal region of the seppmail.cloud service'
         )]
-        [ValidateSet('ch','prv','de')]
+        [ValidateSet('ch','prv','de','dev')]
         [String]$region,
 
         [Parameter(
