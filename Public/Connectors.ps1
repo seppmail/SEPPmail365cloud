@@ -21,7 +21,7 @@ function Get-SC365Connectors
     [CmdletBinding(
         SupportsShouldProcess = $false,
         ConfirmImpact = 'Medium',
-        DefaultparameterSetname = 'parallel',
+        DefaultParameterSetName = 'parallel',
         HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
      )]
 
@@ -29,7 +29,7 @@ function Get-SC365Connectors
     (
         [Parameter(
             Mandatory = $true,
-            Helpmessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft'
+            HelpMessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft'
             )]
         [ValidateSet('parallel','inline','p','i')]
         [String] $routing,
@@ -37,7 +37,7 @@ function Get-SC365Connectors
         [Parameter(
             Mandatory = $false,
             ParameterSetName = 'inline',
-            HelpMessage = 'For routingtype `"inline`", if only inbound service is used.'
+            HelpMessage = 'For routing type `"inline`", if only inbound service is used.'
         )]
         [switch]$inBoundOnly
     )
