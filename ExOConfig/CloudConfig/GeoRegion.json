@@ -124,17 +124,27 @@
             "TlsCertificate": "*.prv.seppmail.cloud"
         },
         "dev":
-        {
-            "IPv4AllowList": [
-                "49.12.102.31"
-            ],
-            "IPv4GateIPs": [
-                "116.202.20.72"
-            ],
-            "IPv4RelayIPs": [
-                "182.140.90.166",
-                "142.132.239.49"
-            ]
-        }
+            {
+                "MailIPs": [
+                    "49.12.102.31"
+                ],
+                "IPv4GateIPs": [
+                    "116.202.20.72"
+                ],
+                "IPv4RelayIPs": [
+                    "49.12.184.143"
+                ],
+                "IPv4AllowList": [
+                    "182.140.90.166",
+                    "142.132.239.49",
+                    "49.12.220.100"
+                ],
+                "IPv6AllowList": [
+                    "2a01:4f8:c012:fb14::/64",
+                    "2a01:4f8:c010:b060::/64",
+                    "2a01:4f8:c012:8433::/64"
+                ],
+                "TlsCertificate": "*.dev.seppmail.cloud"
+            }
     }
 }
