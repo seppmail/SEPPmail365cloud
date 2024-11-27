@@ -543,7 +543,7 @@ function New-SC365ExOReport {
                 VarNam = 'ibCcon'
                 WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-InboundConnector'
                 RawCmd = 'Get-InboundConnector'
-                TabDat = 'Identity,Enabled,ConnectorType,SenderDomains,SenderIPAddresses,TlsSenderCertificateName,EFSkipLastIP,EFSkipIPs,WhenCreated,WhenChanged'
+                TabDat = 'Identity,Enabled,ConnectorType,SenderDomains,SenderIPAddresses,TlsSenderCertificateName,EFSkipLastIP,EFSkipIPs,Comment,WhenCreated,WhenChanged'
                 HdgTxt = 'Inbound Connectors'
                 HlpInf = 'Connectivity for E-Mails flowing Inbound to Exchange Online'
             }
@@ -551,7 +551,7 @@ function New-SC365ExOReport {
                 VarNam = 'obdCon'
                 WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-OutboundConnector'
                 RawCmd = 'Get-OutboundConnector -IncludeTestModeConnectors:$true'
-                TabDat = 'Identity,Enabled,ConnectorType,SmartHosts,TlsDomain,TlsSettings,RecipientDomains,WhenCreated,WhenChanged'
+                TabDat = 'Identity,Enabled,ConnectorType,SmartHosts,TlsDomain,TlsSettings,RecipientDomains,Comment,WhenCreated,WhenChanged'
                 HdgTxt = 'Outbound Connectors'
                 HlpInf = 'Connectivity for E-Mails flowing Outbound from Exchange Online'
             }
@@ -567,7 +567,7 @@ function New-SC365ExOReport {
                 VarNam = 'tnrRls'
                 WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-TransportRule'
                 RawCmd = 'Get-TransportRule'
-                TabDat = 'Name,State,Mode,Priority,FromScope,SentToScope,StopRuleProcessing,ManuallyModified,Description,WhenCreated,WhenChanged'
+                TabDat = 'Name,State,Mode,Priority,FromScope,SentToScope,StopRuleProcessing,ManuallyModified,Comments,Description,WhenCreated,WhenChanged'
                 HdgTxt = 'E-Mail Transport Rules'
                 HlpInf = 'Transport rules control mailflow by conditions and are important for the SEPPmail integration.'
             }
@@ -784,6 +784,12 @@ function New-SC365ExOReport {
                                 }    
                             }
                         }
+                        Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Connectors if available"
+                        $IbcVersion = Get-SC365ModuleVersion -InputString $ibcCon.Comments
+                        if ($ibcVersion) {
+                            $incCon|Add-Member -membertype Notepropety -Name SC365Version -value $matches[0]
+                        }
+                        Write-Verbose "Create the IBC Data Table"
                         New-HTMLTable -DataTable $ibcCon @tableStyle -SearchBuilder {
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row 
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'CodeTwo' -BackgroundColor GoldenYellow -Row
@@ -794,6 +800,11 @@ function New-SC365ExOReport {
                         New-HTMLHeading -Heading h2 -HeadingText $ExoData.obdCon.HdgTxt -Color $ColorSEPPmailGreen -Underline
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.obdCon.HlpInf)}
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.obdCon.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Connectors if available"
+                        $obdVersion = Get-SC365ModuleVersion -InputString $obdCon.Comments
+                        if ($obdVersion) {
+                            $obdCon|Add-Member -membertype Notepropety -Name SC365Version -value $matches[0]
+                        }
                         New-HTMLTable -DataTable $obdCon @tableStyle -SearchBuilder {
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'CodeTwo' -BackgroundColor GoldenYellow -Row
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'Exclaimer' -BackgroundColor GoldenYellow -Row
@@ -809,6 +820,13 @@ function New-SC365ExOReport {
                         New-HTMLHeading -Heading h2 -HeadingText $ExoData.tnrRls.HdgTxt -Color $ColorSEPPmailGreen -Underline
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.tnrRls.HlpInf)}
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.tnrRls.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Transportrules if available"
+                        foreach ($rule in $tnrRls) {
+                            $tnrVersion = Get-SC365ModuleVersion -InputString $rule.Comments
+                            if ($tnrVersion) {
+                                $rule|Add-Member -membertype Notepropety -Name SC365Version -value $matches[0]
+                            }
+                        }
                         New-HTMLTable -DataTable $tnrRls @tablestyle -DefaultSortColumn 'Name' -SearchBuilder {
                             New-HTMLTableCondition -Name 'Name' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row
                         }

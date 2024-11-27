@@ -458,6 +458,58 @@ Function Remove-SC365OnMicrosoftDomain {
     }
     return $NewDomainList    
 }
+<#
+.SYNOPSIS
+Extracts a semantic version number from a given input string.
+
+.DESCRIPTION
+The `Get-SC365ModuleVersion` function searches a given input string for a semantic version number using a regular expression. 
+The function supports versions in the format `MAJOR.MINOR.PATCH` (e.g., `1.3.8`). If a version number is found, it is returned; 
+otherwise, a message indicating no version number was found is returned.
+
+.PARAMETER InputString
+A string that potentially contains a semantic version number. This parameter is mandatory.
+
+.OUTPUTS
+String
+- If a version number is found, the function returns the version in `MAJOR.MINOR.PATCH` format (e.g., `1.3.8`).
+- If no version number is found, the function returns the string "No version number found."
+
+.EXAMPLE
+PS> Get-SC365ModuleVersion -InputString "PowerShell Module version 1.3.8"
+
+Returns:
+1.3.8
+
+.EXAMPLE
+PS> Get-SC365ModuleVersion -InputString "No version in this string."
+
+Returns:
+No version number found.
+
+.NOTES
+- The function uses a regular expression to identify semantic version numbers in the input string.
+- Semantic version numbers must follow the pattern `MAJOR.MINOR.PATCH`, where each part consists of numeric digits.
+
+.LINK
+For more information about semantic versioning, see:
+https://semver.org/
+
+#>
+Function Get-SC365ModuleVersion {
+    param (
+        [string]$InputString
+    )
+    # Check if the string contains "[SEPPMail.cloud]"
+    if ($InputString -like "*[SEPPMail.cloud]*") {
+        # Perform regex match to extract semantic version
+        if ($InputString -match "\d+\.\d+\.\d+") {
+            return $matches[0]
+        }
+        } else {
+        Write-Information "Not a SEPPmail.cloud connector"
+    }
+}
 
 #Beginning with v 1.4.0 this function is obsolete
 <#function Get-ExoHTMLData {
