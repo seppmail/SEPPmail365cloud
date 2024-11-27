@@ -1,6 +1,5 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
-
 ## 1.4.0 - Feature Release
 
 ### Maintenance
@@ -23,8 +22,8 @@
 #### Installation and Upgrade
 
 - The PowerShell version check to avoid running the Module on 5.1 Desktop didnt work on 5.1 Desktop ;-( Added a function for semantic version checking and used this in the Init-Script.
-- Added an update-sc365setup script to ./scripts, to make the update procedure faster. The script also containes a warning that it may not apply to any setup and is only for very simple setups. Customers/partners may use, adapt and extend the script for their own use.
-- New-SC365Setup now allows multiple domains in the -SEPPmailclouddomain parameter
+- Added an update-sc365setup script to ./scripts, to make the update procedure faster. The script also contains a warning that it may not apply to any setup and is only for very simple setups. Customers/partners may use, adapt and extend the script for their own use.
+- New-SC365Setup now allows multiple domains in the -SEPPmailCloudComain parameter
 - Updated IP addresses based on new SEPPmail.cloud infrastructure
 
 #### Functionality
