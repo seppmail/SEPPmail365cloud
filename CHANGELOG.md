@@ -1,12 +1,34 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
 
-## 1.3.9 - Maintenance Release
+## 1.4.0 - Feature Release
 
 ### Maintenance
 
-- Require ExchangeOnlineManagement Version 3.4.0 as minimum
-- Require PowerShell 7.4.0 as minimum version
+- Require ExchangeOnlineManagement Version 3.6.0 as minimum
+- Require PowerShell 7.4.6 as minimum version
+- The init and the upgrade script has moved to a new folder "Scripts"
+
+### Bugs
+
+- The -whatif parameter in New-SC365Rules deleted rules if SEPPmail.cloud rules did exist.
+
+### Features
+
+#### Reporting
+
+- Include the SC365 Module version number in the EXO Report to know which Module version created the components
+- 
+
+#### Installation and Upgrade
+
+- The PowerShell version check to avoid running the Module on 5.1 Desktop didnt work on 5.1 Desktop ;-( Added a function for semantic version checking and used this in the Init-Script.
+
+#### Functionality
+
+- Add [secured by HIN] [signed invalid] and [not secured by HIN] to rule 110 so faking secured E-mails is not possible in parallel mode
+- Rule 110 checked the subject tags on subject and body, this is now changed to subject only.
+- 
 
 ## 1.3.8 - Maintenance release
 
