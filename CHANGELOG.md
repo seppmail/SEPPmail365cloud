@@ -17,18 +17,22 @@
 
 #### Reporting
 
-- Include the SC365 Module version number in the EXO Report to know which Module version created the components
-- 
+- Provide a new report format based on PSWriteHTML
+- Include the SC365 Module version number in the EXO Report to know which module version created the SEPPmail.cloud components
 
 #### Installation and Upgrade
 
 - The PowerShell version check to avoid running the Module on 5.1 Desktop didnt work on 5.1 Desktop ;-( Added a function for semantic version checking and used this in the Init-Script.
+- Added an update-sc365setup script to ./scripts, to make the update procedure faster. The script also containes a warning that it may not apply to any setup and is only for very simple setups. Customers/partners may use, adapt and extend the script for their own use.
+- New-SC365Setup now allows multiple domains in the -SEPPmailclouddomain parameter
+- Updated IP addresses based on new SEPPmail.cloud infrastructure
 
 #### Functionality
 
 - Add [secured by HIN] [signed invalid] and [not secured by HIN] to rule 110 so faking secured E-mails is not possible in parallel mode
 - Rule 110 checked the subject tags on subject and body, this is now changed to subject only.
-- 
+- The E-Mail addresses support@seppmail.ch/de/com and servicedesk@seppmail.com are added to the allowed sender list to prevent emails to our support being blocked.
+- Add warning in INLINE mode that all e-Mail domains are affected. Some partners customers have not been aware of this.
 
 ## 1.3.8 - Maintenance release
 
