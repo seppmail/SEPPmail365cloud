@@ -3,21 +3,21 @@ Write-verbose "Export Exo-Config as JSON"
 New-SC365ExOReport -jsonBackup
 
 Write-verbose "Rename Connectors from SEPPmail to BKP-SC"
-$oldibc = Get-InboundConnector -Identity "[SEPPmail.cloud]*"
-Set-InboundConnector -Identity $oldibc.Identity -Name ($oldibc.Name -replace 'SEPPmail.Cloud','SC BKP')
+$oldIbc = Get-InboundConnector -Identity "[SEPPmail.cloud]*"
+Set-InboundConnector -Identity $oldIbc.Identity -Name ($oldIbc.Identity -replace 'SEPPmail.Cloud','SC BKP')
 
-$oldobc = Get-OutBoundConnector -Identity "[SEPPmail.cloud]*"
-Set-OutBoundConnector -Identity $oldobc.Identity -Name ($oldobc.Name -replace 'SEPPmail.Cloud','SC BKP')
+$oldObc = Get-OutBoundConnector -Identity "[SEPPmail.cloud]*"
+Set-OutBoundConnector -Identity $oldObc.Identity -Name ($oldObc.Identity -replace 'SEPPmail.Cloud','SC BKP')
 #FIXME Check if connectors with Backup names exist already
 
 Write-Verbose "Rename existing SEPPmail rules"
-$oldtrprls = Get-Transportrule -Identity '*SEPPmail.cloud*'
-foreach ($rule in $oldtrprls) {
+$oldTrpRls = Get-TransportRule -Identity '*SEPPmail.cloud*'
+foreach ($rule in $oldTrpRls) {
     Set-TransportRule -Identity $rule.Name -Name ($rule.Name -replace 'SEPPmail.Cloud','SC BKP') -WhatIf
 }
 
 Write-Verbose "Creating new connectors disabled" 
-New-SC365connectors -enabled -disabled
+New-SC365connectors -disabled
 
 Write-Verbose "Creating new Transport Rules" 
 New-SC365Rules -Disabled
@@ -31,25 +31,25 @@ do {
         Write-Host "Sie haben 'Y' gewählt. Fortfahren..."
        
         # Do the critical stuff - enable new stuff
-        $newibc = Get-InboundConnector -Identity "[SEPPmail.cloud]*"
-        Set-InboundConnector -Identity $newibc.Identity -Enabled:$true
-        $newobc = Get-OutboundConnector -Identity "[SEPPmail.cloud]*"
-        Set-OutboundConnector -Identity $newobc.Identity -Enabled:$true
+        $newIbc = Get-InboundConnector -Identity "[SEPPmail.cloud]*"
+        Set-InboundConnector -Identity $newIbc.Identity -Enabled:$true
+        $newObc = Get-OutboundConnector -Identity "[SEPPmail.cloud]*"
+        Set-OutboundConnector -Identity $newObc.Identity -Enabled:$true
 
-        $newtrprls = Get-Transportrule -Identity '*SEPPmail.cloud*'
-            foreach ($rule in $newtrprls) {
+        $newTrpRls = Get-Transportrule -Identity '*SEPPmail.cloud*'
+            foreach ($rule in $newTrpRls) {
                 Enable-Transportrule -Identity $rule.Name 
         }
 
          # Do the less critical stuff - disable old stuff
-         $bkpibc = Get-InboundConnector -Identity "*SC BKP*"
-         Set-InboundConnector -Identity $bpkibc.Identity -Enabled:$true
-         $bkpobc = Get-OutboundConnector -Identity "*SC BKP*"
-         Set-OutboundConnector -Identity $bpkobc.Identity -Enabled:$true
+         $bkpIbc = Get-InboundConnector -Identity "*SC BKP*"
+         Set-InboundConnector -Identity $bkpIbc.Identity -Enabled:$true
+         $bkpObc = Get-OutboundConnector -Identity "*SC BKP*"
+         Set-OutboundConnector -Identity $bkpObc.Identity -Enabled:$true
 
-         $bkptrprls = Get-Transportrule -Identity '*SC BKP*'
-             foreach ($rule in $bpktrprls) {
-                 Enable-Transportrule -Identity $rule.Name 
+         $bkpTrpRls = Get-TransportRule -Identity '*SC BKP*'
+             foreach ($rule in $bkpTrpRls) {
+                 Enable-TransportRule -Identity $rule.Name 
         }
         
         break
