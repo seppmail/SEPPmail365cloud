@@ -505,11 +505,13 @@ Function Get-SC365ModuleVersion {
         # Perform regex match to extract semantic version
         if ($InputString -match "\d+\.\d+\.\d+") {
             return $matches[0]
-        }
+            }
         } else {
-        Write-Information "Not a SEPPmail.cloud connector"
+        #Write-Information "Not a SEPPmail.cloud connector/rule or no version number included"
+            return "-not available in comments-"
+        }
     }
-}
+
 
 #Beginning with v 1.4.0 this function is obsolete
 <#function Get-ExoHTMLData {

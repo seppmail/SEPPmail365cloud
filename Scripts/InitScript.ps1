@@ -1,7 +1,7 @@
 # Detect installed module version
 $ModuleRootPath = Split-Path -Path $PSScriptRoot -Parent
 $ManiFestFile = Import-PowerShellDataFile -Path $ModuleRootPath/SEPPmail365cloud.psd1
-$ModuleVersion = $ManiFestFile.Moduleversion.ToString()
+$Global:ModuleVersion = $ManiFestFile.Moduleversion.ToString()
 
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray

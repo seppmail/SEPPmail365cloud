@@ -698,7 +698,7 @@ function New-SC365ExOReport {
                             'FileName' = Split-Path $FinalPath -Leaf
                             'FilePath' = Split-Path $FinalPath -Parent
                             'Fullpath' = $FinalPath
-                            'SEPPmail365cloud Module Version' = $myInvocation.MyCommand.Version
+                            'SEPPmail365cloud Module Version' = $Global:ModuleVersion
                             'Microsoft Tenant ID' = Get-SC365TenantID -maildomain (Get-AcceptedDomain|where-object InitialDomain -eq $true|select-object -expandproperty Domainname)
                         }
                         if ($jsonBackup) {$RawData.'Link to JSON File on Disk' = $JsonPath}
@@ -769,7 +769,7 @@ function New-SC365ExOReport {
                         Write-verbose "Add Logic to detect if the correct EFIP logic is set"
                         if (!($ibcCon|Get-Member -Name EfSkipConfig)) {$ibcCon|Add-Member -MemberType NoteProperty -Name EfSkipConfig -Value 'undefined'}
                         Foreach ($ib in $ibcCon) {
-                            if ($ib.Identity -like '*SEPPmail*') {
+                            if (($ib.Identity -like '*SEPPmail.cloud*') -and ($ib.ConnectorType -like 'OnPremises')) {
                                 if ((!($ib.EFSkipIPs)) -and ($ib.EFSkipLastIP -eq $true)){
                                     $ib.EfSkipConfig = 'parallel'
                                 }
@@ -786,25 +786,21 @@ function New-SC365ExOReport {
                         }
                         Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Connectors if available"
                         $IbcVersion = Get-SC365ModuleVersion -InputString $ibcCon.Comments
-                        if ($ibcVersion) {
-                            $incCon|Add-Member -membertype Notepropety -Name SC365Version -value $matches[0]
-                        }
+                        $ibcCon|Add-Member -membertype NoteProperty -Name SC365Version -value $IbcVersion.Tostring()
                         Write-Verbose "Create the IBC Data Table"
                         New-HTMLTable -DataTable $ibcCon @tableStyle -SearchBuilder {
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row 
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'CodeTwo' -BackgroundColor GoldenYellow -Row
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'Exclaimer' -BackgroundColor GoldenYellow -Row
-                            #FixME - nur starten wenn SetupMode -eq 'Parallel'
-                            New-HTMLTableCondition -Name 'EfSkipConfig' -ComparisonType string -Operator ne -Value 'parallel' -row -Color red
+                            New-HTMLTableCondition -Name 'EfSkipConfig' -ComparisonType string -Operator like -Value 'EFSkip' -row -Color red
                         }
                         New-HTMLHeading -Heading h2 -HeadingText $ExoData.obdCon.HdgTxt -Color $ColorSEPPmailGreen -Underline
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.obdCon.HlpInf)}
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.obdCon.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
                         Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Connectors if available"
                         $obdVersion = Get-SC365ModuleVersion -InputString $obdCon.Comments
-                        if ($obdVersion) {
-                            $obdCon|Add-Member -membertype Notepropety -Name SC365Version -value $matches[0]
-                        }
+                        $obdCon|Add-Member -membertype NoteProperty -Name SC365Version -value $obdVersion
+
                         New-HTMLTable -DataTable $obdCon @tableStyle -SearchBuilder {
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'CodeTwo' -BackgroundColor GoldenYellow -Row
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'Exclaimer' -BackgroundColor GoldenYellow -Row
@@ -823,9 +819,7 @@ function New-SC365ExOReport {
                         Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Transportrules if available"
                         foreach ($rule in $tnrRls) {
                             $tnrVersion = Get-SC365ModuleVersion -InputString $rule.Comments
-                            if ($tnrVersion) {
-                                $rule|Add-Member -membertype Notepropety -Name SC365Version -value $matches[0]
-                            }
+                            $rule|Add-Member -membertype NoteProperty -Name SC365Version -value $tnrVersion
                         }
                         New-HTMLTable -DataTable $tnrRls @tablestyle -DefaultSortColumn 'Name' -SearchBuilder {
                             New-HTMLTableCondition -Name 'Name' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row
