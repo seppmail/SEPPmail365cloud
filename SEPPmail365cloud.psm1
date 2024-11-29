@@ -25,7 +25,7 @@ if ($sc365notest -ne $true) {
         try {
             $isDehydrated = (Get-OrganizationConfig).IsDehydrated
             if ($isDehydrated) {
-                Write-Verbose "Organisation is not enabled for customizations -- is 'Dehdyrated'. Turning this on now"
+                Write-Verbose "Organization is not enabled for customizations -- is 'Dehdyrated'. Turning this on now"
                 Enable-OrganizationCustomization  #-confirm:$false
             }        
         } catch {
@@ -37,7 +37,7 @@ if ($sc365notest -ne $true) {
             Remove-InboundConnector -Identity '[SEPPmail.cloud] TempConnector EX505293' -Confirm:$false
         }
         catch {
-            Write-Error "This Tenant is not yet allowed to create OnPrem-Connectors (Exchange Error EX505293).If this tenant shall be integrated in PARALLEL mode, contact Microsoft Support and request connector creation. See SEPPmail.cloud onboarding mail for details."
+            Write-Warning "This Tenant is not yet allowed to create OnPrem-Connectors (Exchange Error EX505293).If this tenant shall be integrated in PARALLEL mode, contact Microsoft Support and request connector creation. See SEPPmail.cloud onboarding mail for details."
         }            
     }
 }

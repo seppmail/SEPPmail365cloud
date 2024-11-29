@@ -11,7 +11,7 @@ Write-Host "| Please read the documentation if you are unfamiliar               
 Write-Host "| with the module and its CmdLets before continuing !                 |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "| https://docs.seppmail.com/en/cloud/c07_cloud_powershell.html        |" -ForegroundColor Green -BackgroundColor DarkGray
-Write-Host "| Press <CTRL><Klick> to open the Link                                |" -ForegroundColor Green -BackgroundColor DarkGray
+Write-Host "| Press <CTRL><Click> to open the Link                                |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 
