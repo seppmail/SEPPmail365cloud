@@ -1116,7 +1116,7 @@ function New-SC365Setup {
             Mandatory=$false,
             HelpMessage="Physical location of your data"
             )]
-            [ValidateSet('prv','de','ch')]
+            [ValidateSet('dev','prv','de','ch')]
         [String]$region,
 
         [Parameter(
@@ -1162,7 +1162,9 @@ function New-SC365Setup {
             } else {
                 if ($Deploymentinfo) {
                             if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Cloud not autodetect routig info, use manual parameters"; break}
+               if ($deploymentInfo.Routing -ne $routing) {Write-Error "SEPPmail.cloud is deployed with routing $deploymentInfo.Routing but the routing parameter is set to $routing, this will NOT WORK, exiting ..."; break}
                              if ($deploymentInfo.Region) {$Region = $deploymentInfo.Region} else {Write-Error "Could not autodetect region. Use manual parameters"; break}
+                 if ($deploymentInfo.Region -ne $region) {Write-Error "SEPPmail.cloud is deployed in region $deploymentInfo.Region but the region parameter is set to $region, this will NOT WORK, exiting ..."; break}
                 if ($DeploymentInfo.SEPPmailCloudDomain) {$SEPPmailCloudDomain = $DeploymentInfo.SEPPmailCloudDomain} else {Write-Error "Could not autodetect SEPPmailCloudDomain. Use manual parameters"; break}          
               if ($DeploymentInfo.inBoundOnly -eq $true) {$inboundOnly = $true}
              if ($DeploymentInfo.inBoundOnly -eq $false) {$inboundOnly = $false}
@@ -1318,13 +1320,22 @@ function Get-SC365Setup {
         }
     }
     Process {
-        if ($InBoundOnly -eq $true) {
-            $smcConn = Get-SC365Connectors -Routing $routing -inboundonly:$true
-        } else {
-            $smcConn = Get-SC365Connectors -Routing $routing -inboundonly:$false
+        try {
+            if ($InBoundOnly -eq $true) {
+                Write-Verbose "Get SEPPmail.cloud Connectors in inbound-only mode"
+                $smcConn = Get-SC365Connectors -Routing $routing -inboundonly:$true
+            } else {
+                Write-Verbose "Get SEPPmail.cloud Connectors"
+                $smcConn = Get-SC365Connectors -Routing $routing -inboundonly:$false
+            }
+            if ($InBoundOnly -eq $false) {
+                Write-Verbose "Get SEPPmail.cloud Transpprt Rules"
+                $smcTRules = Get-SC365Rules
+            }    
         }
-        if ($InBoundOnly -eq $false) {
-            $smcTRules = Get-SC365Rules
+        catch {
+            Write-Warning "Found no or incomplete setup, please check manually in EAC."
+            break
         }
     }
     End{

@@ -129,12 +129,12 @@ function New-SC365Connectors
         [Parameter(
             Mandatory = $true,
             ParameterSetName = 'BothDirections',
-            HelpMessage = 'Geographcal region of the seppmail.cloud service'
+            HelpMessage = 'Geographical region of the seppmail.cloud service, either "ch" or "de"'
         )]
         [Parameter(
             Mandatory = $true,
             ParameterSetName = 'InBoundOnly',
-            HelpMessage = 'Geographcal region of the seppmail.cloud service'
+            HelpMessage = 'Geographical region of the seppmail.cloud service, either "ch" or "de"'
         )]
         [ValidateSet('ch','prv','de','dev')]
         [String]$region,
