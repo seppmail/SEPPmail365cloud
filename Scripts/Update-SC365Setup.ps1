@@ -26,6 +26,7 @@ param(
 $existEAValue = $ErrorActionPreference
 $ErrorActionPreference = 'SilentlyContinue'
 
+#FIXME: Get DeploymentInfo and paratemerize creation of objects
 
 Write-verbose "Export Exo-Config as JSON"
 #TODO: New-SC365ExOReport -jsonBackup
@@ -81,7 +82,7 @@ if ($response -eq 'MURPHY') {
         
         #region 3 - create new connectors with temp Name
         Write-Verbose "3 - Creating new connectors with temp name" 
-        $newConnectors = New-SC365connectors -NamePrefix $tempPrefix
+        $newConnectors = New-SC365connectors -NamePrefix $tempPrefix # -routing $($DeplInfo.Routing) -region $($DeplInfo.region) #FIXME:
         #endregion create new connectors with temp Name
         
         #region 4 - set outbound rule to new connector
@@ -121,7 +122,7 @@ if ($response -eq 'MURPHY') {
 
         #region 8 - create New Transport rules
         Write-Verbose "8 - Creating new Transport Rules" 
-        New-SC365Rules -PlacementPriority Top
+        New-SC365Rules -PlacementPriority Top #FIXME: -routing $($deplInfo.routing) -SEPmailcloudDomain ?!?!?
         #endregion
         
         #region 9 - disable old transportrules
