@@ -141,13 +141,13 @@ function New-SC365Connectors
 
         [Parameter(
             Mandatory = $true,
-            ParameterSetname = 'BothDirections',
-            Helpmessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft'
+            ParameterSetName = 'BothDirections',
+            HelpMessage = '`"seppmailcloud`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft'
             )]
         [Parameter(
             Mandatory = $true,
-            ParameterSetname = 'InBoundOnly',
-            Helpmessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft'
+            ParameterSetName = 'InBoundOnly',
+            HelpMessage = '`"inline`": mx points to SEPPmail.cloud, `"parallel`": mx points to Microsoft'
             )]
         [ValidateSet('parallel','inline','p','i')]
         [String] $routing,
@@ -173,15 +173,27 @@ function New-SC365Connectors
 
         [Parameter(
             Mandatory = $false,
-            ParameterSetname = 'BothDirections',
+            ParameterSetName = 'BothDirections',
             HelpMessage = 'Force overwrite of existing connectors and ignore hybrid setup'
         )]
         [Parameter(
             Mandatory = $false,
-            ParameterSetname = 'InBoundOnly',
+            ParameterSetName = 'InBoundOnly',
             HelpMessage = 'Force overwrite of existing connectors and ignore hybrid setup'
         )]
-        [switch]$force
+        [switch]$force,
+
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetName = 'BothDirections',
+            HelpMessage = 'Use custom name instead of name from cloud config'
+        )]
+        [Parameter(
+            Mandatory = $false,
+            ParameterSetName = 'InBoundOnly',
+            HelpMessage = 'Use custom name instead of name from cloud config'
+        )]
+        [switch]$Name
     )
 
     begin
@@ -404,6 +416,9 @@ function New-SC365Connectors
                 {
 
                     $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
+                    if ($name) {
+                        $Param.name = $name
+                    }                    
                     New-OutboundConnector @param | Select-Object Identity,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsDomain.Split('.')[1])}}
 
                     if(!$?)
@@ -490,6 +505,10 @@ function New-SC365Connectors
                 {
 
                     $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
+                    Write-Verbose "Check if parameter `$name was set and overwrite"
+                    if ($name) {
+                        $Param.name = $name
+                    }                    
                     New-InboundConnector @param |Select-Object Identity,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsSenderCertificateName.Split('.')[1])}}
 
                     if(!$?) {
