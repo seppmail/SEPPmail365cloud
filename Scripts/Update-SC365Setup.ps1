@@ -1,106 +1,156 @@
-[CmdletBinding()]
-param()
+[CmdletBinding(
+    SupportsShouldProcess = $true
+)]
+param(
+    # Indicates whether the old setup should be removed during the update process.
+    [Parameter(
+        Mandatory = $false,
+        HelpMessage = "Specify if the old setup should be removed during the update process."
+    )]
+    [bool]$remove = $false,
+
+    # Specifies the name for the backup to be created during the update process.
+    [Parameter(
+        Mandatory = $false,
+        HelpMessage = "Provide a custom name for the backup mailflow object during the update process."
+    )]
+    [string]$BackupName = 'SC-BKP',
+
+    # Specifies the name for the backup to be created during the update process.
+    [Parameter(
+        Mandatory = $false,
+        HelpMessage = "Prefix for connectors for temporary swapping rules traffic"
+    )]
+    [string]$TempPrefix = 'temp'
+)
+$existEAValue = $ErrorActionPreference
+$ErrorActionPreference = 'SilentlyContinue'
+
 
 Write-verbose "Export Exo-Config as JSON"
 #TODO: New-SC365ExOReport -jsonBackup
 
-#
+#region Infoblock
+Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "| This script is a helper and provides basic steps to upgrade your    |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "| SEPPmail.cloud/Exchange integration. It covers only STANDARD Setups!|" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "| The Script will:                                                    |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|    1.) Check if there are any orphaned rule or connector objects    |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|    2.) Rename SEPPmail.cloud Transport rules to `$backupName         |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|    3.) Create Connectors with Temp Name                             |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|    4.) Set (200) outbound transport rule to New-Connector           |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|    5.) Rename SEPPmail.cloud Connectors to `$backupName              |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|    6.) Attach Transport rule 200 to old Connector                   |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|    ----------------- OLD SETUP STILL RUNNING ------------------     |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|    7.) Rename NEW Connectors to original names                      |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|    8.) Create new transport rules -PlacementPriority TOP            |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|    -------------------- NEW SETUP RUNNING ----------------------    |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|    9.) Disable old rules                                            |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|   10.) Disable old connectors                                       |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|   11.) on -remove delete old transport rules and connectors         |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "| If you have any:                                                    |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|   - customizations to SEPPmail.cloud rules                          |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|   - other corporate transport rules                                 |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|   - disclaimer Services integrated via rules                        |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|   - or other special scenarios in your Exo-Tenant                   |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "| you need to adapt/change/post-configure the outcome of this script! |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "| DO NOT JUST FIRE IT UP AND HOPE THINGS ARE GOING TO WORK !!!!!!     |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Gray
+#endregion    
+$response = Read-Host "I have read and understood the above warning (Type MURPHY if you agree)!"
+if ($response -eq 'MURPHY') {
+    
+    Write-Verbose '1 - Checking if there are existing Backup objects in the Exchange Tenant'
+    $backupWildCard = '[' + $backupName + '*'
+    if (!((Get-InboundConnector -Identity $BackupWildcard -ea SilentlyContinue) -or (Get-OutboundConnector -Identity $backupWildCard -ea SilentlyContinue) -or (Get-TransportRule -Identity $backupWildCard -ea SilentlyContinue))) {
+        #region 2 - rename existing rules to backup name
+        Write-Verbose "2 - Rename existing SEPPmail.cloud rules"
+        $oldTrpRls = Get-TransportRule -Identity '[SEPPmail.cloud]*'
+        foreach ($rule in $oldTrpRls) {
+        #if (($rule.state -eq 'Enabled') -and ($rule.RouteMessageOutboundConnector)) {
+        #    Disable-TransportRule -Identity $rule.identity -Confirm:$false
+        #}
+        Set-TransportRule -Identity $rule.Name -Name ($rule.Name -replace 'SEPPmail.Cloud',$BackupName)
+        }
+        #endregion rename existing rules to backup name
+        
+        #region 3 - create new connectors with temp Name
+        Write-Verbose "3 - Creating new connectors with temp name" 
+        $newConnectors = New-SC365connectors -NamePrefix $tempPrefix
+        #endregion create new connectors with temp Name
+        
+        #region 4 - set outbound rule to new connector
+        Write-Verbose "4 - Set outbound rule (200) to new connector" 
+        $oldObc = Get-OutboundConnector -Identity '[SEPPmail.cloud] Outbound-*'
+        [string]$tempObcName = $TempPrefix + $($OldObc.Identity)
+        [string]$bkpRuleName200 = "[" + $backupName + "] - 200 *"
+        Get-TransportRule -Identity $bkpRuleName200|Set-TransportRule -RouteMessageOutboundConnector $tempObcName
+        #endregion set outbound rule to new connector
+        
+        #region 5 - rename old connectors to backup Names
+        Write-Verbose "5 - Rename existing SEPPmail.cloud Inbound Connector to $backupName"
+        Write-Verbose "5a - Rename existing SEPPmail.cloud Inbound Connector"
+        $oldIbc = Get-InboundConnector -Identity '[SEPPmail.cloud] Inbound-*' 
+        Set-InboundConnector -Identity $($OldIbc.Identity) -Name ($($OldIbc.Identity) -replace 'SEPPmail.Cloud',$backupName)
 
-if ((Get-InboundConnector -Identity '[SC BK]*' -ea SilentlyContinue) -or (Get-OutboundConnector -Identity '[SC BK]*' -ea SilentlyContinue) -or (Get-TransportRule -Identity '[SC BK]*' -ea SilentlyContinue)) {
+        Write-Verbose "5b - Rename existing SEPPmail.cloud Outbound Connector"
+        $oldObc = Get-OutBoundConnector -Identity "[SEPPmail.cloud] OutBound-*"
+        Set-OutBoundConnector -Identity $oldObc.Identity -Name ($oldObc.Identity -replace 'SEPPmail.Cloud',$backupName)
+        #endregion
 
-    Write-Verbose "Rename existing SEPPmail.cloud rules and disable those routing to the Outbound Connector."
-    $oldTrpRls = Get-TransportRule -Identity '[SEPPmail.cloud]*'
-    foreach ($rule in $oldTrpRls) {
-        if (($rule.state -eq 'Enabled') -and ($rule.RouteMessageOutboundConnector)) {
-            Disable-TransportRule -Identity $rule.identity -Confirm:$false
+        #region 6 - attach old 200 rule to old connector
+        Write-Verbose "6 - Set outbound rule (200) to old backup connector again" 
+        $bkpConnWildcard = "[" + $backupName + "]*"
+        $bkpObc = Get-OutboundConnector -Identity $bkpConnWildcard
+        Get-TransportRule -Identity $bkpRuleName200|Set-TransportRule -RouteMessageOutboundConnector $bkpObc
+        #endregion
+
+        #region 7 - rename new connectors to final Names
+        Write-Verbose "7 - Rename existing $tempPrefix connectors to final name"
+        $finalObCName = ($newConnectors|Where-Object Identity -like '*OutBound*').Identity -replace "^$([regex]::Escape($tempPrefix))", ""
+        Set-OutboundConnector -Identity ($newConnectors|Where-Object Identity -like '*OutBound*').Identity -Name $finalObcName
+
+        $finalIbcName = ($newConnectors|Where-Object Identity -like '*Inbound*').Identity -replace "^$([regex]::Escape($tempPrefix))", ""
+        Set-InBoundConnector -Identity ($newConnectors|Where-Object Identity -like '*InBound*').Identity -Name $finalIbcName
+        #endregion
+
+        #region 8 - create New Transport rules
+        Write-Verbose "8 - Creating new Transport Rules" 
+        New-SC365Rules -PlacementPriority Top
+        #endregion
+        
+        #region 9 - disable old transportrules
+        $trWildcard = '[' + $BackupName + ']*'
+        Write-Verbose "9 - Disable old Transport Rules" 
+        Get-TransportRule -Identity $trWildcard | Disable-TransportRule -confirm:$false
+        #end region 9
+        
+        #region 10 - Disable old connectors
+        Write-Verbose "10 - Disable old connectors" 
+        Set-InBoundConnector -Identity $bkpConnWildcard -Enabled:$false
+        Set-OutBoundConnector -Identity $bkpConnWildcard -Enabled:$false
+        #endregion 10
+        
+        if ($remove) { 
+            Write-Verbose "11a - Deleting old Transport Rules"
+            Get-TransportRule -Identity $trWildcard | Remove-TransportRule -confirm:$false
+            Write-Verbose "11b - Deleting old Inbound Connector"
+            Remove-InBoundConnector -Identity $bkpConnWildcard -confirm:$false
+            Write-Verbose "11c - Deleting old Outbound Connector"
+            Remove-OutBoundConnector -Identity $bkpConnWildcard -confirm:$false 
         }
-        Set-TransportRule -Identity $rule.Name -Name ($rule.Name -replace 'SEPPmail.Cloud','SC BKP')
+
     }
-    
-    Write-Verbose "Rename existing SEPPmail.cloud Inbound Connector"
-    try {
-        Write-verbose 'Rename Connectors from SEPPmail to BKP-SC'
-        $oldIbc = Get-InboundConnector -Identity '[SEPPmail.cloud]*'
-        foreach ($ic in $oldIbc) {
-            Set-InboundConnector -Identity $Ic.Identity -Name ($Ic.Identity -replace 'SEPPmail.Cloud','SC BKP')
-            }
-        }
-    catch {
-        Write-Warning "No inbound Connector found with [SEPPmail.cloud] in the name"
-        }
-    
-    Write-Verbose "Rename existing SEPPmail.cloud Outbound Connector"
-    $oldObc = Get-OutBoundConnector -Identity "[SEPPmail.cloud]*"
-    foreach ($oc in $oldObc) {
-        Set-OutBoundConnector -Identity $oc.Identity -Name ($Oc.Identity -replace 'SEPPmail.Cloud','SC BKP')
+    else {
+        Write-Error "STOPPING - Found Existing Backup Objects - clean up the environment from $BackupName objects (rules and connectors) and TRY again"
+        break
     }
-    
-    Write-verbose "Enable transport rules so mailflow works during upgrade"
-    $bkpRls = Get-TransportRule -Identity '*SC BKP*'
-    foreach ($rule in $bkpRls) {
-        if ($rule.status -ne 'Enabled') {
-            Enable-TransportRule -Identity $rule.identity -Confirm:$false
-        }
-    }
-    Write-Verbose "Old Setup running with SC BKP as name"
-    
-    Write-Verbose "Creating new connectors disabled" 
-    New-SC365connectors -Disabled:$true
-    
-    Write-Verbose "Enabling new outbound connector"
-    $newObc = Get-OutboundConnector -Identity "[SEPPmail.cloud]*"
-    Set-OutboundConnector -Identity $newObc.Identity -Enabled:$true
-    
-    Write-Verbose "Creating new Transport Rules" 
-    New-SC365Rules -Disabled:$true
-    
-    #Read-Host "I have rearranged the transport rules for a working setup"
-    do {
-        # Frage den Benutzer nach einer Eingabe
-        $response = Read-Host "I have rearranged/customized the Transport Rules for a working setup and i KNOW the RISKS of this step (Y/N)"
-    
-        if ($response -match '^[Yy]$') {
-            Write-Host "Sie haben 'Y' gewählt. Fortfahren..."
-           
-            # Do the critical stuff - enable Inbound Connector stuff
-            $newIbc = Get-InboundConnector -Identity "[SEPPmail.cloud]*"
-            foreach ($ic in $newIbc) {
-                Set-InboundConnector -Identity $ic.Identity -Enabled:$true
-            }
-            $newTrpRls = Get-Transportrule -Identity '*SEPPmail.cloud*'
-                foreach ($rule in $newTrpRls) {
-                    Enable-Transportrule -Identity $rule.Name 
-            }
-    
-             # Do the less critical stuff - disable old stuff
-            $bkpIbc = Get-InboundConnector -Identity "[SC BKP]*"
-            Write-Verbose "Disabling old Inbound Connectors"
-            foreach ($ic in $bkpIbc) {
-                Set-InboundConnector -Identity $bkpIbc.Identity -Enabled:$false
-            }
-            $bkpObc = Get-OutboundConnector -Identity "[SC BKP]*"
-            Write-Verbose "Disabling old Outbound Connectors"
-            foreach ($oc in $bkpObc) {
-                Set-OutboundConnector -Identity $bkpObc.Identity -Enabled:$false
-            }
-            
-            $bkpTrpRls = Get-TransportRule -Identity '[SC BKP]*'
-            Write-Verbose "Disabling old Transport Rules"
-            foreach ($rule in $bkpTrpRls) {
-                     Disable-TransportRule -Identity $rule.Name -confirm:$false
-            }
-            break
-        } elseif ($response -match '^[Nn]$') {
-            Write-Host "Script has been stopped, go to the Exchange Online Admin page and check your configuration"
-            $proceed = $false
-            break
-        } else {
-            Write-Host "Invalid character, please choose 'Y' or 'N'." -ForegroundColor Red
-        }
-    } while ($true)
-    
 } else {
-    Write-Error 'STOPPING - Found Existing Backup Objects - clean up the environment from SC BKP objects (rules and conenctors) and TRY again'
-    break
+    Write-Host "Wise decision! Analyze your integration with New-SC365ExoReport and come back again if you are more familiar with the environment." -ForegroundColor Green -BackgroundColor DarkGray
 }
-
+$ErrorActionPreference = $existEAValue

@@ -10,8 +10,8 @@
 
 ### Bugs
 
-- The -whatif parameter in New-SC365Rules deleted rules if SEPPmail.cloud rules did exist.
-- If Tenant is dehydrated, raise a warning instead of an error. This allows Inline customers to continue installation.
+- The -whatif parameter in New-SC365Rules now does not delet transport rules if SEPPmail.cloud rules exist.
+- If Tenant is dehydrated, raise a warning instead of an error. This allows Inline customers to continue installation because the module loads.
 
 ### Features
 
