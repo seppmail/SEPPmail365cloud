@@ -193,7 +193,7 @@ function New-SC365Connectors
             ParameterSetName = 'InBoundOnly',
             HelpMessage = 'Use custom name instead of name from cloud config'
         )]
-        [switch]$Name
+        [String]$NamePrefix
     )
 
     begin
@@ -350,7 +350,7 @@ function New-SC365Connectors
 
             [bool]$createOutBound = $true #Set Default Value
             #wait-debugger
-            if ($existingSMOutboundConn)
+            if (($existingSMOutboundConn) -and ((!$NamePrefix)))
             {
                 if (!($existingsc365rules)) {
 
@@ -409,15 +409,15 @@ function New-SC365Connectors
             else
             { Write-Verbose "No existing Outbound Connector found" }
 
-            if($createOutbound -and (!($inboundonly)))
+            if($createOutbound -and (!($inBoundOnly)))
             {
                 Write-Debug "Creating SEPPmail.cloud Outbound Connector $($param.Name)!"
                 if ($PSCmdLet.ShouldProcess($($param.Name), 'Creating Outbound Connector'))
                 {
 
                     $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
-                    if ($name) {
-                        $Param.name = $name
+                    if ($NamePrefix) {
+                        $Param.Name = "$NamePrefix" + "$($Param.Name)"
                     }                    
                     New-OutboundConnector @param | Select-Object Identity,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsDomain.Split('.')[1])}}
 
@@ -442,7 +442,7 @@ function New-SC365Connectors
 
             # only $false if the user says so interactively
             [bool]$createInbound = $true
-            if ($existingSMInboundConn)
+            if (($existingSMInboundConn) -and ((!$NamePrefix)))
             {
                 Write-Warning "Found existing SEPPmail.cloud inbound connector with name: `"$($existingSMInboundConn.Name)`", created `"$($existingSMInboundConn.WhenCreated)`" incoming SEPPmail is `"$($existingSMInboundConn.TlsSenderCertificateName)`""
 
@@ -506,8 +506,8 @@ function New-SC365Connectors
 
                     $param.Comment += "`nCreated with SEPPmail365cloud PowerShell Module version $moduleVersion on $now"
                     Write-Verbose "Check if parameter `$name was set and overwrite"
-                    if ($name) {
-                        $Param.name = $name
+                    if ($namePrefix) {
+                        $Param.Name = "$NamePrefix" + "$($Param.Name)"
                     }                    
                     New-InboundConnector @param |Select-Object Identity,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsSenderCertificateName.Split('.')[1])}}
 
