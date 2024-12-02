@@ -205,24 +205,16 @@ function Get-SC365DeploymentInfo {
             if ($routing -eq 'inline') {
                 [String[]]$GateIP = ((Resolve-Dns -Query $GateHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddressToString
                 Foreach ($IP in $GateIP) {if ($ch.IPv4GateIPs.Contains($Ip)) {$region = 'ch';break}}
-                Foreach ($IP in $GateIP) {if ($ch.IPv6GateIPs.Contains($Ip)) {$region = 'ch';break}}
                 Foreach ($IP in $GateIP) {if ($de.IPv4GateIPs.Contains($Ip)) {$region = 'de';break}}
-                Foreach ($IP in $GateIP) {if ($de.IPv6GateIPs.Contains($Ip)) {$region = 'de';break}}
                 Foreach ($IP in $GateIP) {if ($prv.IPv4GateIPs.Contains($Ip)) {$region = 'prv';break}}
-                Foreach ($IP in $GateIP) {if ($prv.IPv6GateIPs.Contains($Ip)) {$region = 'prv';break}}
                 Foreach ($IP in $GateIP) {if ($dev.IPv4GateIPs.Contains($Ip)) {$region = 'dev';break}}
-                Foreach ($IP in $GateIP) {if ($dev.IPv6GateIPs.Contains($Ip)) {$region = 'dev';break}}
             }
             if ($routing -eq 'parallel') {
                $MailIP = ((Resolve-Dns -Query $MailHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddressToString
                Foreach ($ip in $mailIp) {if ($ch.IPv4MailIPs.Contains($Ip)) { $region = 'ch';break}}
-               Foreach ($ip in $mailIp) {if ($ch.IPv6MailIPs.Contains($Ip)) { $region = 'ch';break}}
                Foreach ($ip in $mailIp) {if ($de.IPv4MailIPs.Contains($Ip)) { $region = 'de';break}}
-               Foreach ($ip in $mailIp) {if ($de.IPv6MailIPs.Contains($Ip)) { $region = 'de';break}}
                Foreach ($ip in $mailIp) {if ($prv.IPv4MailIPs.Contains($IP)) { $region = 'prv';break}}
-               Foreach ($ip in $mailIp) {if ($prv.IPv6MailIPs.Contains($IP)) { $region = 'prv';break}}
                Foreach ($ip in $mailIp) {if ($dev.IPv4MailIPs.Contains($IP)) { $region = 'dev';break}}
-               Foreach ($ip in $mailIp) {if ($dev.IPv6MailIPs.Contains($IP)) { $region = 'dev';break}}
             }
         #endregion Cloud-IP-Addresses
 
