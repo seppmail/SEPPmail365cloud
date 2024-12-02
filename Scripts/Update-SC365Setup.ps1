@@ -68,29 +68,34 @@ if ($response -eq 'MURPHY') {
     
     Write-Verbose '1 - Checking if there are existing Backup objects in the Exchange Tenant'
     $backupWildCard = '[' + $backupName + '*'
+    Write-Verbose "1a - Checking if there are any orphaned backup objects"
     if (!((Get-InboundConnector -Identity $BackupWildcard -ea SilentlyContinue) -or (Get-OutboundConnector -Identity $backupWildCard -ea SilentlyContinue) -or (Get-TransportRule -Identity $backupWildCard -ea SilentlyContinue))) {
+        #region 1a - Get-DeploymentInfo
+        Write-Verbose "1b - Getting DeploymentInfo"
+        $DeplInfo = Get-SC365DeploymentInfo
+        
         #region 2 - rename existing rules to backup name
         Write-Verbose "2 - Rename existing SEPPmail.cloud rules"
         $oldTrpRls = Get-TransportRule -Identity '[SEPPmail.cloud]*'
         foreach ($rule in $oldTrpRls) {
-        #if (($rule.state -eq 'Enabled') -and ($rule.RouteMessageOutboundConnector)) {
-        #    Disable-TransportRule -Identity $rule.identity -Confirm:$false
-        #}
-        Set-TransportRule -Identity $rule.Name -Name ($rule.Name -replace 'SEPPmail.Cloud',$BackupName)
+            Set-TransportRule -Identity $rule.Name -Name ($rule.Name -replace 'SEPPmail.Cloud',$BackupName)
         }
         #endregion rename existing rules to backup name
         
         #region 3 - create new connectors with temp Name
         Write-Verbose "3 - Creating new connectors with temp name" 
-        $newConnectors = New-SC365connectors -NamePrefix $tempPrefix # -routing $($DeplInfo.Routing) -region $($DeplInfo.region) #FIXME:
+        $newConnectors = New-SC365connectors -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -region $DeplInfo.region -routing $DeplInfo.routing -NamePrefix $tempPrefix # -routing $($DeplInfo.Routing) -region $($DeplInfo.region) #FIXME:
         #endregion create new connectors with temp Name
         
-        #region 4 - set outbound rule to new connector
-        Write-Verbose "4 - Set outbound rule (200) to new connector" 
+        #region 4 - set outbound rule to new connector (Inline 200, parallel 1xx)
+        Write-Verbose "4 - Set outbound rules to new connector" 
         $oldObc = Get-OutboundConnector -Identity '[SEPPmail.cloud] Outbound-*'
         [string]$tempObcName = $TempPrefix + $($OldObc.Identity)
-        [string]$bkpRuleName200 = "[" + $backupName + "] - 200 *"
-        Get-TransportRule -Identity $bkpRuleName200|Set-TransportRule -RouteMessageOutboundConnector $tempObcName
+        $rulesToChange = Get-TransportRule -Identity '[*' |Where-Object {$_.RouteMessageOutboundConnector -ne $null}
+        foreach ($rule in $rulesToChange) {
+            Set-TransportRule -Identity $($rule.Identity) -RouteMessageOutboundConnector $tempObcName
+        }
+
         #endregion set outbound rule to new connector
         
         #region 5 - rename old connectors to backup Names
@@ -101,14 +106,17 @@ if ($response -eq 'MURPHY') {
 
         Write-Verbose "5b - Rename existing SEPPmail.cloud Outbound Connector"
         $oldObc = Get-OutBoundConnector -Identity "[SEPPmail.cloud] OutBound-*"
-        Set-OutBoundConnector -Identity $oldObc.Identity -Name ($oldObc.Identity -replace 'SEPPmail.Cloud',$backupName)
+        Set-OutBoundConnector -Identity $($oldObc.Identity) -Name ($oldObc.Identity -replace 'SEPPmail.Cloud',$backupName)
         #endregion
 
-        #region 6 - attach old 200 rule to old connector
-        Write-Verbose "6 - Set outbound rule (200) to old backup connector again" 
+        #region 6 - attach old outbound rules to old connector
+        Write-Verbose "6 - Set outbound rule to old backup connector again"
         $bkpConnWildcard = "[" + $backupName + "]*"
         $bkpObc = Get-OutboundConnector -Identity $bkpConnWildcard
-        Get-TransportRule -Identity $bkpRuleName200|Set-TransportRule -RouteMessageOutboundConnector $bkpObc
+        foreach ($rule in $rulesToChange) {
+            Set-TransportRule -Identity $($rule.Identity) -RouteMessageOutboundConnector $bkpObc
+        }
+
         #endregion
 
         #region 7 - rename new connectors to final Names
@@ -122,7 +130,7 @@ if ($response -eq 'MURPHY') {
 
         #region 8 - create New Transport rules
         Write-Verbose "8 - Creating new Transport Rules" 
-        New-SC365Rules -PlacementPriority Top #FIXME: -routing $($deplInfo.routing) -SEPmailcloudDomain ?!?!?
+        New-SC365Rules -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -routing $DeplInfo.routing  -PlacementPriority Top
         #endregion
         
         #region 9 - disable old transportrules
