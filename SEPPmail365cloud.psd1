@@ -16,7 +16,7 @@
 RootModule = 'SEPPmail365cloud.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.4.0'
+ModuleVersion = '2.0.0'
 
 # Supported PSEditions
 CompatiblePSEditions = @('Core')
@@ -148,7 +148,7 @@ PrivateData = @{
         # RequireLicenseAcceptance = $false
 
         # External dependent modules of this module
-        ExternalModuleDependencies = @('ExchangeOnlineManagement','DNSCLient-PS','PSWriteHTML')
+        ExternalModuleDependencies = @('ExchangeOnlineManagement','DNSClient-PS','PSWriteHTML')
 
     } # End of PSData hashtable
 
