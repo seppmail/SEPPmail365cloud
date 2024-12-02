@@ -92,7 +92,7 @@ function Get-SC365DeploymentInfo {
             MailHost            = $null
             GateHost            = $null
             RelayHost           = $null
-            swisssignCheckTXT   = $null
+            SwissSignCheckTXT   = $null
             spfTXT              = $null
             DnsSecurEmailCNAME  = $null
             DnsLetsEncryptCNAME = $null
@@ -210,11 +210,11 @@ function Get-SC365DeploymentInfo {
                 Foreach ($IP in $GateIP) {if ($dev.IPv4GateIPs.Contains($Ip)) {$region = 'dev';break}}
             }
             if ($routing -eq 'parallel') {
-               $MailIP = ((Resolve-Dns -Query $MailHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddressToString
-               Foreach ($ip in $mailIp) {if ($ch.IPv4MailIPs.Contains($Ip)) { $region = 'ch';break}}
-               Foreach ($ip in $mailIp) {if ($de.IPv4MailIPs.Contains($Ip)) { $region = 'de';break}}
-               Foreach ($ip in $mailIp) {if ($prv.IPv4MailIPs.Contains($IP)) { $region = 'prv';break}}
-               Foreach ($ip in $mailIp) {if ($dev.IPv4MailIPs.Contains($IP)) { $region = 'dev';break}}
+                [string[]]$MailIP = ((Resolve-Dns -Query $MailHost).Answers)|Select-Object -expand Address| Select-Object -expand IPAddressToString
+                Foreach ($ip in $mailIp) {if ($ch.IPv4MailIPs.Contains($Ip)) { $region = 'ch';break}}
+                Foreach ($ip in $mailIp) {if ($de.IPv4MailIPs.Contains($Ip)) { $region = 'de';break}}
+                Foreach ($ip in $mailIp) {if ($prv.IPv4MailIPs.Contains($IP)) { $region = 'prv';break}}
+                Foreach ($ip in $mailIp) {if ($dev.IPv4MailIPs.Contains($IP)) { $region = 'dev';break}}
             }
         #endregion Cloud-IP-Addresses
 
@@ -1145,13 +1145,15 @@ function New-SC365Setup {
             Write-Error "Domain $SEPPmailcloudDomain is not intended for E-Mail sending and cannot be booked for the SEPPmail-cloud Service. Specify a custom domain of your tenant and retry."
             break
         }
+        Write-Verbose "Detecting Deploymentstatus frpm SEPPmail.cloud setup"
+        try {
+            $deploymentInfo = Get-SC365DeploymentInfo
+        } catch {
+            Throw [System.Exception] "Could not autodetect SEPPmail.cloud deployment status, use manual parameters -SEPPmailCloudDomain, -region and -routing"
+        }
+
         Write-Verbose "Not enough parameters given, reading from Tenant, otherwise use data from console"
         if ((!($SEPPmailCloudDomain)) -or (!($region)) -or (!($routing)) ) {
-            try {
-                $deploymentInfo = Get-SC365DeploymentInfo
-            } catch {
-                Throw [System.Exception] "Could not autodetect SEPPmail.cloud deployment status, use manual parameters -SEPPmailCloudDomain, -region and -routing"
-            }
             # Customers where TDAD is set to *.onmicrosoft.com  ==> BREAK
             if ($DeploymentInfo.SEPPmailCloudDomain -like '*.onmicrosoft.com') {
                 Write-Error "Domain $($DeploymentInfo.SEPPmailCloudDomain) is set as the tenant default accepted domain. $($DeploymentInfo.SEPPmailCloudDomain) is not intended for E-Mail sending and cannot be booked for the SEPPmail-cloud Service. Specify a custom domain of your tenant and retry or change the Default accepted domain in your Exchange Online tenant."
@@ -1175,7 +1177,12 @@ function New-SC365Setup {
         } else {
             if ($deploymentInfo.routing -eq 'p') {$routing = 'parallel'}
             if ($deploymentInfo.routing -eq 'i') {$routing = 'inline'}
- 
+
+            Write-Verbose "Checking if console parameter fit to deployment Info"
+            if ($SEPPmailCloudDomain -ne $deploymentInfo.SEPPmailCloudDomain) {Write-Warning "Domain `"$SEPPmailCloudDomain`" does not fit to collected deployment info, just detected domain `"$($deploymentInfo.SEPPmailcloudDomain)`""}
+                                    if ($routing -ne $deploymentInfo.routing) {Write-Error "Routing mode `"$routing`" does not fit to deployment info, just detected routing mode `"$($DeploymentInfo.routing)`" STOPPING because deployment will FAIL";break}
+                                      if ($region -ne $deploymentInfo.region) {Write-Error "Region `"$region`" does not fit to deployment info, just detected region `"$($deploymentInfo.region)`" STOPPING because deployment will FAIL";break}
+
             Write-Verbose "Confirming if $SEPPmailCloudDomain is part or the tenant"
             $TenantDefaultDomain = $null
             foreach ($validationDomain in $SEPPmailCloudDomain) {
@@ -1208,7 +1215,7 @@ function New-SC365Setup {
         # For Connectors - use Tenant Default Domain
         # For TransportRules, use all domains in the array
         if ($SEPPmailCloudDomain.count -le 1) {
-            $ConnectorDomain = $SEPPmailCloudDomain
+            $ConnectorDomain = $SEPPmailCloudDomain[0]
         } else {
             $ConnectorDomain = $TenantDefaultDomain
         }
