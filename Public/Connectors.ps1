@@ -303,7 +303,7 @@ function New-SC365Connectors
         }
 
         Write-Debug "Checking for existing SEPPmail.cloud rules"
-        $existingSc365Rules = Get-TransportRule -Identity '[SEPPmail.Cloud]*' -WarningAction SilentlyContinue -erroraction SilentlyContinue
+        $existingSc365Rules = Get-TransportRule -Identity '[*' |Where-Object {$_.RouteMessageOutboundConnector -like '*SEPPmail.cloud*'}
 
         #endregion collecting existing connectors and test for hybrid Setup
 
@@ -402,8 +402,7 @@ function New-SC365Connectors
                     }
                 }
                 else {
-                    Write-Error "There are still transport-rules pointing to the outbound Connector $($existingSMOutboundConn.Identity)"
-                    Write-Error "Use `"Remove-SC365rules -routing parallel/inline`" to remove and restart New-SC365Connectors."
+                    Write-Error "There are still transport-rules pointing to the outbound Connector $($existingSMOutboundConn.Identity). `nRules are: $existingSc365Rules. `nUse `"Remove-SC365rules -routing parallel/inline`" to remove and restart New-SC365Connectors."
                 }
             }
             else
