@@ -26,10 +26,8 @@ param(
 $existEAValue = $ErrorActionPreference
 $ErrorActionPreference = 'SilentlyContinue'
 
-#FIXME: Get DeploymentInfo and paratemerize creation of objects
-
 Write-verbose "Export Exo-Config as JSON"
-#TODO: New-SC365ExOReport -jsonBackup
+New-SC365ExOReport -jsonBackup
 
 #region Infoblock
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Gray
@@ -133,11 +131,11 @@ if ($response -eq 'MURPHY') {
         New-SC365Rules -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -routing $DeplInfo.routing  -PlacementPriority Top
         #endregion
         
-        #region 9 - disable old transportrules
+        #region 9 - disable old Transport rules
         $trWildcard = '[' + $BackupName + ']*'
         Write-Verbose "9 - Disable old Transport Rules" 
         Get-TransportRule -Identity $trWildcard | Disable-TransportRule -confirm:$false
-        #end region 9
+        #endregion 9
         
         #region 10 - Disable old connectors
         Write-Verbose "10 - Disable old connectors" 
@@ -145,6 +143,7 @@ if ($response -eq 'MURPHY') {
         Set-OutBoundConnector -Identity $bkpConnWildcard -Enabled:$false
         #endregion 10
         
+        #region 11 Remove old stuff
         if ($remove) { 
             Write-Verbose "11a - Deleting old Transport Rules"
             Get-TransportRule -Identity $trWildcard | Remove-TransportRule -confirm:$false
@@ -153,6 +152,7 @@ if ($response -eq 'MURPHY') {
             Write-Verbose "11c - Deleting old Outbound Connector"
             Remove-OutBoundConnector -Identity $bkpConnWildcard -confirm:$false 
         }
+        #endregion
 
     }
     else {
