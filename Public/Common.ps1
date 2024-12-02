@@ -541,7 +541,7 @@ function New-SC365ExOReport {
                 HlpInf = 'A DANE record is a DNSSEC-protected TLSA record that specifies the expected TLS certificate or certificate authority information for securely connecting to a server.'
             }
             $ExoData['ibdCon']=[ordered]@{
-                VarNam = 'ibCcon'
+                VarNam = 'ibdcon'
                 WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-InboundConnector'
                 RawCmd = 'Get-InboundConnector'
                 TabDat = 'Identity,Enabled,ConnectorType,SenderDomains,SenderIPAddresses,TlsSenderCertificateName,EFSkipLastIP,EFSkipIPs,Comment,WhenCreated,WhenChanged'
@@ -763,13 +763,13 @@ function New-SC365ExOReport {
                         New-HTMLText -Text $DanSts -FontSize 14 -LineBreak
                     }
                     New-HTMLContent @contentHeaderStyle @ContentBodyStyle -Headertext 'External Connectivity' -Direction 'column' -Content {
-                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.ibcCon.HdgTxt -Color $ColorSEPPmailGreen -Underline
-                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.ibcCon.HlpInf)}
-                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.ibcCon.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
-                        #FIXME in Parallel Modus Muss EFSKIPIP leer sein und EFSKIPLastIP $true
-                        Write-verbose "Add Logic to detect if the correct EFIP logic is set"
-                        if (!($ibcCon|Get-Member -Name EfSkipConfig)) {$ibcCon|Add-Member -MemberType NoteProperty -Name EfSkipConfig -Value 'undefined'}
-                        Foreach ($ib in $ibcCon) {
+                        if ($ibdcon) {
+                            New-HTMLHeading -Heading h2 -HeadingText $ExoData.ibdcon.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.ibdcon.HlpInf)}
+                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.ibdcon.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                            Write-verbose "Add Logic to detect if the correct EFIP logic is set"
+                            if (!($ibdcon|Get-Member -Name EfSkipConfig)) {$ibdcon|Add-Member -MemberType NoteProperty -Name EfSkipConfig -Value 'undefined'}
+                            Foreach ($ib in $ibdcon) {
                             if (($ib.Identity -like '*SEPPmail.cloud*') -and ($ib.ConnectorType -like 'OnPremises')) {
                                 if ((!($ib.EFSkipIPs)) -and ($ib.EFSkipLastIP -eq $true)){
                                     $ib.EfSkipConfig = 'parallel'
@@ -784,22 +784,24 @@ function New-SC365ExOReport {
                                     $ib.EfSkipConfig = 'EFSkipLastIP is $false AND EFSkipIPs not empty'
                                 }    
                             }
-                        }
-                        Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Connectors if available"
-                        $IbcVersion = Get-SC365ModuleVersion -InputString $ibcCon.Comments
-                        $ibcCon|Add-Member -membertype NoteProperty -Name SC365Version -value $IbcVersion.Tostring()
-                        Write-Verbose "Create the IBC Data Table"
-                        New-HTMLTable -DataTable $ibcCon @tableStyle -SearchBuilder {
+                            }
+                            Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Connectors if available"
+                            $IbcVersion = Get-SC365ModuleVersion -InputString $ibdcon.Comment
+                            $ibdcon|Add-Member -membertype NoteProperty -Name SC365Version -value $IbcVersion.Tostring()
+                            Write-Verbose "Create the IBC Data Table"
+                            New-HTMLTable -DataTable $ibdcon @tableStyle -SearchBuilder {
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row 
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'CodeTwo' -BackgroundColor GoldenYellow -Row
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'Exclaimer' -BackgroundColor GoldenYellow -Row
                             New-HTMLTableCondition -Name 'EfSkipConfig' -ComparisonType string -Operator like -Value 'EFSkip' -row -Color red
+                            }
                         }
+                        if ($obdCon) {    
                         New-HTMLHeading -Heading h2 -HeadingText $ExoData.obdCon.HdgTxt -Color $ColorSEPPmailGreen -Underline
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.obdCon.HlpInf)}
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.obdCon.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
                         Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Connectors if available"
-                        $obdVersion = Get-SC365ModuleVersion -InputString $obdCon.Comments
+                        $obdVersion = Get-SC365ModuleVersion -InputString $obdCon.Comment
                         $obdCon|Add-Member -membertype NoteProperty -Name SC365Version -value $obdVersion
 
                         New-HTMLTable -DataTable $obdCon @tableStyle -SearchBuilder {
@@ -807,41 +809,48 @@ function New-SC365ExOReport {
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'Exclaimer' -BackgroundColor GoldenYellow -Row
                             New-HTMLTableCondition -Name 'Identity' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row 
                         }
+                        }
+                        if ($malFlw) {
                         New-HTMLHeading -Heading h2 -HeadingText $ExoData.malFlw.HdgTxt -Color $ColorSEPPmailGreen -Underline
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.malFlw.HlpInf)}
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.malFlw.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
                         #Mailflowstatusreport und Paging auf 20 Einträge (eingeklappt oder anpassen)
                         New-HTMLTable -DataTable $malFlw @tableStyle -PagingLength 20
+                        } #FIXME: Else Messages incl Style
                     }
                     New-HTMLContent @contentHeaderStyle @ContentBodyStyle -HeaderText 'Transport Rules' -Direction 'column' -Content {
-                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.tnrRls.HdgTxt -Color $ColorSEPPmailGreen -Underline
-                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.tnrRls.HlpInf)}
-                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.tnrRls.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
-                        Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Transportrules if available"
-                        foreach ($rule in $tnrRls) {
-                            $tnrVersion = Get-SC365ModuleVersion -InputString $rule.Comments
-                            $rule|Add-Member -membertype NoteProperty -Name SC365Version -value $tnrVersion
-                        }
-                        New-HTMLTable -DataTable $tnrRls @tablestyle -DefaultSortColumn 'Name' -SearchBuilder {
-                            New-HTMLTableCondition -Name 'Name' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row
+                        if ($trnRls) {
+                            New-HTMLHeading -Heading h2 -HeadingText $ExoData.tnrRls.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.tnrRls.HlpInf)}
+                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.tnrRls.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                            Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Transportrules if available"
+                            foreach ($rule in $tnrRls) {
+                                $tnrVersion = Get-SC365ModuleVersion -InputString $rule.Comments
+                                $rule|Add-Member -membertype NoteProperty -Name SC365Version -value $tnrVersion
+                            }
+                            New-HTMLTable -DataTable $tnrRls @tablestyle -DefaultSortColumn 'Name' -SearchBuilder {
+                                New-HTMLTableCondition -Name 'Name' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row
+                            }
+                        } else {
+                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "No data found"}
+                            
                         }
                     }
                     New-HTMLContent @contentHeaderStyle @ContentBodyStyle -HeaderText 'Defender Configuration' -Direction 'column' -Content {
-                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.apsPol.HdgTxt -Color $ColorSEPPmailGreen -Underline
-                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.apsPol.HlpInf)}
-                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.apsPol.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
-                        New-HTMLTable -DataTable $apsPol @tablestyle -DefaultSortColumn 'IsDefault' -DefaultSortOrder 'Descending' -SearchBuilder {
-                            New-HTMLTableCondition -Name 'isDefault' -ComparisonType string -Operator eq -Value 'True' -FontWeight bold -row
+                        if ($apsPol) {
+                            New-HTMLHeading -Heading h2 -HeadingText $ExoData.apsPol.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.apsPol.HlpInf)}
+                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.apsPol.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                            New-HTMLTable -DataTable $apsPol @tablestyle -DefaultSortColumn 'IsDefault' -DefaultSortOrder 'Descending' -SearchBuilder {
+                                New-HTMLTableCondition -Name 'isDefault' -ComparisonType string -Operator eq -Value 'True' -FontWeight bold -row
+                            }
                         }
-                    
                         New-HTMLHeading -Heading h2 -HeadingText $ExoData.MwfPol.HdgTxt -Color $ColorSEPPmailGreen -Underline
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.mwfPol.HlpInf)}
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.MwfPol.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
                         New-HTMLTable -DataTable $MwfPol @tablestyle -DefaultSortColumn 'IsDefault' -DefaultSortOrder 'Descending' -SearchBuilder {
                             New-HTMLTableCondition -Name 'isDefault' -ComparisonType string -Operator eq -Value 'True' -FontWeight bold -row
-                        }
-                    
-                    
+                        }                    
                         New-HTMLHeading -Heading h2 -HeadingText $ExoData.hctFpl.HdgTxt -Color $ColorSEPPmailGreen -Underline
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.hctFpl.HlpInf)}
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.HctFpl.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
@@ -857,12 +866,12 @@ function New-SC365ExOReport {
                         New-HTMLTable -DataTable $hcnFpl @tablestyle -DefaultSortColumn 'IsDefault' -DefaultSortOrder 'Descending'  -SearchBuilder {
                             New-HTMLTableCondition -Name 'isDefault' -ComparisonType string -Operator eq -Value 'True' -FontWeight bold -row
                         }
-                    
-                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.blkSnd.HdgTxt -Color $ColorSEPPmailGreen -Underline
-                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.hcnFpl.HlpInf)}
-                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.blkSnd.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
-                        New-HTMLTable -DataTable $blkSnd @tablestyle
-                    
+                        if ($blkSnd) {
+                            New-HTMLHeading -Heading h2 -HeadingText $ExoData.blkSnd.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.hcnFpl.HlpInf)}
+                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.blkSnd.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                            New-HTMLTable -DataTable $blkSnd @tablestyle
+                        }
                         New-HTMLHeading -Heading h2 -HeadingText $ExoData.qarPol.HdgTxt -Color $ColorSEPPmailGreen -Underline
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.qarPol.HlpInf)}
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.qarPol.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
@@ -884,7 +893,7 @@ function New-SC365ExOReport {
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.hybMdc.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
                         New-HTMLTable -DataTable $hybMdc.DatacenterIPs @tableStyle
                     }
-            }
+                }
             }
             #endregion
             # Write Report to Disk
