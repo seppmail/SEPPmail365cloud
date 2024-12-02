@@ -1220,7 +1220,6 @@ function New-SC365Setup {
             $ConnectorDomain = $TenantDefaultDomain
         }
 
-
         try {
             if ($InBoundOnly -eq $true) {
                     Write-Information '--- Creating inbound connector ---' -InformationAction Continue
@@ -1245,7 +1244,7 @@ function New-SC365Setup {
         }
     }
     End{
-        Write-Information "--- Successfully created SEPPmail.cloud Setup for $seppmailclouddomain in region $region in $routing mode ---" -InformationAction Continue
+        Write-Information "--- Successfully created SEPPmail.cloud Setup for $SEPPmailCloudDomain in region $region in $routing mode ---" -InformationAction Continue
         Write-Information "--- Wait a few minutes until changes are applied in the Microsoft cloud ---" -InformationAction Continue
         Write-Information "--- Afterwards, start testing E-Mails in and out ---" -InformationAction Continue
     }
