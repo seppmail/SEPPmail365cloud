@@ -8,7 +8,7 @@
         "parallel" :
         {
           "Name"                                    : "[SEPPmail.cloud] - 110 Route incoming tagged e-mails to SEPPmail",
-          "Comments"                                : "E-mails sent from outside the organization and have [secure]/[signed OK] tags are sent to the SEPPmail.cloud for tag cleaning.",
+          "Comments"                                : "E-mails sent from outside the organization and have [secure]/[signed OK]/[signed invalid]/[secured by HIN]/[signed invalid]/[not secured by HIN] tags are sent to the SEPPmail.cloud for tag cleaning.",
           "RouteMessageOutboundConnector"           : "[SEPPmail.cloud] Outbound-Parallel",
           "SMPriority"                              : 2,
           "FromScope"                               : "NotInOrganization",
