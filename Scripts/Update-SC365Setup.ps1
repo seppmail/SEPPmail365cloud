@@ -21,13 +21,22 @@ param(
         Mandatory = $false,
         HelpMessage = "Prefix for connectors for temporary swapping rules traffic"
     )]
-    [string]$TempPrefix = 'temp'
+    [string]$TempPrefix = 'temp',
+
+    [Parameter(
+        Mandatory = $false,
+        HelpMessage = "Do not generate a report and JSON backup"
+    )]
+    [switch]$noReport
+
 )
 $existEAValue = $ErrorActionPreference
 $ErrorActionPreference = 'SilentlyContinue'
 
-Write-verbose "Export Exo-Config as JSON"
-New-SC365ExOReport -jsonBackup
+if (!($noReport)) {
+    Write-verbose "Export Exo-Config as JSON"
+    New-SC365ExOReport -jsonBackup
+}
 
 #region Infoblock
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Gray
@@ -133,8 +142,10 @@ if ($response -eq 'MURPHY') {
         
         #region 9 - disable old Transport rules
         $trWildcard = '[' + $BackupName + ']*'
-        Write-Verbose "9 - Disable old Transport Rules" 
-        Get-TransportRule -Identity $trWildcard | Disable-TransportRule -confirm:$false
+        Write-Verbose "9 - Disable old Transport Rules"
+        if ($PSCmdlet.ShouldProcess("Disabling Transport Rules matching $trWildcard")) {
+            Get-TransportRule -Identity $trWildcard | Disable-TransportRule -Confirm:$false
+        } 
         #endregion 9
         
         #region 10 - Disable old connectors

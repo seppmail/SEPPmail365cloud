@@ -8,7 +8,7 @@
 # Thanks to Ryan Bolger for his excellent DNSCLient-PS Module which i use for multiplatform DNS.
 # Details here: https://github.com/rmbolger/DnsClient-PS
 
-# Thanks to evotec for PSWriteHTML
+# Thanks to evotec for PSWriteHTML, its amazing!
 
 @{
 
