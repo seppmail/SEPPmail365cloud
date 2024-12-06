@@ -7,6 +7,7 @@
 - Require ExchangeOnlineManagement Version 3.6.0 as minimum
 - Require PowerShell 7.4.6 as minimum version
 - The init and the upgrade script has moved to a new folder "Scripts"
+- New-SC365Connectors now has a new -Name Parameter. It changes the string inside the square brackets and you could create connectors with custom names, i.e. [PARTNER] Outbound-Inline. This is for special setups and is used for the Upgrade-Script. Do not use custom names in production !
 
 ### Bugs
 
@@ -14,15 +15,13 @@
 - If Tenant is dehydrated, raise a warning instead of an error. This allows Inline customers to continue installation because the module loads.
 - PS Version and platform check now works also on Windows PowerShell
 - Fake crypto headers like [secure] or [signed OK] being sent inbound are now matched only against the subject and not subject or body.
+- New-SC365Connectors now checks if transport rules still point to the connector and stops if this is the case.
 
 ### Features
 
-- New-SC365Connectors now has a new -Name Parameter. It changed the string inside the square brackets and you could create connectors with custom names, i.e. [PARTNER] Outbound-Inline. This is for special setups and is used for the Upgrade-Script. Do not use custom names in production !
-- New-SC365Connectors now checks if transport rules still point to the connector and stops if this is the case.
 - New-SC365Setup now checks if the parameters given fit to the deployment information of the cloud. It warns if you use a non-tenant-default-domain, and stops if you use the wrong region or routing
 - Transport Rules now support also subject tags like [secured by HIN], [signed invalid], [not secured by HIN]
 - In the CloudConfig JSON the IP Addresses have been updated to the latest status
-- Get-SC365Setup now supports the -SEPPmailCloudDomain parameter to check if a setup for a particular domain was added
 - The SEPPmail support e-Mail addresses are now added to the allowlist of senders in the HostedContentFilterPolicy. This prevents that quarantine reports are blocked.
 - Added a warning for setups in Inline Mode that inline setups affect all domains
 - ./scripts/Update-SC365Setup.ps1 is a script that updates an existing BASIC setups. Should work for most configurations. Clients may need to adapt the config later

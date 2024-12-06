@@ -303,18 +303,16 @@ function New-SC365Connectors
         }
 
         Write-Debug "Checking for existing SEPPmail.cloud rules"
-        if (Get-TransportRule) {
-            $existingSc365Rules = Get-TransportRule -Identity '[*' |Where-Object {$_.RouteMessageOutboundConnector -like '*SEPPmail.cloud*'} -ea 0
-        }
+        $existingSC365Rules = Get-TransportRule |Where-Object {($_.RouteMessageOutboundConnector -like '*SEPPmail.cloud*') -and ($_.Name -like '[*')} -ea 0
         #endregion collecting existing connectors and test for hybrid Setup
 
         Write-Debug "Look for ARC-Signature for seppmail.cloud and add if missing"
         try {
-            [string]$ath = (Get-ArcConfig).ArctrustedSealers
+            [string]$ath = (Get-ArcConfig).ArcTrustedSealers
             if ($ath) {
                 if ((!($ath.Contains('SEPPmail.cloud')))) {
                     Write-Verbose "ARC header `'$ath`' exists, but does not contain SEPPmail.cloud"
-                    $athnew = $ath.Split(',') + 'SEPPmail.cloud'
+                    $athNew = $ath.Split(',') + 'SEPPmail.cloud'
                     Set-ArcConfig -Identity default -ArcTrustedSealers $athNew|Out-Null
                 }
             }
@@ -353,7 +351,7 @@ function New-SC365Connectors
             #wait-debugger
             if (($existingSMOutboundConn) -and ((!$NamePrefix)))
             {
-                if (!($existingsc365rules)) {
+                if ($existingSC365Rules.Count -ge 1) {
 
                     Write-Warning "Found existing SEPPmail.cloud outbound connector with name: `"$($existingSMOutboundConn.Name)`" created on `"$($existingSMOutboundConn.WhenCreated)`" pointing to SEPPmail `"$($existingSMOutboundConn.TlsDomain)`" "
                     if (($InteractiveSession) -and (!($force)))

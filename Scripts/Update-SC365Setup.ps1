@@ -40,7 +40,7 @@ Write-Host "|    2.) Rename SEPPmail.cloud Transport rules to `$backupName      
 Write-Host "|    3.) Create Connectors with Temp Name                             |" -ForegroundColor Magenta -BackgroundColor Gray
 Write-Host "|    4.) Set (200) outbound transport rule to New-Connector           |" -ForegroundColor Magenta -BackgroundColor Gray
 Write-Host "|    5.) Rename SEPPmail.cloud Connectors to `$backupName              |" -ForegroundColor Magenta -BackgroundColor Gray
-Write-Host "|    6.) Attach Transport rule 200 to old Connector                   |" -ForegroundColor Magenta -BackgroundColor Gray
+Write-Host "|    6.) Attach old Transport rules to old Connector with BackupNam   |" -ForegroundColor Magenta -BackgroundColor Gray
 Write-Host "|    ----------------- OLD SETUP STILL RUNNING ------------------     |" -ForegroundColor Magenta -BackgroundColor Gray
 Write-Host "|    7.) Rename NEW Connectors to original names                      |" -ForegroundColor Magenta -BackgroundColor Gray
 Write-Host "|    8.) Create new transport rules -PlacementPriority TOP            |" -ForegroundColor Magenta -BackgroundColor Gray
