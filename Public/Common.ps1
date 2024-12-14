@@ -1013,27 +1013,33 @@ function Remove-SC365Setup {
         [switch]$InBoundOnly
     )
     Begin {
-        if ((!($InboundOnly)) -or (!($routing)) ) {
-            try {
-                $deploymentInfo = Get-SC365DeploymentInfo
-            } catch {
-                Throw [System.Exception] "Could not autodetect SEPPmail.cloud Deployment Status, use manual parameters"
-            }
-            
-            if ($DeploymentInfo.DeployMentStatus -eq $false) {
-                Write-Error "SEPPmail.cloud setup not (fully) deployed. Use Cloud-Portal and fix deployment."
-                break
-            } else {
-                if ($Deploymentinfo) {
-                                   if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Cloud not autodetect routig info, use manual parameters"; break}
-                     if ($DeploymentInfo.inBoundOnly -eq $true) {$inboundOnly = $true}
-                    if ($DeploymentInfo.inBoundOnly -eq $false) {$inboundOnly = $false}
-                     if ($null -eq $DeploymentInfo.inBoundOnly) {$inboundOnly = $false}
+        if(!(Test-SC365ConnectionStatus)) {
+            throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"        
+        }
+        else {
+            if ((!($InboundOnly)) -or (!($routing)) ) {
+                try {
+                    $deploymentInfo = Get-SC365DeploymentInfo
+                } catch {
+                    Throw [System.Exception] "Could not autodetect SEPPmail.cloud Deployment Status, use manual parameters"
                 }
+                if ($DeploymentInfo.DeployMentStatus -eq $false) {
+                    Write-Error "SEPPmail.cloud setup not (fully) deployed. Use Cloud-Portal and fix deployment."
+                    break
+                } 
+                else {
+                    if ($Deploymentinfo) {
+                                       if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Cloud not autodetect routig info, use manual parameters"; break}
+                         if ($DeploymentInfo.inBoundOnly -eq $true) {$inboundOnly = $true}
+                        if ($DeploymentInfo.inBoundOnly -eq $false) {$inboundOnly = $false}
+                         if ($null -eq $DeploymentInfo.inBoundOnly) {$inboundOnly = $false}
+                    }
+                }
+            } 
+            else {
+                if ($deploymentInfo.routing -eq 'p') {$routing = 'parallel'}
+                if ($deploymentInfo.routing -eq 'i') {$routing = 'inline'}
             }
-        } else {
-            if ($deploymentInfo.routing -eq 'p') {$routing = 'parallel'}
-            if ($deploymentInfo.routing -eq 'i') {$routing = 'inline'}
         }
     }
     Process {
