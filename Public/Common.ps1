@@ -564,13 +564,13 @@ function New-SC365ExOReport {
                 HdgTxt = 'Mail Flow Status Report'
                 HlpInf = 'E-Mails categorized by by severity, of the last 24 hours'
             }
-            $ExoData['trnRls']=[ordered]@{
-                VarNam = 'tnrRls'
+            $ExoData['tapRls']=[ordered]@{
+                VarNam = 'tapRls'
                 WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-TransportRule'
                 RawCmd = 'Get-TransportRule'
                 TabDat = 'Name,State,Mode,Priority,FromScope,SentToScope,StopRuleProcessing,ManuallyModified,Comments,Description,WhenCreated,WhenChanged'
                 HdgTxt = 'E-Mail Transport Rules'
-                HlpInf = 'Transport rules control mailflow by conditions and are important for the SEPPmail integration.'
+                HlpInf = 'Transport rules control mail flow by conditions and are important for the SEPPmail integration.'
             }
             $ExoData['apsPol']=[ordered]@{
                 VarNam = 'apsPol'
@@ -672,7 +672,7 @@ function New-SC365ExOReport {
                     -PercentComplete (($j / $totalItems) * 100)
 
                 if ([string]::IsNullOrWhiteSpace($InfoData.TabDat)) {
-                    # If TabDat is empty, use the raw variable value
+                    # If TabDat (Select-Object of Data) is empty, use the raw variable value
                     Set-Variable -Name $processedVariableName -Value (Get-Variable -Name $rawVariableName -ValueOnly) -Scope Script
                 } else {
                     # Otherwise, process RawCmd with Select-Object and TabDat properties
@@ -819,17 +819,17 @@ function New-SC365ExOReport {
                         } #FIXME: Else Messages incl Style
                     }
                     New-HTMLContent @contentHeaderStyle @ContentBodyStyle -HeaderText 'Transport Rules' -Direction 'column' -Content {
-                        if ($trnRls) {
-                            New-HTMLHeading -Heading h2 -HeadingText $ExoData.tnrRls.HdgTxt -Color $ColorSEPPmailGreen -Underline
-                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.tnrRls.HlpInf)}
-                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.tnrRls.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        if ($tapRls) {
+                            New-HTMLHeading -Heading h2 -HeadingText $ExoData.tapRls.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.tapRls.HlpInf)}
+                            New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.tapRls.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
                             Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Transportrules if available"
-                            foreach ($rule in $tnrRls) {
+                            foreach ($rule in $tapRls) {
                                 $tnrVersion = Get-SC365ModuleVersion -InputString $rule.Comments
                                 $rule|Add-Member -membertype NoteProperty -Name SC365Version -value $tnrVersion
                             }
-                            New-HTMLTable -DataTable $tnrRls @tablestyle -DefaultSortColumn 'Name' -SearchBuilder {
-                                New-HTMLTableCondition -Name 'Name' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row
+                            New-HTMLTable -DataTable $tapRls @tablestyle -DefaultSortColumn 'Name' -SearchBuilder {
+                                New-HTMLTableCondition -Name 'Name' -ComparisonType string -Operator like -Value '[SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row #FIXME: doesnt match anymore :-)
                             }
                         } else {
                             New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "No data found"}
