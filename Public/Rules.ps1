@@ -292,6 +292,7 @@ function New-SC365Rules
 	Removes the SEPPmail.cloud transport rules
 .DESCRIPTION
 	Convenience function to remove the SEPPmail.cloud rules in one CmdLet.
+	Matches only on "[SEPPmail.cloud]*"
 .EXAMPLE
 	Remove-SC365Rules
 #>
@@ -315,9 +316,11 @@ function Remove-SC365Rules {
 	process {
 		Write-Verbose "Removing current version module rules"
 		$allSEPPmailCloudRules = Get-TransportRule -Identity '[SEPPmail.cloud]*' -ErrorAction 0
-		foreach ($rule in $allSEPPmailCloudRules) {
-			if($PSCmdlet.ShouldProcess($rule.Name, "Remove transport rule")) {
-				Remove-TransportRule -Identity $rule -confirm:$false
+		if ($allSEPPmailCloudRules.count -ge 1) {
+			foreach ($rule in $allSEPPmailCloudRules) {
+				if($PSCmdlet.ShouldProcess($rule.Name, "Remove transport rule")) {
+					Remove-TransportRule -Identity $rule -confirm:$false
+				}
 			}
 		} 
 	}
