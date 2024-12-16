@@ -248,7 +248,7 @@ function New-SC365Rules
 										$Setting.ExceptIfSCLOver = $SCLInboundValue
 									}
 									if ($cryptoContentOnly) {
-										Write-Verbose 'Adding Setting to send only crptographic needed e-mails to SEPPmail.cloud'
+										Write-Verbose 'Adding Setting to send only cryptographic needed e-mails to SEPPmail.cloud'
 										$Setting.HeaderContainsMessageHeader = 'content-type'
 										$Setting.HeaderContainsWords = "application/x-pkcs7-mime","application/pkcs7-mime","application/x-pkcs7-signature","application/pkcs7-signature","multipart/signed","application/pgp-signature","multipart/encrypted","application/pgp-encrypted","application/octet-stream"
 									}
@@ -314,10 +314,9 @@ function Remove-SC365Rules {
 	}
 	process {
 		Write-Verbose "Removing current version module rules"
-		$allSEPPmailCloudRules = Get-TransportRule -Identity '[SEPPmail*'
+		$allSEPPmailCloudRules = Get-TransportRule -Identity '[SEPPmail.cloud]*' -ErrorAction 0
 		foreach ($rule in $allSEPPmailCloudRules) {
 			if($PSCmdlet.ShouldProcess($rule.Name, "Remove transport rule")) {
-					#$rule = Get-TransportRule $setting.Name -ErrorAction SilentlyContinue
 				Remove-TransportRule -Identity $rule -confirm:$false
 			}
 		} 
