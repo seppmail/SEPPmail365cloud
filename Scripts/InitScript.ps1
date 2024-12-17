@@ -2,7 +2,7 @@
 # Detect installed module version
 $ModuleRootPath = Split-Path -Path $PSScriptRoot -Parent
 $ManiFestFile = Import-PowerShellDataFile -Path $ModuleRootPath/SEPPmail365cloud.psd1
-$Global:ModuleVersion = $ManiFestFile.Moduleversion.ToString()
+$Global:ModuleVersion = $ManiFestFile.ModuleVersion.ToString()
 
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
@@ -25,7 +25,7 @@ if ($sc365notests -ne $true) {
     # Check Module availability
     if (!(Get-Module DNSClient-PS -ListAvailable)) {
         try {
-            Write-Information "Installing required module DNSClient-PS" -InformationAction Continue
+            Write-Verbose "Installing required module DNSClient-PS" -InformationAction Continue
             if (Get-Command -Name Install-PSResource) {
                 Install-PSResource 'DNSClient-PS' -Reinstall -WarningAction SilentlyContinue
             } else {
@@ -39,7 +39,7 @@ if ($sc365notests -ne $true) {
     }
     if (!(Get-Module PSWriteHtml -ListAvailable)) {
         try {
-            Write-Information "Installing required module PSWriteHtml" -InformationAction Continue
+            Write-verbose "Installing required module PSWriteHtml" -InformationAction Continue
             if (Get-Command -Name Install-PSResource) {
                 Install-PSResource 'PSWriteHtml' -reinstall -WarningAction SilentlyContinue
             } else {
@@ -53,7 +53,7 @@ if ($sc365notests -ne $true) {
     }
     if (!(Get-Module ExchangeOnlineManagement -ListAvailable|Where-Object Version -like '3.6.0')) {
         try {
-            Write-Information "Installing required module ExchangeOnlineManagement" -InformationAction Continue
+            Write-verbose "Installing required module ExchangeOnlineManagement" -InformationAction Continue
             if (Get-Command -Name Install-PSResource) {
                 Install-PSResource ExchangeOnlineManagement -Reinstall -WarningAction SilentlyContinue
             } else {

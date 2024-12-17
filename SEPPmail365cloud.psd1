@@ -90,6 +90,7 @@ FunctionsToExport = @(
            'Get-SC365SetupTime'
            'New-SC365Setup'
         'Remove-SC365Setup'
+        'Update-SC365Setup'
        'Confirm-SC365TenantDefaultDomain'
            'Get-SC365DeploymentInfo'
           'Show-SC365Tenant'
