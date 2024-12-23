@@ -3,6 +3,7 @@
 $ModuleRootPath = Split-Path -Path $PSScriptRoot -Parent
 $ManiFestFile = Import-PowerShellDataFile -Path $ModuleRootPath/SEPPmail365cloud.psd1
 $Global:ModuleVersion = $ManiFestFile.ModuleVersion.ToString()
+$requiredExoModuleVersion = '3.7.0'
 
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
@@ -51,7 +52,7 @@ if ($sc365notests -ne $true) {
             Write-Error "Could not install required Module 'PSWriteHtml'. Please install manually from the PowerShell Gallery"
         }
     }
-    if (!(Get-Module ExchangeOnlineManagement -ListAvailable|Where-Object Version -like '3.6.0')) {
+    if (!(Get-Module ExchangeOnlineManagement -ListAvailable|Where-Object Version -like $requiredExoModuleVersion)) {
         try {
             Write-verbose "Installing required module ExchangeOnlineManagement" -InformationAction Continue
             if (Get-Command -Name Install-PSResource) {
@@ -172,12 +173,12 @@ if ($sc365notests -ne $true) {
     Write-Verbose "PowerShell version is $instPSVersion and equal or newer than required version $minPSVersion"
 
     # Check Exo Module Version 
-    if (!((Get-Module -Name ExchangeOnlineManagement -ListAvailable).Where({$_.Version -ge [version]'3.0.0'}))) {
+    if (!((Get-Module -Name ExchangeOnlineManagement -ListAvailable).Where({$_.Version -ge [version]$requiredExoModuleVersion}))) {
         Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|   WRONG Version of ExchangeOnlineManagement Module   |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|          Install version 3.6.0 ++ of the             |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|          Install version $requiredExoModuleVersion ++ of the             |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|         ExchangeOnlineManagement Module with:        |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|  `"Install-Module ExchangeOnlineManagement -Force`"    |" -ForegroundColor Red -BackgroundColor Black
