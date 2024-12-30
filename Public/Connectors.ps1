@@ -57,7 +57,10 @@ function Get-SC365Connectors
         $ibc = Get-InboundConnector $inbound.Name -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
         if ($ibc | Where-Object Identity -eq $($inbound.Name))
         {
-            $ibc|select-object Name,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsSenderCertificateName.Split('.')[1])}}
+            $ibc | Add-Member -MemberType NoteProperty -Name "SC365ModuleVersion" -Value (Get-SC365moduleVersion $($ibc.comment))
+            $ibc | Add-Member -MemberType NoteProperty -Name "Region" -Value (($ibc.TlsSenderCertificateName.Split('.')[1]))
+            $ibc.PSObject.TypeNames.Insert(0, "SEPPmail.cloud.Connectors")
+            $ibc
         }
         else 
         {
@@ -67,7 +70,10 @@ function Get-SC365Connectors
             $outbound = Get-SC365OutboundConnectorSettings -Routing $routing
             $obc = Get-OutboundConnector $outbound.Name -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
             if ($obc | Where-Object Identity -eq $($outbound.Name)){
-                $obc|select-object Name,Enabled,WhenCreated,@{Name = 'Region'; Expression = {($_.TlsDomain.Split('.')[1])}}
+                $obc | Add-Member -MemberType NoteProperty -Name 'SC365ModuleVersion' -Value (Get-SC365moduleVersion $($obc.comment))
+                $obc | Add-Member -MemberType NoteProperty -Name 'Region' -Value ($obc.TlsDomain.Split('.')[1])
+                $obc.PSObject.TypeNames.Insert(0, "SEPPmail.cloud.Connectors")
+                $obc
             }
             else {
                 Write-Warning "No SEPPmail.cloud Outbound Connector with name `"$($outbound.Name)`" found - Wrong routing mode or inbound only ?"

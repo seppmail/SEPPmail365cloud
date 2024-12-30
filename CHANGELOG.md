@@ -7,6 +7,7 @@
 - Require ExchangeOnlineManagement Version 3.6.0 as minimum
 - Require PowerShell 7.4.6 as minimum version
 - The init and the upgrade script has moved to a new folder "Scripts"
+- Output format of Get-SC365Rules and Get-SC365Connectors customized
 - New-SC365Connectors now has a new -Name Parameter. It changes the string inside the square brackets and you could create connectors with custom names, i.e. [PARTNER] Outbound-Inline. This is for special setups and is used for the Upgrade-Script. Do not use custom names in production !
 
 ### Bugs

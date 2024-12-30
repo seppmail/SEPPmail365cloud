@@ -36,15 +36,17 @@ function Get-SC365Rules {
 		 	if ($allSEPPmailCloudRules) {
 				Foreach ($rule in $allSEPPmailCloudRules) {
 					if ($rule) {
+						$rule.PSObject.TypeNames.Insert(0, "SEPPmail.cloud.Rules")
 						if ($rule.Identity -like '*100*') {
-							$rule|Select-Object Identity,Priority,State,@{Name = 'IncludedDomains'; Expression={$_.RecipientDomainIs}}
+							$rule | Add-Member -MemberType NoteProperty -Name IncludedDomains -Value $rule.RecipientDomainIs
+							#$rule|Select-Object Identity,Priority,State,@{Name = 'IncludedDomains'; Expression={$_.RecipientDomainIs}}
 						}
-						elseif ($rule.Identity -like '*200*') {
-							$rule|Select-Object Identity,Priority,State,@{Name = 'IncludedDomains'; Expression={$_.SenderDomainIs}}
+						if ($rule.Identity -like '*200*') {
+							$rule | Add-Member -MemberType NoteProperty -Name IncludedDomains -Value $rule.SenderDomainDomainIs
+							#$rule|Select-Object Identity,Priority,State,@{Name = 'IncludedDomains'; Expression={$_.SenderDomainIs}}
 						}
-						else {
-							$rule|Select-Object Identity,Priority,State,IncludedDomains
-						}
+						$rule | Add-Member -MemberType NoteProperty -Name 'SC365ModuleVersion' -Value (Get-SC365moduleVersion $($rule.comments))
+						$rule
 					}
 				}
 			}
