@@ -7,8 +7,7 @@
 - Require ExchangeOnlineManagement Version 3.6.0 as minimum
 - Require PowerShell 7.4.6 as minimum version
 - The init and the upgrade script has moved to a new folder "Scripts"
-- Output format of Get-SC365Rules and Get-SC365Connectors customized
-- New-SC365Connectors now has a new -Name Parameter. It changes the string inside the square brackets and you could create connectors with custom names, i.e. [PARTNER] Outbound-Inline. This is for special setups and is used for the Upgrade-Script. Do not use custom names in production !
+- New-SC365Connectors now has a new -Name Parameter. It changes the string inside the square brackets and you could create connectors with custom names, i.e. [PARTNER] Outbound-Inline. This is for special setups and is used for the Upgrade-Script. Do __not use__ custom names in production !
 
 ### Bugs
 
@@ -16,10 +15,11 @@
 - If Tenant is dehydrated, raise a warning instead of an error. This allows Inline customers to continue installation because the module loads.
 - PS Version and platform check now works also on Windows PowerShell
 - Fake crypto headers like [secure] or [signed OK] being sent inbound are now matched only against the subject and not subject or body.
-- New-SC365Connectors now checks if transport rules still point to the connector and stops if this is the case.
+- New-SC365Connectors now checks if transport rules still point to the connector and stops if this is the case, instead of raising an error.
 
 ### Features
 
+- Output format of Get-SC365Rules and Get-SC365Connectors customized
 - New-SC365Setup now checks if the parameters given fit to the deployment information of the cloud. It warns if you use a non-tenant-default-domain, and stops if you use the wrong region or routing
 - Transport Rules now support also subject tags like [secured by HIN], [signed invalid], [not secured by HIN]
 - In the CloudConfig JSON the IP Addresses have been updated to the latest status
@@ -34,7 +34,7 @@
 
 #### Installation and Upgrade
 
-- The PowerShell version check to avoid running the Module on 5.1 Desktop didnt work on 5.1 Desktop ;- Added a function for semantic version checking and used this in the Init-Script.
+- The PowerShell version check to avoid running the Module on 5.1 Desktop did not work on 5.1 Desktop ;- Added a function for semantic version checking and used this in the Init-Script.
 - Added an update-sc365setup Cmdlet, to make the update procedure faster. The script also contains a warning that it may not apply to any setup and is only for very simple setups. Customers/partners need to pre and post configure their Exchange Online environment for proper operations.
 - New-SC365Setup now allows multiple domains in the -SEPPmailCloudDomain parameter
 - Updated IP addresses based on new SEPPmail.cloud infrastructure
