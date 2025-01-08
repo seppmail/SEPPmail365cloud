@@ -69,7 +69,7 @@
                 <TableHeaders>
                     <TableColumnHeader>
                         <Label>Rule Name (Identity)</Label>
-                        <Width>36</Width>
+                        <Width>46</Width>
                     </TableColumnHeader>
                     <TableColumnHeader>
                         <Label>Is Enabled ?</Label>
