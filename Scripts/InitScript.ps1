@@ -3,7 +3,13 @@
 $ModuleRootPath = Split-Path -Path $PSScriptRoot -Parent
 $ManiFestFile = Import-PowerShellDataFile -Path $ModuleRootPath/SEPPmail365cloud.psd1
 $Global:ModuleVersion = $ManiFestFile.ModuleVersion.ToString()
-$requiredExoModuleVersion = '3.7.0'
+[string]$requiredPSVersion = '7.4.6'
+
+$requiredModules = @{
+     "ExchangeOnlineManagement" = "3.7.0"
+                 "DNSClient-PS" = "1.1.1"
+                  "PSWriteHTML" = "1.27.0"
+    }
 
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 Write-Host "|                                                                     |" -ForegroundColor Green -BackgroundColor DarkGray
@@ -18,56 +24,12 @@ Write-Host "|                                                                   
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
 
 Write-Verbose "Running InitScript.ps1 and doing requirement-checks" 
-if ($sc365notests -ne $true) {
+if ($sc365noTests -ne $true) {
     if ((Get-PSRepository -Name PSGallery).InstallationPolicy -ne 'Trusted') {
         Write-Warning "You do not Trust the PowerShellGallery as a module installation source."
         Write-Output "Run 'Set-PSRepository -Name PSGallery -Trusted' to avoid confirmation on module installs."
     }
-    # Check Module availability
-    if (!(Get-Module DNSClient-PS -ListAvailable)) {
-        try {
-            Write-Verbose "Installing required module DNSClient-PS" -InformationAction Continue
-            if (Get-Command -Name Install-PSResource) {
-                Install-PSResource 'DNSClient-PS' -Reinstall -WarningAction SilentlyContinue
-            } else {
-                Install-Module 'DNSClient-PS' -Force -WarningAction SilentlyContinue
-            }
-            Import-Module DNSClient-PS -Force
-        } 
-        catch {
-            Write-Error "Could not install required Module 'DNSClient'. Please install manually from the PowerShell Gallery"
-        }
-    }
-    if (!(Get-Module PSWriteHtml -ListAvailable)) {
-        try {
-            Write-verbose "Installing required module PSWriteHtml" -InformationAction Continue
-            if (Get-Command -Name Install-PSResource) {
-                Install-PSResource 'PSWriteHtml' -reinstall -WarningAction SilentlyContinue
-            } else {
-                Install-Module 'PSWriteHtml' -force -WarningAction SilentlyContinue         
-            }
-            Import-Module PSWriteHtml -Force
-        } 
-        catch {
-            Write-Error "Could not install required Module 'PSWriteHtml'. Please install manually from the PowerShell Gallery"
-        }
-    }
-    if (!(Get-Module ExchangeOnlineManagement -ListAvailable|Where-Object Version -like $requiredExoModuleVersion)) {
-        try {
-            Write-verbose "Installing required module ExchangeOnlineManagement" -InformationAction Continue
-            if (Get-Command -Name Install-PSResource) {
-                Install-PSResource ExchangeOnlineManagement -Reinstall -WarningAction SilentlyContinue
-            } else {
-                Install-Module ExchangeOnlineManagement -force -WarningAction SilentlyContinue
-            }
-            Import-Module ExchangeOnlineManagement
-        } 
-        catch {
-            Write-Error "Could not install required Module 'ExchangeOnlineManagement'. Please install manually from the PowerShell Gallery"
-            break
-        }
-    }
-    #Check PowerShell Version
+    Write-Verbose "Create Helper function for Version checking"
     <#
     .SYNOPSIS
     Parses a semantic version string and converts it into a structured object.
@@ -127,72 +89,114 @@ if ($sc365notests -ne $true) {
     Semantic Versioning Specification: https://semver.org/
     #>
     function ConvertTo-SemanticVersion {
-    param (
-        [string]$VersionString
-    )
-
-    if ($VersionString -match '^(\d+)\.(\d+)\.(\d+)(?:-([\w\-\.]+))?(?:\+([\w\-\.]+))?$') {
-        return @{
-            Major        = [int]$matches[1]
-            Minor        = [int]$matches[2]
-            Patch        = [int]$matches[3]
-            PreRelease   = $matches[4]
-            BuildMetadata = $matches[5]
+        param (
+            [string]$VersionString
+        )
+    
+        if ($VersionString -match '^(\d+)\.(\d+)\.(\d+)(?:-([\w\-\.]+))?(?:\+([\w\-\.]+))?$') {
+            return @{
+                Major        = [int]$matches[1]
+                Minor        = [int]$matches[2]
+                Patch        = [int]$matches[3]
+                PreRelease   = $matches[4]
+                BuildMetadata = $matches[5]
+            }
         }
-    } else {
-        throw "Invalid semantic version format: $VersionString"
+        else {
+            throw "Invalid semantic version format: $VersionString"
+        }
     }
-    }
-    [string]$requiredPSVersion = '7.4.6'
-    [String]$InstPSVersion = ((($PSVersionTable.PSVersion.ToString())) -Split '\.')[0..2] -join '.'
+    Write-verbose "Check PowerShell Version"
+    [String]$instPSVersion = ((($PSVersionTable.PSVersion.ToString())) -Split '\.')[0..2] -join '.'
     if ($PSVersionTable.PSEdition -eq "Desktop") {
-        $InstVersion -eq 'Desktop'
         Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|           ! WRONG POWERSHELL VERSION !               |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|           !!! Wrong PowerShell EDITION !!!           |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|           The module will not work on                |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|           Windows Powershell 5.1 and earlier :-( :-( |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|           The module does not support                |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|           Windows Powershell 5.1 Desktop and earlier |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|           PLEASE install PowerShell CORE $minPSVersion+      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
         Break
     } else {
-    $minVersion = [System.Management.Automation.SemanticVersion]::Parse($requiredPSVersion)
-    $instVersion = [System.Management.Automation.SemanticVersion]::Parse($InstPSVersion)
-    if ($minVersion -gt $instVersion) {
-        Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|           ! WRONG POWERSHELL VERSION !               |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|           PLEASE install PowerShell CORE $minVersion+      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
-        Break
+        $minPSVersion = [System.Management.Automation.SemanticVersion]::Parse($requiredPSVersion)
+        $instPSVersion = [System.Management.Automation.SemanticVersion]::Parse($InstPSVersion)
+        if ($minPSVersion -gt $instPSVersion) {
+            Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
+            Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
+            Write-Host "|           !!! Wrong PowerShell VERSION !!!           |" -ForegroundColor Red -BackgroundColor Black
+            Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
+            Write-Host "|           PLEASE install PowerShell CORE $minPSVersion+      |" -ForegroundColor Red -BackgroundColor Black
+            Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
+            Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
+            Break
         }
     }
     Write-Verbose "PowerShell version is $instPSVersion and equal or newer than required version $minPSVersion"
 
-    # Check Exo Module Version 
-    if (!((Get-Module -Name ExchangeOnlineManagement -ListAvailable).Where({$_.Version -ge [version]$requiredExoModuleVersion}))) {
-        Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|   WRONG Version of ExchangeOnlineManagement Module   |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|          Install version $requiredExoModuleVersion ++ of the             |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|         ExchangeOnlineManagement Module with:        |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|  `"Install-Module ExchangeOnlineManagement -Force`"    |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|                         or                           |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "| `"Install-PSResource ExchangeOnlineManagement -Force`" |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|     # EXIT and RESTART THE POWERSHELL SESSION #      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|       `"Import-Module ExchangeOnlineManagement`"       |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
+    Write-Verbose "Create Helper function for module installation"
+    <#
+    .SYNOPSIS
+    Installs a PowerShell module or resource from a repository using the appropriate installation command.
+
+    .DESCRIPTION
+    The `Invoke-RepoInstall` function checks if the `Install-PSResource` command is available. If available, it uses it to install or reinstall the specified artifact. If not, it defaults to using `Install-Module` for installation. This function ensures compatibility with both older and newer versions of PowerShell's module management tools.
+
+    .PARAMETER artefact
+    The name of the module or resource to be installed from the repository.
+
+    .EXAMPLE
+    Invoke-RepoInstall -artefact 'ExchangeOnlineManagement'
+
+    This command installs or reinstalls the `ExchangeOnlineManagement` module.
+
+    .EXAMPLE
+    Invoke-RepoInstall -artefact 'PSWriteHTML'
+
+    This command installs or reinstalls the `PSWriteHTML` module.
+
+    .NOTES
+    - This function simplifies module installation by abstracting the differences between `Install-Module` and `Install-PSResource`.
+    - Requires the appropriate repository (e.g., PSGallery) to be registered and accessible.
+
+    .OUTPUTS
+    None.
+
+    .INPUTS
+    [string]
+    Accepts the name of the module or resource as a string.
+
+    #>
+    function Invoke-RepoInstall {
+        param (
+            [string]$artefact,
+            [string]$artefactVersion
+        )
+        if (!(Get-Command -Name 'Install-PSResource' -ErrorAction SilentlyContinue)) {
+            #$RepoInstallMethod = 'Module'
+            $InstCommandString = "Install-Module $artefact -requiredVersion $artefactVersion -force -WarningAction SilentlyContinue"
+        } else {
+            $InstCommandString = "Install-PSResource $artefact -Version $artefactVersion -Reinstall -WarningAction SilentlyContinue"
+        }
+        Invoke-Expression $InstCommandString
+    }
+
+    Write-Verbose "Check required Module availability"
+    foreach ($module in $requiredModules.Keys) {
+        $version = $requiredModules[$module]
+        if (!(Get-Module $module -ListAvailable)) {
+            try {
+                Write-Verbose "Installing required module $module" -InformationAction Continue
+                Invoke-RepoInstall -artefact $module -artefactVersion $version
+            } catch {
+                Write-Error "Could not install required Module $module with version $version. Please install manually from the PowerShell Gallery"
+            }
+            Import-Module $module -Force
+        }
     }
 }
-
 Write-Verbose 'Initialize argument completer scriptblocks'
 $script:paramDomSB = {
     # Read Accepted Domains for domain selection
