@@ -125,16 +125,17 @@ function Get-SC365DeploymentInfo {
                 }
             }
 
-        <#    if (($SEPPmailCloudDomain) -and (!($tenantAcceptedDomains.DomainName.Contains($SEPPmailCloudDomain)))) {
-               throw [System.Exception] "Domain $SEPPmailCloudDomain is not member of this tenant! Check for typos or connect to different tenant"
-            }#>
         #endregion Select DefaultDomain
 
         #region Query SEPPmail routing-Hosts DNS records and detect routing mode and in/oitbound
             [string]$relayHost = $DnsHostDomain.Replace('.','-') + '.relay.seppmail.cloud'
              [string]$mailHost = $DnsHostDomain.Replace('.','-') + '.mail.seppmail.cloud'
              [string]$gateHost = $DnsHostDomain.Replace('.','-') + '.gate.seppmail.cloud'
-            
+        
+        $defEAPref = $ErrorActionPreference
+        $ErrorActionPreference = 'SilentlyContinue'
+
+        $DeploymentStatus = 'unknown'
         if (((Resolve-Dns -Query $GateHost).Answers)) {
             $routing = 'inline'
             if ((Resolve-Dns -Query $RelayHost).Answers) {                    
@@ -268,6 +269,7 @@ function Get-SC365DeploymentInfo {
         else {
             $WildcardRecord = $false
         }
+        $ErrorActionPreference = $defEAPref
         #endregion
     }
     end {
@@ -1164,7 +1166,7 @@ function New-SC365Setup {
         try {
             $deploymentInfo = Get-SC365DeploymentInfo
         } catch {
-            Throw [System.Exception] "Could not autodetect SEPPmail.cloud deployment status, use manual parameters -SEPPmailCloudDomain, -region and -routing"
+            Throw [System.Exception] "Could not autodetect SEPPmail.cloud deployment status, check SEPPmail.cloud portal deployment status"
         }
 
         Write-Verbose "Not enough parameters given, reading from Tenant, otherwise use data from console"
