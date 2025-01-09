@@ -1322,7 +1322,7 @@ function Get-SC365Setup {
         } else {
             Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
         }
-        if ((!($InboundOnly)) -or (!($routing)) ) {
+        if (!((!($InboundOnly)) -or (!($routing)))) {
             try {
                 $deploymentInfo = Get-SC365DeploymentInfo
             } catch {
