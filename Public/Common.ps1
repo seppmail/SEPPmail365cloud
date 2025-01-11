@@ -2003,36 +2003,36 @@ function Update-SC365Setup {
         New-SC365ExOReport -jsonBackup
         }
         #region Infoblock
-    Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "| This script is a helper and provides basic steps to upgrade your    |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "| SEPPmail.cloud/Exchange integration. It covers only STANDARD Setups!|" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "| The Script will:                                                    |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|    1.) Check if there are any orphaned rule or connector objects    |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|    2.) Rename SEPPmail.cloud Transport rules to `$backupName         |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|    3.) Create Connectors with Temp Name                             |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|    4.) Set (200) outbound transport rule to New-Connector           |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|    5.) Rename SEPPmail.cloud Connectors to `$backupName              |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|    6.) Attach old Transport rules to old Connector with BackupNam   |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|    ----------------- OLD SETUP STILL RUNNING ------------------     |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|    7.) Rename NEW Connectors to original names                      |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|    8.) Create new transport rules -PlacementPriority TOP            |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|    -------------------- NEW SETUP RUNNING ----------------------    |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|    9.) Disable old rules                                            |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|   10.) Disable old connectors                                       |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|   11.) on -remove delete old transport rules and connectors         |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "| If you have any:                                                    |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|   - customizations to SEPPmail.cloud rules                          |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|   - other corporate transport rules                                 |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|   - disclaimer Services integrated via rules                        |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|   - or other special scenarios in your Exo-Tenant                   |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "| you need to adapt/change/post-configure the outcome of this script! |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "| DO NOT JUST FIRE IT UP AND HOPE THINGS ARE GOING TO WORK !!!!!!     |" -ForegroundColor Magenta -BackgroundColor Gray
-    Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Gray
+    Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "| This script is a helper and provides basic steps to upgrade your    |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "| SEPPmail.cloud/Exchange integration. It covers only STANDARD Setups!|" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "| The Script will:                                                    |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|    1.) Check if there are any orphaned rule or connector objects    |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|    2.) Rename SEPPmail.cloud Transport rules to `$backupName         |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|    3.) Create Connectors with Temp Name                             |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|    4.) Set (200) outbound transport rule to New-Connector           |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|    5.) Rename SEPPmail.cloud Connectors to `$backupName              |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|    6.) Attach old Transport rules to old Connector with BackupNam   |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|    ----------------- OLD SETUP STILL RUNNING ------------------     |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|    7.) Rename NEW Connectors to original names                      |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|    8.) Create new transport rules -PlacementPriority TOP            |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|    -------------------- NEW SETUP RUNNING ----------------------    |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|    9.) Disable old rules                                            |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|   10.) Disable old connectors                                       |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|   11.) on -remove delete old transport rules and connectors         |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "| If you have any:                                                    |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|   - customizations to SEPPmail.cloud rules                          |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|   - other corporate transport rules                                 |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|   - disclaimer Services integrated via rules                        |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|   - or other special scenarios in your Exo-Tenant                   |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "| you need to adapt/change/post-configure the outcome of this script! |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "| DO NOT JUST FIRE IT UP AND HOPE THINGS ARE GOING TO WORK !!!!!!     |" -ForegroundColor Magenta -BackgroundColor Black
+    Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Black
         #endregion    
         $response = Read-Host "I have read and understood the above warning (Type MURPHY if you agree)!"
         if ($response -eq 'MURPHY') {
