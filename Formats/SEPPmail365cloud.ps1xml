@@ -14,24 +14,24 @@
                         <Width>36</Width>
                     </TableColumnHeader>
                     <TableColumnHeader>
-                        <Label>Is Enabled ?</Label>
+                        <Label>Enabled</Label>
+                        <Width>8</Width>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Type</Label>
                         <Width>10</Width>
                     </TableColumnHeader>
                     <TableColumnHeader>
-                        <Label>Connector Type</Label>
-                        <Width>14</Width>
-                    </TableColumnHeader>
-                    <TableColumnHeader>
-                        <Label>Create DateTime</Label>
+                        <Label>Created</Label>
                         <Width>20</Width>
                     </TableColumnHeader>
                     <TableColumnHeader>
-                        <Label>SEPPmail.cloud Region</Label>
-                        <Width>21</Width>
+                        <Label>Geo</Label>
+                        <Width>5</Width>
                     </TableColumnHeader>
                     <TableColumnHeader>
-                        <Label>SC365 Module Version</Label>
-                        <Width>20</Width>
+                        <Label>Ver</Label>
+                        <Width>5</Width>
                     </TableColumnHeader>
                 </TableHeaders>
                 <TableRowEntries>
@@ -69,31 +69,27 @@
                 <TableHeaders>
                     <TableColumnHeader>
                         <Label>Rule Name (Identity)</Label>
-                        <Width>46</Width>
+                        <Width>36</Width>
                     </TableColumnHeader>
                     <TableColumnHeader>
-                        <Label>Is Enabled ?</Label>
-                        <Width>12</Width>
-                    </TableColumnHeader>
-                    <TableColumnHeader>
-                        <Label>Priority</Label>
+                        <Label>Enabled</Label>
                         <Width>8</Width>
                     </TableColumnHeader>
                     <TableColumnHeader>
-                        <Label>Last Changed DateTime</Label>
+                        <Label>Priority</Label>
+                        <Width>10</Width>
+                    </TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>Last Changed</Label>
                         <Width>20</Width>
                     </TableColumnHeader>
                     <TableColumnHeader>
-                        <Label>Included Domains</Label>
-                        <Width>40</Width>
+                        <Label>Stop</Label>
+                        <Width>5</Width>
                     </TableColumnHeader>
                     <TableColumnHeader>
-                        <Label>Stop Processing</Label>
-                        <Width>15</Width>
-                    </TableColumnHeader>
-                    <TableColumnHeader>
-                        <Label>SC365 Module Version</Label>
-                        <Width>20</Width>
+                        <Label>Ver</Label>
+                        <Width>5</Width>
                     </TableColumnHeader>
                 </TableHeaders>
                 <TableRowEntries>
@@ -110,9 +106,6 @@
                             </TableColumnItem>
                             <TableColumnItem>
                                 <PropertyName>WhenChanged</PropertyName>
-                            </TableColumnItem>
-                            <TableColumnItem>
-                                <PropertyName>IncludedDomains</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
                                 <PropertyName>StopRuleProcessing</PropertyName>
