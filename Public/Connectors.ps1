@@ -309,10 +309,10 @@ function New-SC365Connectors
         }
 
         Write-Debug "Checking for existing SEPPmail.cloud rules"
-        $existingSC365Rules = Get-TransportRule |Where-Object {($_.RouteMessageOutboundConnector -like '*SEPPmail.cloud*') -and ($_.Name -like '[*')} -ea 0
+        $existingSC365Rules = Get-TransportRule |Where-Object {($_.RouteMessageOutboundConnector -like '*SEPPmail.cloud*') -and ($_.Name -like '*SEPPmail.cloud*')} -ea 0
         #endregion collecting existing connectors and test for hybrid Setup
 
-        Write-Debug "Look for ARC-Signature for seppmail.cloud and add if missing"
+        Write-Debug "Look for ARC-Signature for SEPPmail.cloud and add if missing"
         try {
             [string]$ath = (Get-ArcConfig).ArcTrustedSealers
             if ($ath) {
