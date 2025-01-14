@@ -116,7 +116,7 @@ if ($sc365noTests -ne $true) {
         Write-Host "|           The module does not support                |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|           Windows Powershell 5.1 Desktop and earlier |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-        Write-Host "|           PLEASE install PowerShell CORE $minPSVersion+      |" -ForegroundColor Red -BackgroundColor Black
+        Write-Host "|           PLEASE install PowerShell CORE $requiredPSVersion+      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
         Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
         Break
@@ -134,7 +134,7 @@ if ($sc365noTests -ne $true) {
             Break
         }
     }
-    Write-Verbose "PowerShell version is $instPSVersion and equal or newer than required version $minPSVersion"
+    Write-Verbose "PowerShell version is $instPSVersion and equal or newer than required version $requiredPSVersion"
 
     Write-Verbose "Create Helper function for module installation"
     <#
