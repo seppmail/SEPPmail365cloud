@@ -587,4 +587,172 @@ function ConvertFrom-SC365IDNA {
     return $idn.GetUnicode($String)
 }
 
+function Get-SC365ParallelModeConfig {
+    [CmdletBinding()]
+    param (
+        [Parameter(
+            Mandatory = $false
+        )]
+        [string]$ExpectedArcTrustedSealers = "SEPPmail.cloud",  # Expected ArcTrustedSealers value
+
+        [Parameter(
+            Mandatory = $false
+        )]
+        [string]$InboundConnectorIdentity = "[SEPPmail.cloud] Inbound-Parallel",  # Expected InboundConnector identity pattern
+
+        [Parameter(
+            Mandatory = $false
+        )]
+        [bool]$ExpectedEFSkipIPs = $false,  # Expected EFSkipIPs value
+
+        [Parameter(
+            Mandatory = $false
+        )]
+        [bool]$ExpectedEFSkipLastIP = $true,  # Expected EFSkipLastIP value
+
+        [Parameter(
+            Mandatory = $false
+        )]
+        [string]$ExpectedContentFilterPolicyIdentity = "Default",  # Expected Hosted Content Filter Policy Identity
+
+        [Parameter(
+            Mandatory = $false
+        )]
+        [string]$ExpectedMarkAsSpamSpfRecordHardFail = "Off"  # Expected value for MarkAsSpamSpfRecordHardFail
+    )
+
+    Begin {
+        Write-Verbose "Initializing Exchange Online configuration check..."
+        $results = @{}  # Hashtable to store retrieved values
+        $warnings = @() # Array to store warnings
+    }
+
+    Process {
+        try {
+            # Get current ARC configuration
+            $arcConfig = Get-ArcConfig
+            $results["ArcTrustedSealers"] = $arcConfig.ArcTrustedSealers
+            if ($results["ArcTrustedSealers"] -notmatch "\b$ExpectedArcTrustedSealers\b") {
+                $warnings += "ArcTrustedSealers does not contain '$ExpectedArcTrustedSealers', Found: '$($arcConfig.ArcTrustedSealers)'. This will be Updated with the Setup of the SEPPmail.cloud connectors automatic cally"
+            }
+
+            # Get current InboundConnector configuration (use Get-InboundConnector to retrieve details)
+            if ($inboundConnector = Get-InboundConnector -Identity $InboundConnectorIdentity -ErrorAction SilentlyContinue) {
+                $results["EFSkipIPs"] = $inboundConnector.EFSkipIPs
+                $results["EFSkipLastIP"] = $inboundConnector.EFSkipLastIP    
+                if ($inboundConnector.EFSkipIPs -ne $ExpectedEFSkipIPs) {
+                    $warnings += "EFSkipIPs is not as expected! Expected: '$ExpectedEFSkipIPs', Found: '$($inboundConnector.EFSkipIPs)'"
+                }
+                if ($inboundConnector.EFSkipLastIP -ne $ExpectedEFSkipLastIP) {
+                    $warnings += "EFSkipLastIP is not as expected! Expected: '$ExpectedEFSkipLastIP', Found: '$($inboundConnector.EFSkipLastIP)'"
+                }    
+            } else {
+                Write-Warning "No Parallel Inbound Connector with Identity $InboundConnectorIdentity found"
+            }
+
+            # Get current Hosted Content Filter Policy configuration
+            $contentFilterPolicy = Get-HostedContentFilterPolicy -Identity $ExpectedContentFilterPolicyIdentity
+            $results["MarkAsSpamSpfRecordHardFail"] = $contentFilterPolicy.MarkAsSpamSpfRecordHardFail
+            if ($contentFilterPolicy.MarkAsSpamSpfRecordHardFail -ne $ExpectedMarkAsSpamSpfRecordHardFail) {
+                $warnings += "MarkAsSpamSpfRecordHardFail is not as expected! Expected: '$ExpectedMarkAsSpamSpfRecordHardFail', Found: '$($contentFilterPolicy.MarkAsSpamSpfRecordHardFail)'"
+            }
+        }
+        catch {
+            Write-Error "An error occurred while retrieving Exchange Online configuration. Error: $_"
+        }
+    }
+
+    End {
+        # Output the retrieved values
+        Write-Output $results
+
+        # Display warnings if any configuration does not match
+        if ($warnings.Count -gt 0) {
+            Write-Warning "The setup is not as required! See details below:"
+            foreach ($warning in $warnings) {
+                Write-Warning $warning
+            }
+        } else {
+            Write-Host "The setup matches the expected configuration." -ForegroundColor Green
+        }
+    }
+}
+
+function Set-SC365ParallelModeConfig {
+    [CmdletBinding(SupportsShouldProcess)]
+    param (
+        [Parameter(
+            Mandatory = $false
+        )]
+        [string]$ArcTrustedSealers = "seppmail.cloud", # Default value for ArcTrustedSealers
+        
+        [Parameter(
+            Mandatory = $false
+        )]        
+        [string]$InboundConnectorIdentity = "[SEPPmail.cloud] Inbound-Parallel", # Default pattern for InboundConnector Identity
+        
+        [Parameter(
+            Mandatory = $false
+        )]
+        [string]$ContentFilterPolicyIdentity = "Default", # Default value for Content Filter Policy Identity
+        
+        [Parameter(
+            Mandatory = $false
+        )]
+        [string]$ArcConfigIdentity = "Default" # Default value for ARC Config Identity
+    )
+
+    Begin {
+        Write-Verbose "Initializing Exchange Online configuration process..."
+        $progressCounter = 0
+        $progressSteps = 4
+    }
+
+    Process {
+        try {
+            # Task 1: Set ARC Config
+            $progressCounter++
+            Write-Progress -Activity "Configuring ARC" -Status "Step $progressCounter of $progressSteps" -PercentComplete (($progressCounter / $progressSteps) * 100)
+            
+            if ($PSCmdlet.ShouldProcess("ARC Configuration", "Setting ArcTrustedSealers to $ArcTrustedSealers")) {
+                Set-ArcConfig -Identity $ArcConfigIdentity -ArcTrustedSealers $ArcTrustedSealers
+                Write-Verbose "ARC Configuration updated successfully."
+            }
+
+            # Task 2: Configure InboundConnector EFSkipIPs
+            $progressCounter++
+            Write-Progress -Activity "Configuring Inbound Connector" -Status "Step $progressCounter of $progressSteps" -PercentComplete (($progressCounter / $progressSteps) * 100)
+            
+            if ($PSCmdlet.ShouldProcess("Inbound Connector EFSkipIPs", "Setting EFSkipIPs to $false for Identity $InboundConnectorIdentity")) {
+                Set-InboundConnector -Identity $InboundConnectorIdentity -EFSkipIPs $false
+                Write-Verbose "Inbound Connector EFSkipIPs set to false successfully."
+            }
+
+            # Task 3: Configure InboundConnector EFSkipLastIP
+            $progressCounter++
+            Write-Progress -Activity "Configuring Inbound Connector EFSkipLastIP" -Status "Step $progressCounter of $progressSteps" -PercentComplete (($progressCounter / $progressSteps) * 100)
+            
+            if ($PSCmdlet.ShouldProcess("Inbound Connector EFSkipLastIP", "Setting EFSkipLastIP to $true for Identity $InboundConnectorIdentity")) {
+                Set-InboundConnector -Identity $InboundConnectorIdentity -EFSkipLastIP $true
+                Write-Verbose "Inbound Connector EFSkipLastIP set to true successfully."
+            }
+
+            # Task 4: Configure Hosted Content Filter Policy
+            $progressCounter++
+            Write-Progress -Activity "Configuring Content Filter Policy" -Status "Step $progressCounter of $progressSteps" -PercentComplete (($progressCounter / $progressSteps) * 100)
+            
+            if ($PSCmdlet.ShouldProcess("Hosted Content Filter Policy", "Setting MarkAsSpamSpfRecordHardFail to Off for Identity $ContentFilterPolicyIdentity")) {
+                Set-HostedContentFilterPolicy -Identity $ContentFilterPolicyIdentity -MarkAsSpamSpfRecordHardFail Off
+                Write-Verbose "Content Filter Policy updated successfully."
+            }
+        }
+        catch {
+            Write-Error "An error occurred while configuring Exchange Online. Error: $_"
+        }
+    }
+
+    End {
+        Write-Progress -Activity "Configuring Exchange Online" -Status "Completed" -Completed
+    }
+}
 Register-ArgumentCompleter -CommandName Get-SC365TenantId -ParameterName MailDomain -ScriptBlock $paramDomSB

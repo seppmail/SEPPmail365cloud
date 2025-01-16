@@ -91,6 +91,8 @@ FunctionsToExport = @(
            'New-SC365Setup'
         'Remove-SC365Setup'
         'Update-SC365Setup'
+           'Get-SC365ParallelModeConfig'
+           'Set-SC365ParallelModeConfig'
        'Confirm-SC365TenantDefaultDomain'
            'Get-SC365DeploymentInfo'
           'Show-SC365Tenant'
