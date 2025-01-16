@@ -32,7 +32,7 @@
 
 - Provide a new report format based on PSWriteHTML
 - REport can be customized by the Partner with custom logo, url and logowidth. Example:
-  New-SC365ExOReport ~/Desktop -LogoSource 'https://www.powershell.co.at/wp-content/uploads/2020/01/Powershell_UserGroup_Austria.svg' -LogoUrl 'https://www.powershell.co.at' -LogoWidth '25%'
+  beta3: New-SC365ExOReport ~/Desktop -LogoSource 'https://www.powershell.co.at/wp-content/uploads/2020/01/Powershell_UserGroup_Austria.svg' -LogoUrl 'https://www.powershell.co.at' -LogoWidth '25%'
 - Include the SC365 Module version number in the EXO Report for [SEPPmail.cloud] Rules and Connectors to know which module version created the SEPPmail.cloud components
 
 #### Installation and Upgrade
