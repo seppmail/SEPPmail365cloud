@@ -26,11 +26,13 @@
 - In the CloudConfig JSON the IP Addresses have been updated to the latest status
 - The SEPPmail support e-Mail addresses are now added to the allowlist of senders in the HostedContentFilterPolicy. This prevents that quarantine reports are blocked.
 - Added a warning for setups in Inline Mode that inline setups affect all domains
-- ./scripts/Update-SC365Setup.ps1 is a script that updates an existing BASIC setups. Should work for most configurations. Clients may need to adapt the config later
+- New-CmdLet Update-SC365Setup is a script that updates an existing BASIC setups. Should work for most configurations. Clients may need to adapt the config later
 
 #### Reporting
 
 - Provide a new report format based on PSWriteHTML
+- REport can be customized by the Partner with custom logo, url and logowidth. Example:
+  New-SC365ExOReport ~/Desktop -LogoSource 'https://www.powershell.co.at/wp-content/uploads/2020/01/Powershell_UserGroup_Austria.svg' -LogoUrl 'https://www.powershell.co.at' -LogoWidth '25%'
 - Include the SC365 Module version number in the EXO Report for [SEPPmail.cloud] Rules and Connectors to know which module version created the SEPPmail.cloud components
 
 #### Installation and Upgrade

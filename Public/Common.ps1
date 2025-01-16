@@ -344,19 +344,56 @@ function New-SC365ExOReport {
            ParameterSetName = 'LiteralPath',
            Position = 0
         )]
-        [string]$Literalpath = '.',
+        [string]$LiteralPath = '.',
 
         [Parameter(   
            Mandatory   = $false,
-           HelpMessage = 'Literal path of the HTML report on disk',
+           HelpMessage = 'URL Path of the header logo',
            ParameterSetName = 'LiteralPath',
            Position = 1
         )]
         [Parameter(   
             Mandatory   = $false,
-            HelpMessage = 'Literal path of the HTML report on disk',
+            HelpMessage = 'URL Path of the header logo',
             ParameterSetName = 'FilePath',
             Position = 1
+         )]
+         [string]$LogoSource = 'https://downloads.seppmail.com/wp-content/uploads/logo_seppmail_V1_Screen_M.png',
+
+         [Parameter(   
+            Mandatory   = $false,
+            HelpMessage = 'Scaling factor in % of the header logo',
+            ParameterSetName = 'LiteralPath'
+         )]
+         [Parameter(   
+             Mandatory   = $false,
+             HelpMessage = 'Scaling factor in % of the header logo',
+             ParameterSetName = 'FilePath'
+          )]
+          [ValidatePattern('^(100|[1-9][0-9]?)%$')]
+          [string]$LogoWidth = '20%',
+
+          [Parameter(   
+            Mandatory   = $false,
+            HelpMessage = 'URL when clicking the header logo',
+            ParameterSetName = 'LiteralPath'
+         )]
+         [Parameter(   
+             Mandatory   = $false,
+             HelpMessage = 'URL when clicking the logo',
+             ParameterSetName = 'FilePath'
+          )]
+          [string]$LogoUrl = 'https://www.seppmail.cloud',
+ 
+        [Parameter(   
+           Mandatory   = $false,
+           HelpMessage = 'Literal path of the JSON backup on disk',
+           ParameterSetName = 'LiteralPath'
+        )]
+        [Parameter(   
+            Mandatory   = $false,
+            HelpMessage = 'Literal path of the JSON backup on disk',
+            ParameterSetName = 'FilePath'
          )]
          [switch]$jsonBackup
  
@@ -691,9 +728,13 @@ function New-SC365ExOReport {
 
             #region Generate the HTML report
             $finalReport = New-HTML -HtmlData {
-                New-HTMLImage -Source 'https://downloads.seppmail.com/wp-content/uploads/logo_seppmail_V1_Screen_M.png'  -Width '20%'
-                #New-HTMLLogo -LogoPath '/Users/romanstadlmair/Desktop/NewReport/' -LeftLogoName 'SEPPmailLogo.png' -LeftLogoString '/Users/romanstadlmair/Desktop/NewReport/SEPPmailLogo.png'
-                New-HTMLSection @sectionStyle -Headertext "Exchange Online Status Report for: $($OrgCfg.DisplayName)" -Content {    
+
+                if ($FileLogo) {
+                    New-HTMLLogo -LogoPath $logoPath
+                } else {
+                    New-HTMLImage -Source $LogoSource  -Width $LogoWidth -UrlLink $LogoUrl
+                }
+                    New-HTMLSection @sectionStyle -Headertext "Exchange Online Status Report for: $($OrgCfg.DisplayName)" -Content {    
                     New-HTMLContent @contentHeaderStyle @ContentbodyStyle -HeaderText 'Report Information' -Direction 'column' -Collapsed -Content {
                         $RawData =[ordered]@{
                             'Report created' = (Get-Date)
