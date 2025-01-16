@@ -4,7 +4,7 @@
 
 $InformationPreference = $true
 $ModulePath = $PSScriptRoot
-$InteractiveSession = [System.Environment]::UserInteractive
+$InterActiveSession = [System.Environment]::UserInteractive
 
 Write-Verbose 'Request terminating errors by default'
 $PSDefaultParameterValues['*:ErrorAction'] = [System.Management.Automation.ActionPreference]::Stop
@@ -17,7 +17,7 @@ Write-Verbose 'Loading Module Files'
 . $ModulePath\Public\Rules.ps1
 . $ModulePath\Public\Connectors.ps1
 
-if ($sc365notest -ne $true) {
+if ($sc365noTest -ne $true) {
     Write-Verbose "Testing Exchange Online connectivity"
     if (!(Test-SC365ConnectionStatus)) {
         Write-Warning "You are not connected to Exchange Online. Use `"Connect-ExchangeOnline`" to connect to your tenant"
