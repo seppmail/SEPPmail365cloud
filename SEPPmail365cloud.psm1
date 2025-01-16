@@ -13,6 +13,8 @@ $global:tenantAcceptedDomains = $null
 
 Write-Verbose 'Loading Module Files'
 . $ModulePath\Private\PrivateFunctions.ps1
+. $ModulePath\Public\Helpers.ps1
+. $ModulePath\Public\Report.ps1
 . $ModulePath\Public\Common.ps1
 . $ModulePath\Public\Rules.ps1
 . $ModulePath\Public\Connectors.ps1
