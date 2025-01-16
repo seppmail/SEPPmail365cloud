@@ -647,7 +647,7 @@ function Get-SC365ParallelModeConfig {
                     $warnings += "EFSkipLastIP is not as expected! Expected: '$ExpectedEFSkipLastIP', Found: '$($inboundConnector.EFSkipLastIP)'"
                 }    
             } else {
-                Write-Warning "No Parallel Inbound Connector with Identity $InboundConnectorIdentity found"
+                Write-Warning "No Parallel Inbound Connector with Identity `'$InboundConnectorIdentity`' found"
             }
 
             # Get current Hosted Content Filter Policy configuration
@@ -668,12 +668,12 @@ function Get-SC365ParallelModeConfig {
 
         # Display warnings if any configuration does not match
         if ($warnings.Count -gt 0) {
-            Write-Warning "The setup is not as required! See details below:"
+            Write-Warning "The setup is not as required! See details below and use Set-SC365ParallelModeConfig to prepare your tenant"
             foreach ($warning in $warnings) {
                 Write-Warning $warning
             }
         } else {
-            Write-Host "The setup matches the expected configuration." -ForegroundColor Green
+            Write-Output "`nThe setup MATCHES the expected configuration."
         }
     }
 }
@@ -684,60 +684,18 @@ function Set-SC365ParallelModeConfig {
         [Parameter(
             Mandatory = $false
         )]
-        [string]$ArcTrustedSealers = "seppmail.cloud", # Default value for ArcTrustedSealers
-        
-        [Parameter(
-            Mandatory = $false
-        )]        
-        [string]$InboundConnectorIdentity = "[SEPPmail.cloud] Inbound-Parallel", # Default pattern for InboundConnector Identity
-        
-        [Parameter(
-            Mandatory = $false
-        )]
-        [string]$ContentFilterPolicyIdentity = "Default", # Default value for Content Filter Policy Identity
-        
-        [Parameter(
-            Mandatory = $false
-        )]
-        [string]$ArcConfigIdentity = "Default" # Default value for ARC Config Identity
+        [string]$ContentFilterPolicyIdentity = "Default" # Default value for Content Filter Policy Identity        
     )
 
     Begin {
         Write-Verbose "Initializing Exchange Online configuration process..."
         $progressCounter = 0
-        $progressSteps = 4
+        $progressSteps = 1
     }
 
     Process {
         try {
-            # Task 1: Set ARC Config
-            $progressCounter++
-            Write-Progress -Activity "Configuring ARC" -Status "Step $progressCounter of $progressSteps" -PercentComplete (($progressCounter / $progressSteps) * 100)
-            
-            if ($PSCmdlet.ShouldProcess("ARC Configuration", "Setting ArcTrustedSealers to $ArcTrustedSealers")) {
-                Set-ArcConfig -Identity $ArcConfigIdentity -ArcTrustedSealers $ArcTrustedSealers
-                Write-Verbose "ARC Configuration updated successfully."
-            }
-
-            # Task 2: Configure InboundConnector EFSkipIPs
-            $progressCounter++
-            Write-Progress -Activity "Configuring Inbound Connector" -Status "Step $progressCounter of $progressSteps" -PercentComplete (($progressCounter / $progressSteps) * 100)
-            
-            if ($PSCmdlet.ShouldProcess("Inbound Connector EFSkipIPs", "Setting EFSkipIPs to $false for Identity $InboundConnectorIdentity")) {
-                Set-InboundConnector -Identity $InboundConnectorIdentity -EFSkipIPs $false
-                Write-Verbose "Inbound Connector EFSkipIPs set to false successfully."
-            }
-
-            # Task 3: Configure InboundConnector EFSkipLastIP
-            $progressCounter++
-            Write-Progress -Activity "Configuring Inbound Connector EFSkipLastIP" -Status "Step $progressCounter of $progressSteps" -PercentComplete (($progressCounter / $progressSteps) * 100)
-            
-            if ($PSCmdlet.ShouldProcess("Inbound Connector EFSkipLastIP", "Setting EFSkipLastIP to $true for Identity $InboundConnectorIdentity")) {
-                Set-InboundConnector -Identity $InboundConnectorIdentity -EFSkipLastIP $true
-                Write-Verbose "Inbound Connector EFSkipLastIP set to true successfully."
-            }
-
-            # Task 4: Configure Hosted Content Filter Policy
+            # Task 1: Configure Hosted Content Filter Policy
             $progressCounter++
             Write-Progress -Activity "Configuring Content Filter Policy" -Status "Step $progressCounter of $progressSteps" -PercentComplete (($progressCounter / $progressSteps) * 100)
             
