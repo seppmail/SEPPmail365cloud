@@ -496,10 +496,10 @@ Function Get-SC365SetupTime {
     begin {}
     process {
         $ibc = Get-InboundConnector -Identity '[SEPPmail.Cloud]*' | select-object -first 1
-        $ibc|Select-Object -ExpandProperty WhenCreated
+        $createDateTime = $ibc|Select-Object -ExpandProperty WhenCreated
 
         $days = (New-Timespan -Start (Get-Date $ibc.WhenCreated) -End (Get-Date)).Days
-        Write-Output "SEPPmail Cloud was created $days days ago"
+        Write-Output "Create time was $createDateTime ($days days ago)"
         $commentstime = ((($ibc.comment|select-String 'Created with') -split 'version').trim()[-1] -split 'on').trim()[-1]
         Write-Verbose "Inbound Connector Comments writes install date is: $commentsTime"
     }
