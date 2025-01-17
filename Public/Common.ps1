@@ -683,17 +683,11 @@ function Update-SC365Setup {
         )
     ]
     param(
-        # Indicates whether the old setup should be removed during the update process.
-        [Parameter(
-            Mandatory = $false,
-            HelpMessage = "Specify if the old setup should be removed during the update process."
-        )]
-        [bool]$remove = $false,
 
         # Specifies the name for the backup to be created during the update process.
         [Parameter(
             Mandatory = $false,
-            HelpMessage = "Provide a custom name for the backup mailflow object during the update process."
+            HelpMessage = "Provide a custom name for the backup mail flow object during the update process."
         )]
         [string]$BackupName = 'SC-BKP',
 
@@ -813,37 +807,27 @@ function Update-SC365Setup {
 
                 #endregion
 
-                #region 8 - create New Transport rules
+                #region 8 - create New Transport rules Disabled
                 Write-Verbose "8 - Creating new Transport Rules" 
-                New-SC365Rules -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -routing $DeplInfo.routing  -PlacementPriority Top @PSBoundParameters
+                New-SC365Rules -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -routing $DeplInfo.routing  -PlacementPriority Top @PSBoundParameters -disabled
 
                 #endregion
 
-                #region 9 - disable old Transport rules
-                $trWildcard = '[' + $BackupName + ']*'
+                #region 9 - disable old Transport rules #Keep enabled for partner customization.
+                <#$trWildcard = '[' + $BackupName + ']*'
                 Write-Verbose "9 - Disable old Transport Rules"
                 if ($PSCmdlet.ShouldProcess("Disabling Transport Rules matching $trWildcard")) {
                     Get-TransportRule -Identity $trWildcard | Disable-TransportRule -Confirm:$false @psboundParameters
-                } 
+                }#> 
                 #endregion 9
 
-                #region 10 - Disable old connectors
-                Write-Verbose "10 - Disable old connectors" 
+                #region 10 - Disable old connectors # Keep enabled for partner customizing
+                <#Write-Verbose "10 - Disable old connectors" 
                 Set-InBoundConnector -Identity $bkpConnWildcard -Enabled:$false @psBoundParameters
                 Set-OutBoundConnector -Identity $bkpConnWildcard -Enabled:$false @PSBoundParameters
+                #>
 
                 #endregion 10
-
-                #region 11 Remove old stuff
-                if ($remove) { 
-                    Write-Verbose "11a - Deleting old Transport Rules"
-                    Get-TransportRule -Identity $trWildcard | Remove-TransportRule -confirm:$false
-                    Write-Verbose "11b - Deleting old Inbound Connector"
-                    Remove-InBoundConnector -Identity $bkpConnWildcard -confirm:$false
-                    Write-Verbose "11c - Deleting old Outbound Connector"
-                    Remove-OutBoundConnector -Identity $bkpConnWildcard -confirm:$false
-                }
-                #endregion
             }
             else {
                 Write-Error "STOPPING - Found Existing Backup Objects - clean up the environment from $BackupName objects (rules and connectors) and TRY again"
