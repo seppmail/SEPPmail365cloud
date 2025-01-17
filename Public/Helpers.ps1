@@ -493,15 +493,24 @@ Function Get-SC365SetupTime {
 
     param ()
 
-    begin {}
+    begin {
+        if(!(Test-SC365ConnectionStatus)) {
+            throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"
+            break
+        }
+    }
     process {
-        $ibc = Get-InboundConnector -Identity '[SEPPmail.Cloud]*' | select-object -first 1
-        $createDateTime = $ibc|Select-Object -ExpandProperty WhenCreated
+        $ibc = Get-InboundConnector -Identity '[SEPPmail.Cloud]*' -ErrorAction SilentlyContinue| select-object -first 1 -ErrorAction SilentlyContinue
+        if ($ibc) {
+            $createDateTime = $ibc|Select-Object -ExpandProperty WhenCreated
 
-        $days = (New-Timespan -Start (Get-Date $ibc.WhenCreated) -End (Get-Date)).Days
-        Write-Output "Create time was $createDateTime ($days days ago)"
-        $commentstime = ((($ibc.comment|select-String 'Created with') -split 'version').trim()[-1] -split 'on').trim()[-1]
-        Write-Verbose "Inbound Connector Comments writes install date is: $commentsTime"
+            $days = (New-Timespan -Start (Get-Date $ibc.WhenCreated) -End (Get-Date)).Days
+            Write-Output "Create time was $createDateTime ($days days ago)"
+            $commentstime = ((($ibc.comment|select-String 'Created with') -split 'version').trim()[-1] -split 'on').trim()[-1]
+            Write-Verbose "Inbound Connector SEPPmail Setup Comments writes install date is: $commentsTime"
+        } else {
+            Write-Warning "No inbond connector found, no or incomplete Setup"
+        }
     }
     end{}
 }
