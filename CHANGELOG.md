@@ -9,6 +9,7 @@
 - The init and the upgrade script has moved to a new folder "Scripts"
 - New-SC365Connectors now has a new -Name Parameter. It changes the string inside the square brackets and you could create connectors with custom names, i.e. [PARTNER] Outbound-Inline. This is for special setups and is used for the Upgrade-Script. Do __not use__ custom names in production !
 - redesigned the init script for a smarter dependency module installation
+- beta3: Redesigned Get-SC365Setup. No more parameters, just get the deploymentinfo from the cloud and show whats there.
 
 ### Bugs
 

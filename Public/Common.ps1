@@ -625,70 +625,42 @@ function New-SC365Setup {
     # Reads inline in "InbohndOnly" mode setup config
 #>
 function Get-SC365Setup {
-    [CmdletBinding(DefaultParameterSetName='parallel')]
-    
-    param(
-        [Parameter(
-            ParameterSetName = 'parallel',
-            Mandatory=$false,
-            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)"
-            )]
-            [ValidateNotNullOrEmpty()]
-            [ValidateSet('parallel','inline','p','i')]
-        [Parameter(
-            ParameterSetName = 'inline',
-            Mandatory=$false,
-            HelpMessage="Inline routing via SEPPmail (MX ==> SEPPmail), or routing via Microsoft (MX ==> Microsoft)"
-            )]
-            [ValidateNotNullOrEmpty()]
-            [ValidateSet('parallel','inline','p','i')]
-        [String]$routing,
-
-        [Parameter(
-            ParameterSetName = 'inline',
-            Mandatory=$false,
-            HelpMessage="No routing of outbound traffic via SEPPmail.cloud"
-            )]
-        [switch]$InBoundOnly
-    )
+    [CmdletBinding()]
+    param()
     Begin {
         if(!(Test-SC365ConnectionStatus)) {
             throw [System.Exception] "You're not connected to Exchange Online - please connect prior to using this CmdLet"
         } else {
             Write-Verbose "Connected to Exchange Organization `"$Script:ExODefaultDomain`"" -InformationAction Continue
         }
-        if (!((!($InboundOnly)) -or (!($routing)))) {
-            try {
-                $deploymentInfo = Get-SC365DeploymentInfo
-            } catch {
-                Throw [System.Exception] "Could not autodetect SEPPmail.cloud Deployment Status, use manual parameters"
-            }
-            
-            if ($DeploymentInfo.DeployMentStatus -eq $false) {
-                Write-Error "SEPPmail.cloud setup not (fully) deployed. Use Cloud-Portal and fix deployment."
-                break
-            } else {
-                if ($Deploymentinfo) {
-                    if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Cloud not autodetect routig info, use manual parameters"; break}
-                    if ($deploymentInfo.InBoundOnly -eq $true) {$InBoundOnly = $deploymentInfo.InBoundOnly} else {$InBoundOnly = $false}
-                }
-            }
+        Write-Verbose "Detecting SEPPmail.cloud deployment scenario to read Exo Deployment"
+        try {
+            $deploymentInfo = Get-SC365DeploymentInfo
+        } catch {
+            Throw [System.Exception] "Could not autodetect SEPPmail.cloud Deployment Status, use manual parameters"
+        }
+        
+        if ($deploymentInfo.DeployMentStatus -eq $false) {
+            Write-Error "SEPPmail.cloud setup not (fully) deployed. Use Cloud-Portal and fix deployment."
+            break
         } else {
-            if ($deploymentInfo.routing -eq 'p') {$routing = 'parallel'}
-            if ($deploymentInfo.routing -eq 'i') {$routing = 'inline'}
+            if ($deploymentInfo) {
+                if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Cloud not autodetect routing info, use manual parameters"; break}
+                if ($deploymentInfo.InBoundOnly -eq $true) {$InBoundOnly = $deploymentInfo.InBoundOnly} else {$InBoundOnly = $false}
+            }
         }
     }
     Process {
         try {
             if ($InBoundOnly -eq $true) {
                 Write-Verbose "Get SEPPmail.cloud Connectors in inbound-only mode"
-                $smcConn = Get-SC365Connectors -Routing $routing -inboundonly:$true
+                $smcConn = Get-SC365Connectors -Routing $routing -inboundOnly:$true
             } else {
                 Write-Verbose "Get SEPPmail.cloud Connectors"
-                $smcConn = Get-SC365Connectors -Routing $routing -inboundonly:$false
+                $smcConn = Get-SC365Connectors -Routing $routing -inboundOnly:$false
             }
             if ($InBoundOnly -eq $false) {
-                Write-Verbose "Get SEPPmail.cloud Transpprt Rules"
+                Write-Verbose "Get SEPPmail.cloud Transport Rules"
                 $smcTRules = Get-SC365Rules
             }    
         }
