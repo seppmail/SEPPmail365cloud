@@ -266,7 +266,7 @@ function New-SC365ExOReport {
                 HlpInf = 'ARC is used to run SEPPmail.cloud or the SEPPmail Appliance in parallel mode with Exchange Online'
             }
             $ExoData['DkmSig']=[ordered]@{
-                VarNam = 'dkmsig'
+                VarNam = 'dkmSig'
                 WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-DkimSigningConfig'
                 RawCmd = 'Get-DkimSigningConfig'
                 TabDat = 'Domain,Enabled,Status,Selector1CNAME,Selector2CNAME,WhenCreated,WhenChanged'
@@ -274,7 +274,7 @@ function New-SC365ExOReport {
                 HlpInf = 'DKIM Keys per Domain, DNS entries contains a public key used to verify the digital signature of an email. Makes only sense if MX record points to Microsoft.'
             }
             $ExoData['DanSts']=[ordered]@{
-                VarNam = 'dansts'
+                VarNam = 'danSts'
                 WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-Arc'
                 RawCmd = 'Get-SmtpDaneInboundStatus -DomainName (($accDom|Where-Object {$_.Default -eq $true}).DomainName)'
                 TabDat = ''
@@ -282,7 +282,7 @@ function New-SC365ExOReport {
                 HlpInf = 'A DANE record is a DNSSEC-protected TLSA record that specifies the expected TLS certificate or certificate authority information for securely connecting to a server.'
             }
             $ExoData['ibdCon']=[ordered]@{
-                VarNam = 'ibdcon'
+                VarNam = 'ibdCon'
                 WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/Get-InboundConnector'
                 RawCmd = 'Get-InboundConnector'
                 TabDat = 'Identity,Enabled,ConnectorType,SenderDomains,SenderIPAddresses,TlsSenderCertificateName,EFSkipLastIP,EFSkipIPs,Comment,WhenCreated,WhenChanged'
@@ -571,11 +571,10 @@ function New-SC365ExOReport {
                             Write-Verbose "Add SEPPmail.cloud PowerShell Module version number to SEPPmail Transportrules if available"
                             foreach ($rule in $tapRls) {
                                 $tnrVersion = Get-SC365ModuleVersion -InputString $rule.Comments
-                                $rule|Add-Member -membertype NoteProperty -Name SC365Version -value $tnrVersion
+                                $rule|Add-Member -memberType NoteProperty -Name SC365Version -value $tnrVersion
                             }
-                            New-HTMLTable -DataTable $tapRls @tablestyle -DefaultSortColumn 'Name' -SearchBuilder {
-                                New-HTMLTableCondition -Name 'Name' -ComparisonType string -Operator like -Value '[SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row #FIXME: doesnt match anymore :-)
-                            }
+                            New-HTMLTable -DataTable $tapRls @tableStyle -DefaultSortColumn 'Name' -SearchBuilder {
+                                New-HTMLTableCondition -Name 'Name' -ComparisonType string -Operator like -Value 'SEPPmail' -FontWeight bold -Color $colorSEPPmailGreen -Row
                         } else {
                             New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "No data found"}
                             
