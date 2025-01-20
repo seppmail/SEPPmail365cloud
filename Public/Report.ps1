@@ -648,7 +648,6 @@ function New-SC365ExOReport {
                 Write-Verbose "If JSONBackup is selected, write a JSON Backup"
                 if ($jsonBackup) {
                     # Store json in the same location as HTML
-                    #FIXME erzeuge RAWDATA
                     foreach ($ExoDataKey in $ExoData.Keys) {
                         $InfoData = $ExoData[$ExoDataKey]
                         $VarNamRawJSON = "$($InfoData.VarNam)" + "Raw"
