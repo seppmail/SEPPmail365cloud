@@ -385,6 +385,18 @@ function New-SC365ExOReport {
                 HdgTxt = 'Hybrid Mailflow Datacenter IPs'
                 HlpInf = 'List of IP addresses used by Microsoft datacenters for managing hybrid mail flow in an Exchange hybrid deployment'
             }
+            $ExoData['mflStr']=[ordered]@{
+                VarNam = 'mflStr'
+                WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/get-mailflowstatusreport?view=exchange-ps'
+                RawCmd = 'Get-MailFlowStatusReport'
+                TabDat = 'Date,EventType, Direction, Messagecount'
+                HdgTxt = 'Mailflow Status Report'
+                HlpInf = 'This CmdLet provides a summary report of the status of mail flow within the organization. This cmdlet provides high-level information about the number of messages processed by Exchange Online over a specific period, categorized by severity'
+            }
+            #FIXME: Get-IPv6StatusForAcceptedDomain -Domain rconsult.at | select *
+            #FIXME: For parallel Get-DKimSigningConfig
+            #FIXME: For parallel: Get-DNSSecStatusForVerifiedDomain
+            #FIXME: Get-SmtpDaneInboundStatus
             <#$ExoData['nnnNnn']=[ordered]@{
                 VarNam = 'nnnNnn'
                 WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/nnn'
@@ -662,6 +674,17 @@ function New-SC365ExOReport {
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "No $ExoData.iorCon.HdgTxt found"} 
                     }
                 }
+                # mflStr
+                New-HTMLContent @contentHeaderStyle @ContentBodyStyle -HeaderText 'MailFlow' -Direction 'column' -Collapsed -Content {
+                    if ($mflStr) {
+                        New-HTMLHeading -Heading h2 -HeadingText $ExoData.mflStr.HdgTxt -Color $ColorSEPPmailGreen -Underline
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.iorCon.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.mflStr.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
+                        New-HTMLTable -DataTable $mflStr @tableStyle
+                    } else {
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "No $ExoData.mflStr.HdgTxt found"} 
+                    }
+                }
             }
         }
             #endregion
@@ -680,20 +703,19 @@ function New-SC365ExOReport {
                     }                 
                     $jsonData = Set-Content -Value $JsonData -Path $jsonPath -force
                 }
-
             }
-            catch{
+            catch {
                 Write-Warning "Could not write report to $FinalPath"
                 if ($IsWindows) {
                     $FinalPath = Join-Path -Path $env:localappdata -ChildPath $ReportFilename
                     if ($jsonBackup) {
-                        $jsonpath = (Join-Path -Path (split-path $FinalPath -Parent) -ChildPath (split-path $FinalPath -leafbase)) + '.json'
+                        $jsonpath = (Join-Path -Path (split-path $FinalPath -Parent) -ChildPath (split-path $FinalPath -leafBase)) + '.json'
                     }
                 }
                 if (($IsMacOs) -or ($isLinux)) {
-                    $Finalpath = Join-Path -Path $env:HOME -ChildPath $ReportFilename
+                    $FinalPath = Join-Path -Path $env:HOME -ChildPath $ReportFilename
                     if ($jsonBackup) {
-                        $jsonpath = (Join-Path -Path (split-path $FinalPath -Parent) -ChildPath (split-path $FinalPath -leafbase)) + '.json'
+                        $jsonpath = (Join-Path -Path (split-path $FinalPath -Parent) -ChildPath (split-path $FinalPath -leafBase)) + '.json'
                     }
                 }
                 Write-Verbose "Writing report to $finalPath"
@@ -702,23 +724,22 @@ function New-SC365ExOReport {
                     if ($jsonBackup) {
                         # Store json in the same location as HTML
                         Set-Content -Value $JsonData -Path $jsonPath -force
-                    }
+                        if ($IsWindows) {
+                            Write-Information -MessageData "Opening $finalPath with default browser"
+                            Invoke-Expression "& '$finalpath'"
+                        }
+                        if (($IsMacOs) -or ($isLinux)) {
+                            "Report is stored on your disk at $finalpath. Open with your favorite browser."
+                            if ($jsonBackup) {
+                                "Json Backup is stored on your disk at $jsonPath. Open with your favorite editor."
+                            }
+                        }
+                    }        
                 }
                 catch {
                     $error[0]
                 }
             }
-            if ($IsWindows) {
-                Write-Information -MessageData "Opening $finalPath with default browser"
-                Invoke-Expression "& '$finalpath'"
-            }
-            if (($IsMacOs) -or ($isLinux)) {
-                "Report is stored on your disk at $finalpath. Open with your favorite browser."
-                if ($jsonBackup) {
-                    "Json Backup is stored on your disk at $jsonPath. Open with your favorite editor."
-                }
-            }
-        
         }
         catch {
                 throw [System.Exception] "Error: $($_.Exception.Message)"
