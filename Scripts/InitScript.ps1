@@ -3,7 +3,7 @@
 $ModuleRootPath = Split-Path -Path $PSScriptRoot -Parent
 $ManiFestFile = Import-PowerShellDataFile -Path $ModuleRootPath/SEPPmail365cloud.psd1
 $Global:ModuleVersion = $ManiFestFile.ModuleVersion.ToString()
-[string]$requiredPSVersion = '7.4.6'
+[string]$requiredPSVersion = '7.5.0'
 
 $requiredModules = @{
      "ExchangeOnlineManagement" = "3.7.0"
