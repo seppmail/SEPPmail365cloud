@@ -718,13 +718,8 @@ function Update-SC365Setup {
         Write-Host "|    6.) Attach old Transport rules to old Connector with BackupNam   |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|    ----------------- OLD SETUP STILL RUNNING ------------------     |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|    7.) Rename NEW Connectors to original names                      |" -ForegroundColor Magenta -BackgroundColor Black
-        Write-Host "|    8.) Create new transport rules -PlacementPriority TOP            |" -ForegroundColor Magenta -BackgroundColor Black
-        Write-Host "|    -------------------- NEW SETUP RUNNING ----------------------    |" -ForegroundColor Magenta -BackgroundColor Black
-        Write-Host "|    9.) Disable old rules                                            |" -ForegroundColor Magenta -BackgroundColor Black
-        Write-Host "|   10.) Disable old connectors                                       |" -ForegroundColor Magenta -BackgroundColor Black
-        Write-Host "|   11.) on -remove delete old transport rules and connectors         |" -ForegroundColor Magenta -BackgroundColor Black
-        Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
-        Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
+        Write-Host "|    8.) Create new transport rules -PlacementPriority BOTTOM         |" -ForegroundColor Magenta -BackgroundColor Black
+        Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black        Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "| If you have any:                                                    |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|   - customizations to SEPPmail.cloud rules                          |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|   - other corporate transport rules                                 |" -ForegroundColor Magenta -BackgroundColor Black
@@ -757,8 +752,6 @@ function Update-SC365Setup {
 
                 #region 3 - create new connectors with temp Name
                 Write-Verbose "3 - Creating new connectors with temp name" 
-                #$newConnectors = New-SC365connectors -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -region $DeplInfo.region -routing $DeplInfo.routing -NamePrefix $tempPrefix # -routing $($DeplInfo.Routing) -region $($DeplInfo.region) #FIXME:
-
                 if ($PSCmdlet.ShouldProcess('New connectors','create')){
                     $newConnectors = New-SC365connectors -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -region $DeplInfo.region -routing $DeplInfo.routing -NamePrefix $tempPrefix @psBoundParameters
                 }
@@ -783,7 +776,6 @@ function Update-SC365Setup {
                 Write-Verbose "5b - Rename existing SEPPmail.cloud Outbound Connector"
                 $oldObc = Get-OutBoundConnector -Identity "[SEPPmail.cloud] OutBound-*"
                 Set-OutBoundConnector -Identity $($oldObc.Identity) -Name ($oldObc.Identity -replace 'SEPPmail.Cloud',$backupName) @PSBoundParameters
-
                 #endregion
 
                 #region 6 - attach old outbound rules to old connector
@@ -793,7 +785,6 @@ function Update-SC365Setup {
                 foreach ($rule in $rulesToChange) {
                     Set-TransportRule -Identity $($rule.Identity) -RouteMessageOutboundConnector $bkpObc @PSBoundParameters
                 }
-
                 #endregion
 
                 #region 7 - rename new connectors to final Names
@@ -809,25 +800,17 @@ function Update-SC365Setup {
 
                 #region 8 - create New Transport rules Disabled
                 Write-Verbose "8 - Creating new Transport Rules" 
-                New-SC365Rules -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -routing $DeplInfo.routing  -PlacementPriority Top @PSBoundParameters -disabled
+                New-SC365Rules -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -routing $DeplInfo.routing  -PlacementPriority Bottom @PSBoundParameters -Disabled
 
                 #endregion
-
-                #region 9 - disable old Transport rules #Keep enabled for partner customization.
-                <#$trWildcard = '[' + $BackupName + ']*'
-                Write-Verbose "9 - Disable old Transport Rules"
-                if ($PSCmdlet.ShouldProcess("Disabling Transport Rules matching $trWildcard")) {
-                    Get-TransportRule -Identity $trWildcard | Disable-TransportRule -Confirm:$false @psboundParameters
-                }#> 
-                #endregion 9
-
-                #region 10 - Disable old connectors # Keep enabled for partner customizing
-                <#Write-Verbose "10 - Disable old connectors" 
-                Set-InBoundConnector -Identity $bkpConnWildcard -Enabled:$false @psBoundParameters
-                Set-OutBoundConnector -Identity $bkpConnWildcard -Enabled:$false @PSBoundParameters
-                #>
-
-                #endregion 10
+                #Region Infobblock Success
+                Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Black
+                Write-Host "|  The CmdLet has finiehd and the OLD SETUP [SC-BPK] IS STILL ACTIVE  |" -ForegroundColor Magenta -BackgroundColor Black
+                Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
+                Write-Host "|       CUSTOMIZE your setup and ENABLE the new setup when done.      |" -ForegroundColor Magenta -BackgroundColor Black
+                Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
+                Write-Host "|        After final tests you can DELETE the [SC-BKP] objects        |" -ForegroundColor Magenta -BackgroundColor Black
+                Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Black
             }
             else {
                 Write-Error "STOPPING - Found Existing Backup Objects - clean up the environment from $BackupName objects (rules and connectors) and TRY again"
