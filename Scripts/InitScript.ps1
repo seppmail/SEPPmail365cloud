@@ -6,7 +6,7 @@ $Global:ModuleVersion = $ManiFestFile.ModuleVersion.ToString()
 [string]$requiredPSVersion = '7.5.0'
 
 $requiredModules = @{
-     "ExchangeOnlineManagement" = "3.7.0"
+     "ExchangeOnlineManagement" = "3.7.1"
                  "DNSClient-PS" = "1.1.1"
                   "PSWriteHTML" = "1.27.0"
     }
