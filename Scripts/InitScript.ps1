@@ -8,7 +8,7 @@ $Global:ModuleVersion = $ManiFestFile.ModuleVersion.ToString()
 $requiredModules = @{
      "ExchangeOnlineManagement" = "3.7.1"
                  "DNSClient-PS" = "1.1.1"
-                  "PSWriteHTML" = "1.27.0"
+                  "PSWriteHTML" = "1.28.0"
     }
 
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
@@ -186,9 +186,15 @@ if ($sc365noTests -ne $true) {
     Write-Verbose "Check required Module availability"
     foreach ($module in $requiredModules.Keys) {
         $version = $requiredModules[$module]
-        if (!(Get-Module $module -ListAvailable)) {
+        $localInstVersion = (Get-Module $module -ListAvailable).Version
+        if ($localInstVersion) {
+            $semanticLocalInstVersion = [System.Management.Automation.SemanticVersion]::Parse($localInstVersion.ToString())
+            $semanticRequiredVersion = [System.Management.Automation.SemanticVersion]::Parse($Version)
+        }
+        if ((!($localInstVersion)) -or ($semanticLocalInstVersion -lt $semanticRequiredVersion )) {
             try {
                 Write-Verbose "Installing required module $module" -InformationAction Continue
+                Write-Output "Installing/Updating Module $module with required version $version "
                 Invoke-RepoInstall -artefact $module -artefactVersion $version
             } catch {
                 Write-Error "Could not install required Module $module with version $version. Please install manually from the PowerShell Gallery"
@@ -197,7 +203,7 @@ if ($sc365noTests -ne $true) {
         }
     }
 }
-Write-Verbose 'Initialize argument completer scriptblocks'
+Write-Verbose 'Initialize argument completer scriptBlocks'
 $script:paramDomSB = {
     # Read Accepted Domains for domain selection
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
