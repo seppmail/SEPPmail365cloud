@@ -27,7 +27,8 @@
 - In the CloudConfig JSON the IP Addresses have been updated to the latest status
 - The SEPPmail support e-Mail addresses are now added to the allowlist of senders in the HostedContentFilterPolicy. This prevents that quarantine reports are blocked.
 - Added a warning for setups in Inline Mode that inline setups affect all domains
-- New-CmdLet Update-SC365Setup is a script that updates an existing BASIC setups. Should work for most configurations. Clients may need to adapt the config later
+- New-CmdLet Update-SC365Setup is a script that updates an existing BASIC setups. Should work for most configurations. Clients may need to adapt the config later.
+- beta3: Update-SC365Setup now leaves the old setup active, so that the partner may adapt until things work.
 
 #### Reporting
 
