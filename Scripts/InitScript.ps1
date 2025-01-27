@@ -126,7 +126,7 @@ if ($sc365noTests -ne $true) {
         if ($minPSVersion -gt $instPSVersion) {
             Write-Host "+------------------------------------------------------+" -ForegroundColor Red -BackgroundColor Black
             Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
-            Write-Host "|           !!! Wrong PowerShell VERSION !!!           |" -ForegroundColor Red -BackgroundColor Black
+            Write-Host "|      !!! Wrong PowerShell Version $instPSversion found !!!    |" -ForegroundColor Red -BackgroundColor Black
             Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
             Write-Host "|           PLEASE install PowerShell CORE $minPSVersion+      |" -ForegroundColor Red -BackgroundColor Black
             Write-Host "|                                                      |" -ForegroundColor Red -BackgroundColor Black
@@ -186,7 +186,7 @@ if ($sc365noTests -ne $true) {
     Write-Verbose "Check required Module availability"
     foreach ($module in $requiredModules.Keys) {
         $version = $requiredModules[$module]
-        $localInstVersion = (Get-Module $module -ListAvailable).Version
+        $localInstVersion = (Get-Module $module -ListAvailable|Sort-Object Version -Descending)[0].Version
         if ($localInstVersion) {
             $semanticLocalInstVersion = [System.Management.Automation.SemanticVersion]::Parse($localInstVersion.ToString())
             $semanticRequiredVersion = [System.Management.Automation.SemanticVersion]::Parse($Version)
