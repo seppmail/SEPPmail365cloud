@@ -677,6 +677,53 @@ function Get-SC365Setup {
      }
 }
 
+<#
+.SYNOPSIS
+    Updates the SEPPmail.cloud setup in Exchange Online by performing a controlled upgrade of transport rules and connectors.
+
+.DESCRIPTION
+    The `Update-SC365Setup` function helps update the SEPPmail.cloud integration with Exchange Online while minimizing disruptions.
+    It follows a structured approach to renaming and replacing existing transport rules and connectors with updated versions.
+
+    The update process includes:
+    1. Checking for existing backup objects.
+    2. Renaming existing SEPPmail.cloud transport rules to a backup name.
+    3. Creating temporary connectors with a prefixed name.
+    4. Reconfiguring outbound transport rules to use the new connectors.
+    5. Renaming existing SEPPmail.cloud connectors to backup names.
+    6. Reattaching old transport rules to the renamed backup connectors.
+    7. Renaming the new connectors to their final names.
+    8. Creating new transport rules in a disabled state for review.
+
+    This function is designed for standard SEPPmail.cloud setups. If you have customizations in your Exchange Online environment, 
+    additional manual adjustments may be necessary.
+
+.PARAMETER BackupName
+    Specifies a custom prefix for the backup mail flow objects created during the update process.
+    The default value is 'SC-BKP'.
+
+.PARAMETER TempPrefix
+    Specifies the prefix used for temporary connectors during the update process.
+    The default value is 'temp'.
+
+.EXAMPLE
+    Update-SC365Setup
+
+    Runs the update process using the default backup name ('SC-BKP') and temporary prefix ('temp').
+
+.EXAMPLE
+    Update-SC365Setup -BackupName "SEPPmail-Backup" -TempPrefix "TempConn"
+
+    Runs the update process with custom naming for backup and temporary objects.
+
+.NOTES
+    - This script should only be used for standard SEPPmail.cloud setups.
+    - After execution, manual verification and testing are recommended.
+    - The old setup remains active until the administrator enables the new configuration.
+
+.LINK
+    https://github.com/seppmail/SEPPmail365cloud
+#>
 function Update-SC365Setup {
     [CmdletBinding(
         SupportsShouldProcess = $true
