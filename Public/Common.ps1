@@ -782,81 +782,95 @@ function Update-SC365Setup {
         if ($response -eq 'MURPHY') {
 
             Write-Verbose '1 - Checking if there are existing Backup objects in the Exchange Tenant'
+
+            # Define total steps for progress calculation
+            $totalSteps = 8
+            $step = 0
+            
             $backupWildCard = '[' + $backupName + '*'
             Write-Verbose "1a - Checking if there are any orphaned backup objects"
-            if (!((Get-InboundConnector -Identity $BackupWildcard -ea SilentlyContinue) -or (Get-OutboundConnector -Identity $backupWildCard -ea SilentlyContinue) -or (Get-TransportRule -Identity $backupWildCard -ea SilentlyContinue))) {
-                #region 1a - Get-DeploymentInfo
+            if (!((Get-InboundConnector -Identity $BackupWildcard -ea SilentlyContinue) -or 
+                  (Get-OutboundConnector -Identity $backupWildCard -ea SilentlyContinue) -or 
+                  (Get-TransportRule -Identity $backupWildCard -ea SilentlyContinue))) {
+            
+                # Step 1: Get Deployment Info
+                $step++
+                Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Retrieving Deployment Info ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "1b - Getting DeploymentInfo"
                 $DeplInfo = Get-SC365DeploymentInfo
-
-                #region 2 - rename existing rules to backup name
+            
+                # Step 2: Rename Existing Rules
+                $step++
+                Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Renaming Transport Rules ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "2 - Rename existing SEPPmail.cloud rules"
                 $oldTrpRls = Get-TransportRule -Identity '[SEPPmail.cloud]*'
                 foreach ($rule in $oldTrpRls) {
                     Set-TransportRule -Identity $rule.Name -Name ($rule.Name -replace 'SEPPmail.Cloud', $BackupName) @psBoundParameters
                 }
-                #endregion rename existing rules to backup name
-
-                #region 3 - create new connectors with temp Name
+            
+                # Step 3: Create New Connectors
+                $step++
+                Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Creating New Connectors ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "3 - Creating new connectors with temp name" 
-                if ($PSCmdlet.ShouldProcess('New connectors','create')){
+                if ($PSCmdlet.ShouldProcess('New connectors', 'create')) {
                     $newConnectors = New-SC365connectors -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -region $DeplInfo.region -routing $DeplInfo.routing -NamePrefix $tempPrefix @psBoundParameters
                 }
-                #endregion create new connectors with temp Name
-                #region 4 - set outbound rule to new connector (Inline 200, parallel 1xx)
+            
+                # Step 4: Update Transport Rules to Use New Connectors
+                $step++
+                Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Updating Transport Rules ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "4 - Set outbound rules to new connector" 
                 $oldObc = Get-OutboundConnector -Identity '[SEPPmail.cloud] Outbound-*'
                 [string]$tempObcName = $TempPrefix + $($OldObc.Identity)
-                $rulesToChange = Get-TransportRule -Identity '[*' | Where-Object {($null -ne $_.RouteMessageOutboundConnector) -and ($_.Name -like "*$backupName*")}
+                $rulesToChange = Get-TransportRule -Identity '[*' | Where-Object {($_.RouteMessageOutboundConnector) -and ($_.Name -like "*$backupName*")}
                 foreach ($rule in $rulesToChange) {
                     Set-TransportRule -Identity $($rule.Identity) -RouteMessageOutboundConnector $tempObcName @psBoundParameters
                 }
-                #endregion set outbound rule to new connector
-
-                #region 5 - rename old connectors to backup Names
+            
+                # Step 5: Rename Old Connectors
+                $step++
+                Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Renaming Old Connectors ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "5 - Rename existing SEPPmail.cloud Connectors to $backupName"
-                Write-Verbose "5a - Rename existing SEPPmail.cloud Inbound Connector"
                 $oldIbc = Get-InboundConnector -Identity '[SEPPmail.cloud] Inbound-*' 
-
-                Set-InboundConnector -Identity $($OldIbc.Identity) -Name ($($OldIbc.Identity) -replace 'SEPPmail.Cloud',$backupName) @PSBoundParameters
-
-                Write-Verbose "5b - Rename existing SEPPmail.cloud Outbound Connector"
+                Set-InboundConnector -Identity $($OldIbc.Identity) -Name ($($OldIbc.Identity) -replace 'SEPPmail.Cloud', $backupName) @PSBoundParameters
                 $oldObc = Get-OutBoundConnector -Identity "[SEPPmail.cloud] OutBound-*"
-                Set-OutBoundConnector -Identity $($oldObc.Identity) -Name ($oldObc.Identity -replace 'SEPPmail.Cloud',$backupName) @PSBoundParameters
-                #endregion
-
-                #region 6 - attach old outbound rules to old connector
+                Set-OutBoundConnector -Identity $($oldObc.Identity) -Name ($oldObc.Identity -replace 'SEPPmail.Cloud', $backupName) @PSBoundParameters
+            
+                # Step 6: Attach Old Transport Rules to Renamed Backup Connectors
+                $step++
+                Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Reattaching Old Rules ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "6 - Set outbound rule to old backup connector again"
                 $bkpConnWildcard = "[" + $backupName + "]*"
                 $bkpObc = Get-OutboundConnector -Identity $bkpConnWildcard
                 foreach ($rule in $rulesToChange) {
                     Set-TransportRule -Identity $($rule.Identity) -RouteMessageOutboundConnector $bkpObc @PSBoundParameters
                 }
-                #endregion
-
-                #region 7 - rename new connectors to final Names
+            
+                # Step 7: Rename New Connectors to Their Final Names
+                $step++
+                Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Renaming New Connectors ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "7 - Rename existing $tempPrefix connectors to final name"
-                $finalObCName = ($newConnectors|Where-Object Identity -like '*OutBound*').Identity -replace "^$([regex]::Escape($tempPrefix))", ""
-
-                Set-OutboundConnector -Identity ($newConnectors|Where-Object Identity -like '*OutBound*').Identity -Name $finalObcName @PSBoundParameters
-
-                $finalIbcName = ($newConnectors|Where-Object Identity -like '*Inbound*').Identity -replace "^$([regex]::Escape($tempPrefix))", ""
-                Set-InBoundConnector -Identity ($newConnectors|Where-Object Identity -like '*InBound*').Identity -Name $finalIbcName @PSBoundParameters
-
-                #endregion
-
-                #region 8 - create New Transport rules Disabled
+                $finalObCName = ($newConnectors | Where-Object Identity -like '*OutBound*').Identity -replace "^$([regex]::Escape($tempPrefix))", ""
+                Set-OutboundConnector -Identity ($newConnectors | Where-Object Identity -like '*OutBound*').Identity -Name $finalObcName @PSBoundParameters
+                $finalIbcName = ($newConnectors | Where-Object Identity -like '*Inbound*').Identity -replace "^$([regex]::Escape($tempPrefix))", ""
+                Set-InBoundConnector -Identity ($newConnectors | Where-Object Identity -like '*InBound*').Identity -Name $finalIbcName @PSBoundParameters
+            
+                # Step 8: Create New Transport Rules in Disabled State for Review
+                $step++
+                Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Creating New Transport Rules ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "8 - Creating new Transport Rules" 
-                New-SC365Rules -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -routing $DeplInfo.routing  -PlacementPriority Bottom @PSBoundParameters -Disabled
-
-                #endregion
-                #Region Infobblock Success
+                New-SC365Rules -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -routing $DeplInfo.routing -PlacementPriority Bottom @PSBoundParameters -Disabled
+            
+                # Complete Progress Bar
+                Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Completed" -Completed
+            
+                # Inform User About Next Steps
                 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Black
-                Write-Host "|  The CmdLet has finiehd and the OLD SETUP [SC-BPK] IS STILL ACTIVE  |" -ForegroundColor Magenta -BackgroundColor Black
+                Write-Host "|  The CmdLet has finished and the OLD SETUP $backupname IS STILL ACTIVE  |" -ForegroundColor Magenta -BackgroundColor Black
                 Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
                 Write-Host "|       CUSTOMIZE your setup and ENABLE the new setup when done.      |" -ForegroundColor Magenta -BackgroundColor Black
                 Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
-                Write-Host "|        After final tests you can DELETE the [SC-BKP] objects        |" -ForegroundColor Magenta -BackgroundColor Black
+                Write-Host "|        After final tests you can DELETE the $backupname objects        |" -ForegroundColor Magenta -BackgroundColor Black
                 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Black
             }
             else {
