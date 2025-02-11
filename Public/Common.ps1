@@ -901,10 +901,8 @@ function Update-SC365Setup {
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Completed" -Completed
                 
 $switchFinalConfig = @'
-# To enable the new configuration, use something like the 3 commands below.
+# To enable the new configuration, use something like the command below.
 Get-TransportRule | Where-Object {$_.Name -like "*[SEPPmail.cloud]*"} | Enable-TransportRule
-Get-InboundConnector |? {$_.Identity -like '*[SEPPmail.cloud]*'}|Set-InboundConnector -Enabled:$true
-Get-OutboundConnector |? {$_.Identity -like '*[SEPPmail.cloud]*'}|Set-OutboundConnector -Enabled:$false
 
 # To remove the old configuration, use something like the code below as an example.
 Get-TransportRule | Where-Object {$_.Name -like "*BKP*"} | Remove-TransportRule -Confirm:$false
