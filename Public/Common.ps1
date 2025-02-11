@@ -1,19 +1,19 @@
 ﻿<#
 .SYNOPSIS
-    Detects the SEPPmail.Cloud Deploymemnt status, based in M365 Tenant information
+    Detects the SEPPmail.Cloud deployment status, based in M365 Tenant information
 .DESCRIPTION
-    Checks Deplyoment Status of the SEPPmail.Cloud based on M365 Tenantinformation from outside, based on DNS information
+    Checks deployment Status of the SEPPmail.Cloud based on M365 tenant information from outside, based on DNS information
     
-    - Queries routingmode based on available MX records in the SEPPmail.cloud
-    - Queries region based on IP adresses and mailhosts
+    - Queries routing mode based on available MX records in the SEPPmail.cloud
+    - Queries region based on IP addresses and mail hosts
     - Tests if MX record is set correctly in Inline Mode
     - Checks if the SEPPmail.cloud is prepared for Certificate-based-Connectors
     
     Creates a PSObject with the following values:
     
     Routing = inline/parallel                           # Routing Mode
-    Region = ch/de/prv                                  # Cloud Region (Datacenter location)
-    SEPPmailCloudDomain = 'contoso.de','contoso.ch'     # Maildomains which will be routet via SEPPmail. Is basis for naming the mailrouting hosts (gate/relay/mail) 
+    Region = ch/de/prv                                  # Cloud Region (data center location)
+    SEPPmailCloudDomain = 'contoso.de','contoso.ch'     # Mail domains which will be routed via SEPPmail. Is basis for naming the mail routing hosts (gate/relay/mail) 
     CBCenabled = $true/$false                           # Certificate Based Connectors setup available
     CBCConnectorHost = '<tenantid>.<rg>.seppmail.cloud' # Hostname of TLS host for CBC
     InlineMXMatch = $true/$false                        # (Inline Mod only) MX record points to the correct (SEPPmail) host
@@ -118,7 +118,7 @@ function Get-SC365DeploymentInfo {
                             $DnsHostDomain = $dom
                         }
                         else {
-                            Write-Verbose "TenantDefaultDomain not selected, using $dom ans DNSHostDoman"
+                            Write-Verbose "TenantDefaultDomain not selected, using $dom and DNSHost domain"
                             $DnsHostDomain = $dom
                         }
                     }
@@ -127,7 +127,7 @@ function Get-SC365DeploymentInfo {
 
         #endregion Select DefaultDomain
 
-        #region Query SEPPmail routing-Hosts DNS records and detect routing mode and in/oitbound
+        #region Query SEPPmail routing-Hosts DNS records and detect routing mode and in/outbound
             [string]$relayHost = $DnsHostDomain.Replace('.','-') + '.relay.seppmail.cloud'
              [string]$mailHost = $DnsHostDomain.Replace('.','-') + '.mail.seppmail.cloud'
              [string]$gateHost = $DnsHostDomain.Replace('.','-') + '.gate.seppmail.cloud'
@@ -161,7 +161,7 @@ function Get-SC365DeploymentInfo {
                 $deploymentStatus = $false
             }            
         }
-        #endregion Mailhost queries
+        #endregion mail host queries
 
         #region DoubleCheck if MX Record is set correctly
             $mxFull = get-mxrecordreport -Domain $DnsHostDomain
@@ -234,7 +234,7 @@ function Get-SC365DeploymentInfo {
         
         #region Advanced DNS Queries
         
-        # TXT records (Swissign check and SPF)
+        # TXT records (Swisssign check and SPF)
         $txtRecords = (Resolve-dns -querytype TXT $DNSHostdomain).Answers
         if ($txtRecords) { 
             $swisssignTXTRecord = $txtRecords|Where-Object EscapedText -like 'swisssign-check*'
@@ -316,7 +316,7 @@ function Get-SC365DeploymentInfo {
     # Forces to remove inline setup config
 .EXAMPLE
     Remove-SC365Setup -inline -inBoundOnly
-    # Forces to remove inline in "InbohndOnly" mode setup config
+    # Forces to remove inline in "InboundOnly" mode setup config
 #>
 function Remove-SC365Setup {
     [CmdletBinding(
@@ -365,8 +365,8 @@ function Remove-SC365Setup {
                     break
                 } 
                 else {
-                    if ($Deploymentinfo) {
-                                       if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Cloud not autodetect routig info, use manual parameters"; break}
+                    if ($DeploymentInfo) {
+                                       if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Cloud not autodetect routing info, use manual parameters"; break}
                          if ($DeploymentInfo.inBoundOnly -eq $true) {$inboundOnly = $true}
                         if ($DeploymentInfo.inBoundOnly -eq $false) {$inboundOnly = $false}
                          if ($null -eq $DeploymentInfo.inBoundOnly) {$inboundOnly = $false}
@@ -383,7 +383,7 @@ function Remove-SC365Setup {
         Write-Verbose "Creating Progress Bar"
         $objectCount = $null
         # Count Rules
-        foreach ($file in (Get-Childitem -Path "$psscriptroot\..\ExOConfig\Rules\")) {
+        foreach ($file in (Get-ChildItem -Path "$psscriptroot\..\ExOConfig\Rules\")) {
             $objectCount += if ((Get-SC365TransportRuleSettings -routing $routing -file $file).count -gt 0) {1}
         }
 
@@ -395,14 +395,14 @@ function Remove-SC365Setup {
             if ($InBoundOnly) {
                 #Write-Progress -Activity "Removing SEPPmail.Cloud Setup" -Status "Removing Rules" -PercentComplete (0)
                 Write-Information '--- Remove connector(s) ---' -InformationAction Continue
-                Remove-SC365Connectors -routing $routing -Inboundonly:$inboundonly
+                Remove-SC365Connectors -routing $routing -InboundOnly:$inboundOnly
             }
             else {
                 #Write-Progress -Activity "Removing SEPPmail.Cloud Setup" -Status "Removing Rules" -PercentComplete (0)
                 Write-Information '--- Removing transport rules ---' -InformationAction Continue
                 Remove-SC365Rules
                 Write-Information '--- Remove connector(s) ---' -InformationAction Continue
-                Remove-SC365Connectors -routing $routing -Inboundonly:$inboundonly
+                Remove-SC365Connectors -routing $routing -InboundOnly:$inboundOnly
             }
         } catch {
             throw [System.Exception] "Error: $($_.Exception.Message)"
@@ -429,7 +429,7 @@ function Remove-SC365Setup {
     # Without any parameters, it runs discovery mode and created rules and connectors
 .EXAMPLE
     New-SC365Setup -force
-    # The force parameter will force the removal of an existig setup and recreate connectors and rules 
+    # The force parameter will force the removal of an existing setup and recreate connectors and rules 
 .EXAMPLE
     New-SC365Setup -SEPPmailCloudDomain contoso.com -routing parallel -region ch
     # Creates a setup for one domain in parallel mode and in region Switzerland
@@ -437,7 +437,7 @@ function Remove-SC365Setup {
     New-SC365Setup -SEPPmailCloudDomain contoso.de -routing inline -region de
     # Creates a setup for one domain in inline mode and in region Germany/EU
 .EXAMPLE
-    New-SC365Setup -SEPPmailCloudDomain contoso.de -routing inline -region de -inboundonly
+    New-SC365Setup -SEPPmailCloudDomain contoso.de -routing inline -region de -inboundOnly
     # Creates a setup for one domain in inline mode and in region Germany/EU inbound only.
 #>
 function New-SC365Setup {
@@ -494,10 +494,10 @@ function New-SC365Setup {
 
         # If user tries to use *.onmicrosoft.com domain ==> BREAK
         if ($SEPPmailCloudDomain -like '*.onmicrosoft.com') {
-            Write-Error "Domain $SEPPmailcloudDomain is not intended for E-Mail sending and cannot be booked for the SEPPmail-cloud Service. Specify a custom domain of your tenant and retry."
+            Write-Error "Domain $SEPPmailCloudDomain is not intended for E-Mail sending and cannot be booked for the SEPPmail-cloud Service. Specify a custom domain of your tenant and retry."
             break
         }
-        Write-Verbose "Detecting Deploymentstatus frpm SEPPmail.cloud setup"
+        Write-Verbose "Detecting deployment status from SEPPmail.cloud setup"
         try {
             $deploymentInfo = Get-SC365DeploymentInfo
         } catch {
@@ -512,11 +512,11 @@ function New-SC365Setup {
                 break
             }
             if ($DeploymentInfo.DeployMentStatus -eq $false) {
-                Write-Error "SEPPmail.cloud setup for domain $deploymentinfo.SEPPmailCloudDomain is not (fully) deployed. Use Cloud-Portal and fix deployment."
+                Write-Error "SEPPmail.cloud setup for domain $deploymentInfo.SEPPmailCloudDomain is not (fully) deployed. Use Cloud-Portal and fix deployment."
                 break
             } else {
                 if ($Deploymentinfo) {
-                            if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Cloud not autodetect routig info, use manual parameters"; break}
+                            if ($deploymentInfo.Routing) {$Routing = $deploymentInfo.Routing} else {Write-Error "Cloud not autodetect routing info, use manual parameters"; break}
                if ($deploymentInfo.Routing -ne $routing) {Write-Error "SEPPmail.cloud is deployed with routing $deploymentInfo.Routing but the routing parameter is set to $routing, this will NOT WORK, exiting ..."; break}
                              if ($deploymentInfo.Region) {$Region = $deploymentInfo.Region} else {Write-Error "Could not autodetect region. Use manual parameters"; break}
                  if ($deploymentInfo.Region -ne $region) {Write-Error "SEPPmail.cloud is deployed in region $deploymentInfo.Region but the region parameter is set to $region, this will NOT WORK, exiting ..."; break}
@@ -575,7 +575,7 @@ function New-SC365Setup {
         try {
             if ($InBoundOnly -eq $true) {
                     Write-Information '--- Creating inbound connector ---' -InformationAction Continue
-                    New-SC365Connectors -SEPPmailCloudDomain $ConnectorDomain -routing $routing -region $region -inboundonly:$true
+                    New-SC365Connectors -SEPPmailCloudDomain $ConnectorDomain -routing $routing -region $region -inboundOnly:$true
             } else {
                     Write-Information '--- Creating in and outbound connectors ---' -InformationAction Continue
                     New-SC365Connectors -SEPPmailCloudDomain $ConnectorDomain -routing $routing -region $region
@@ -622,7 +622,7 @@ function New-SC365Setup {
     # Reads inline setup config
 .EXAMPLE
     Get-SC365Setup -inline -inBoundOnly
-    # Reads inline in "InbohndOnly" mode setup config
+    # Reads inline in "inboundOnly" mode setup config
 #>
 function Get-SC365Setup {
     [CmdletBinding()]
@@ -751,7 +751,7 @@ function Update-SC365Setup {
         $ErrorActionPreference = 'SilentlyContinue'
     }
     process {
-        #region Infoblock
+        #region info block
         Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "| This script is a helper and provides basic steps to upgrade your    |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "| SEPPmail.cloud/Exchange integration. It covers only STANDARD Setups!|" -ForegroundColor Magenta -BackgroundColor Black
@@ -763,17 +763,18 @@ function Update-SC365Setup {
         Write-Host "|    4.) Set (200) outbound transport rule to New-Connector           |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|    5.) Rename SEPPmail.cloud Connectors to `$backupName              |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|    6.) Attach old Transport rules to old Connector with BackupNam   |" -ForegroundColor Magenta -BackgroundColor Black
-        Write-Host "|    ----------------- OLD SETUP STILL RUNNING ------------------     |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|    7.) Rename NEW Connectors to original names                      |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|    8.) Create new transport rules -PlacementPriority BOTTOM         |" -ForegroundColor Magenta -BackgroundColor Black
+        Write-Host "|    ----------------- OLD SETUP STILL RUNNING ------------------     |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black        Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
-        Write-Host "| If you have any:                                                    |" -ForegroundColor Magenta -BackgroundColor Black
+        Write-Host "| Check any:                                                          |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|   - customizations to SEPPmail.cloud rules                          |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|   - other corporate transport rules                                 |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|   - disclaimer Services integrated via rules                        |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|   - or other special scenarios in your Exo-Tenant                   |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
-        Write-Host "| you need to adapt/change/post-configure the outcome of this script! |" -ForegroundColor Magenta -BackgroundColor Black
+        Write-Host "| you need to adapt/change/post-configure the outcome of this script, |" -ForegroundColor Magenta -BackgroundColor Black
+        Write-Host "| and ENABLE the new setup in Exchange Online.                        |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "| DO NOT JUST FIRE IT UP AND HOPE THINGS ARE GOING TO WORK !!!!!!     |" -ForegroundColor Magenta -BackgroundColor Black
         Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Black
@@ -803,11 +804,28 @@ function Update-SC365Setup {
                 $step++
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Renaming Transport Rules ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "2 - Rename existing SEPPmail.cloud rules"
+
+                # Get all transport rules that match SEPPmail.cloud pattern
                 $oldTrpRls = Get-TransportRule -Identity '[SEPPmail.cloud]*'
+                $totalRules = $oldTrpRls.Count
+                $ruleCounter = 0  # Initialize sub-progress counter
+
                 foreach ($rule in $oldTrpRls) {
-                    Set-TransportRule -Identity $rule.Name -Name ($rule.Name -replace 'SEPPmail.Cloud', $BackupName) @psBoundParameters
+                    $ruleCounter++
+                
+                    # Sub-Progress Bar: Shows progress for each rule being renamed
+                    Write-Progress -Activity "Renaming Transport Rules" `
+                                   -Status "Renaming ($ruleCounter of $totalRules): $($rule.Name)" `
+                                   -PercentComplete (($ruleCounter / $totalRules) * 100) `
+                                   -Id 2  # Unique ID for the sub-progress bar
+                
+                    # Rename the rule
+                    Set-TransportRule -Identity $rule.Name -Name ($rule.Name -replace 'SEPPmail.Cloud', $BackupName) @PSBoundParameters
                 }
-            
+
+                # Clear the sub-progress bar once renaming is done
+                Write-Progress -Id 2 -Activity "Renaming Transport Rules" -Completed            
+
                 # Step 3: Create New Connectors
                 $step++
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Creating New Connectors ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
@@ -819,14 +837,32 @@ function Update-SC365Setup {
                 # Step 4: Update Transport Rules to Use New Connectors
                 $step++
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Updating Transport Rules ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
-                Write-Verbose "4 - Set outbound rules to new connector" 
+                Write-Verbose "4 - Set outbound rules to new connector"
+
+                # Get the current outbound connector
                 $oldObc = Get-OutboundConnector -Identity '[SEPPmail.cloud] Outbound-*'
                 [string]$tempObcName = $TempPrefix + $($OldObc.Identity)
+
+                # Get transport rules that need updating
                 $rulesToChange = Get-TransportRule -Identity '[*' | Where-Object {($_.RouteMessageOutboundConnector) -and ($_.Name -like "*$backupName*")}
+                $totalRules = $rulesToChange.Count
+                $ruleCounter = 0  # Initialize sub-progress counter
+
                 foreach ($rule in $rulesToChange) {
+                    $ruleCounter++                
+                    # Sub-Progress Bar: Show progress for each rule being updated
+                    Write-Progress -Activity "Updating Transport Rules" `
+                                   -Status "Updating ($ruleCounter of $totalRules): $($rule.Name)" `
+                                   -PercentComplete (($ruleCounter / $totalRules) * 100) `
+                                   -Id 3  # Unique ID for the sub-progress bar
+                
+                    # Update the transport rule to use the new connector
                     Set-TransportRule -Identity $($rule.Identity) -RouteMessageOutboundConnector $tempObcName @psBoundParameters
                 }
-            
+
+                # Clear the sub-progress bar once the update is complete
+                Write-Progress -Id 3 -Activity "Updating Transport Rules" -Completed
+
                 # Step 5: Rename Old Connectors
                 $step++
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Renaming Old Connectors ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
@@ -863,15 +899,32 @@ function Update-SC365Setup {
             
                 # Complete Progress Bar
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Completed" -Completed
-            
+                
+$switchFinalConfig = @'
+# To enable the new configuration, use something like the 3 commands below.
+Get-TransportRule | Where-Object {$_.Name -like "*[SEPPmail.cloud]*"} | Enable-TransportRule
+Get-InboundConnector |? {$_.Identity -like '*[SEPPmail.cloud]*'}|Set-InboundConnector -Enabled:$true
+Get-OutboundConnector |? {$_.Identity -like '*[SEPPmail.cloud]*'}|Set-OutboundConnector -Enabled:$false
+
+# To remove the old configuration, use something like the code below as an example.
+Get-TransportRule | Where-Object {$_.Name -like "*BKP*"} | Remove-TransportRule -Confirm:$false
+Get-InboundConnector |? {$_.Identity -like '*BKP*'}|Remove-InboundConnector -Confirm:$false
+Get-OutboundConnector |? {$_.Identity -like '*BKP*'}|Remove-OutboundConnector -Confirm:$false
+'@
+              
                 # Inform User About Next Steps
                 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Black
-                Write-Host "|  The CmdLet has finished and the OLD SETUP $backupname IS STILL ACTIVE  |" -ForegroundColor Magenta -BackgroundColor Black
+                Write-Host "|  The CmdLet has finished and the OLD SETUP $backupName IS STILL ACTIVE   |" -ForegroundColor Magenta -BackgroundColor Black
                 Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
                 Write-Host "|       CUSTOMIZE your setup and ENABLE the new setup when done.      |" -ForegroundColor Magenta -BackgroundColor Black
                 Write-Host "|                                                                     |" -ForegroundColor Magenta -BackgroundColor Black
-                Write-Host "|        After final tests you can DELETE the $backupname objects        |" -ForegroundColor Magenta -BackgroundColor Black
+                Write-Host "|        After final tests you can DELETE the $backupName objects          |" -ForegroundColor Magenta -BackgroundColor Black
+                Write-Host "|                  Find some example commands below:                  |" -ForegroundColor Magenta -BackgroundColor Black
                 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Black
+
+                $switchFinalConfig.Replace('*BKP*','*$backupName*')
+                
+                #>
             }
             else {
                 Write-Error "STOPPING - Found Existing Backup Objects - clean up the environment from $BackupName objects (rules and connectors) and TRY again"
