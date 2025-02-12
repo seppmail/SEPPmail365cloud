@@ -895,7 +895,7 @@ function Update-SC365Setup {
                 $step++
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Creating New Transport Rules ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "8 - Creating new Transport Rules" 
-                New-SC365Rules -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -routing $DeplInfo.routing -PlacementPriority Bottom @PSBoundParameters -Disabled
+                New-SC365Rules -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -routing $DeplInfo.routing -PlacementPriority Top @PSBoundParameters -Disabled
             
                 # Complete Progress Bar
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Completed" -Completed
