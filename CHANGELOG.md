@@ -8,8 +8,8 @@
 - Require PowerShell 7.5.0 as minimum version
 - The init and the upgrade script has moved to a new folder "Scripts"
 - New-SC365Connectors now has a new -Name Parameter. It changes the string inside the square brackets and you could create connectors with custom names, i.e. [PARTNER] Outbound-Inline. This is for special setups and is used for the Upgrade-Script. Do __not use__ custom names in production !
-- redesigned the init script for a smarter dependency module installation
-- beta3: Redesigned Get-SC365Setup. No more parameters, just get the deploymentinfo from the cloud and show whats there.
+- Redesigned the init script for a smarter dependency module installation
+- Redesigned Get-SC365Setup. There are no more parameters anymore, just get the deployment info from the cloud and show whats there.
 
 ### Bugs
 
@@ -28,14 +28,18 @@
 - The SEPPmail support e-Mail addresses are now added to the allowlist of senders in the HostedContentFilterPolicy. This prevents that quarantine reports are blocked.
 - Added a warning for setups in Inline Mode that inline setups affect all domains
 - New-CmdLet Update-SC365Setup is a script that updates an existing BASIC setups. Should work for most configurations. Clients may need to adapt the config later.
-- beta3: Update-SC365Setup now leaves the old setup active, so that the partner may adapt until things work.
+- Update-SC365Setup leaves the old setup active, so that the partner may adapt until things work.
+- Get/Set-SC365ParallelModeCOnfig checks if all required parameters are set for a potential working parallel mode integration.
+- 
 
 #### Reporting
 
 - Provide a new report format based on PSWriteHTML
 - REport can be customized by the Partner with custom logo, url and logowidth. Example:
-  beta3: New-SC365ExOReport ~/Desktop -LogoSource 'https://www.powershell.co.at/wp-content/uploads/2020/01/Powershell_UserGroup_Austria.svg' -LogoUrl 'https://www.powershell.co.at' -LogoWidth '25%'
+  New-SC365ExOReport ~/Desktop -LogoSource 'https://www.powershell.co.at/wp-content/uploads/2020/01/Powershell_UserGroup_Austria.svg' -LogoUrl 'https://www.powershell.co.at' -LogoWidth '25%'
+- Longer Tasks now show a progress bar
 - Include the SC365 Module version number in the EXO Report for [SEPPmail.cloud] Rules and Connectors to know which module version created the SEPPmail.cloud components
+- Added traffic "Mailflowstatus" to the report, which gives an overview of mailtraffic of the tenant.
 
 #### Installation and Upgrade
 
