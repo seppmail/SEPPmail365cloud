@@ -10,10 +10,11 @@
 - New-SC365Connectors now has a new -Name Parameter. It changes the string inside the square brackets and you could create connectors with custom names, i.e. [PARTNER] Outbound-Inline. This is for special setups and is used for the Upgrade-Script. Do __not use__ custom names in production !
 - Redesigned the init script for a smarter dependency module installation
 - Redesigned Get-SC365Setup. There are no more parameters anymore, just get the deployment info from the cloud and show whats there.
+- BREAKING CHANGE: New-SC365Setup will now deploy ENABLED Transport rules. #FIXME: kläre mit SS
 
 ### Bugs
 
-- The -whatif parameter in New-SC365Rules now does not delete transport rules if SEPPmail.cloud rules exist.
+- The -whatIf parameter in New-SC365Rules now does not delete transport rules if SEPPmail.cloud rules exist.
 - If Tenant is dehydrated, raise a warning instead of an error. This allows Inline customers to continue installation because the module loads.
 - PS Version and platform check now works also on Windows PowerShell
 - Fake crypto headers like [secure] or [signed OK] being sent inbound are now matched only against the subject and not subject or body.
