@@ -27,7 +27,7 @@ Write-Verbose "Running InitScript.ps1 and doing requirement-checks"
 if ($sc365noTests -ne $true) {
     if ((Get-PSRepository -Name PSGallery).InstallationPolicy -ne 'Trusted') {
         Write-Warning "You do not Trust the PowerShellGallery as a module installation source."
-        Write-Output "Run 'Set-PSRepository -Name PSGallery -Trusted' to avoid confirmation on module installs."
+        Write-Output "Run 'Set-PSRepository -Name PSGallery -Trusted' to avoid confirmation on module installs and errors."
     }
     Write-Verbose "Create Helper function for Version checking"
     <#

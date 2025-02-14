@@ -4,58 +4,48 @@
 
 ### Maintenance
 
-- Require ExchangeOnlineManagement Version 3.7.1 as minimum
-- Require PowerShell 7.5.0 as minimum version
+- Require ExchangeOnlineManagement module version 3.7.1 as minimum
+- Require PowerShell version 7.5.0 as minimum
 - The init and the upgrade script has moved to a new folder "Scripts"
-- New-SC365Connectors now has a new -Name Parameter. It changes the string inside the square brackets and you could create connectors with custom names, i.e. [PARTNER] Outbound-Inline. This is for special setups and is used for the Upgrade-Script. Do __not use__ custom names in production !
+- New-SC365Connectors now has a new -Name Parameter. It changes the string inside the square brackets and you could create connectors with custom names, i.e. [PARTNER] Outbound-Inline. This is for special setups and is used for the Update-SC365Setup CmdLet. Do __not use__ custom names in production !
 - Redesigned the init script for a smarter dependency module installation
 - Redesigned Get-SC365Setup. There are no more parameters anymore, just get the deployment info from the cloud and show whats there.
-- BREAKING CHANGE: New-SC365Setup will now deploy ENABLED Transport rules. #FIXME: kläre mit SS
+- __BREAKING CHANGE__: New-SC365Setup will now deploy ENABLED Transport rules, so the config is immediately active.
 
 ### Bugs
 
-- The -whatIf parameter in New-SC365Rules now does not delete transport rules if SEPPmail.cloud rules exist.
-- If Tenant is dehydrated, raise a warning instead of an error. This allows Inline customers to continue installation because the module loads.
-- PS Version and platform check now works also on Windows PowerShell
-- Fake crypto headers like [secure] or [signed OK] being sent inbound are now matched only against the subject and not subject or body.
+- The -whatIf parameter in New-SC365Rules now does __not__ delete transport rules if SEPPmail.cloud rules exist.
+- If the tenant is dehydrated, raise a __warning__ instead of an __error__. This allows Inline customers to continue installation because the module loads even with this issue.
+- PS Version and platform check now works also on Windows PowerShell, which means that the module will definitely will not load anymore on PowerShell windows Desktop
+- Fake crypto headers like [secure] or [signed OK] being sent inbound are now matched only against the subject and not subject or body. Faking secured E-mails is not possible in parallel mode
 - New-SC365Connectors now checks if transport rules still point to the connector and stops if this is the case, instead of raising an error.
 
 ### Features
 
-- Output format of Get-SC365Rules and Get-SC365Connectors customized
-- New-SC365Setup now checks if the parameters given fit to the deployment information of the cloud. It warns if you use a non-tenant-default-domain, and stops if you use the wrong region or routing
-- Transport Rules now support also subject tags like [secured by HIN], [signed invalid], [not secured by HIN]
-- In the CloudConfig JSON the IP Addresses have been updated to the latest status
+- Output format of Get-SC365Rules and Get-SC365Connectors is now customized so that it shows as table and fits into the screen
+- New-SC365Setup now checks if the parameters given, fit to the deployment information of the cloud. It warns if you use a non-tenant-default-domain, and stops if you use the wrong region or routing.
+- Transport Rules now support also subject tags like [secured by HIN], [signed invalid], [not secured by HIN] for fake-crypto-header identification
+- In the CloudConfig JSON file, the IP Addresses have been updated to the latest environment data
 - The SEPPmail support e-Mail addresses are now added to the allowlist of senders in the HostedContentFilterPolicy. This prevents that quarantine reports are blocked.
 - Added a warning for setups in Inline Mode that inline setups affect all domains
-- New-CmdLet Update-SC365Setup is a script that updates an existing BASIC setups. Should work for most configurations. Clients may need to adapt the config later.
+- __New-CmdLet__ Update-SC365Setup updates an existing setup. Should work for most configurations. Clients/Partners will need to adapt the config finally to activate it. More details are found in the info-screens of the CmdLet.
 - Update-SC365Setup leaves the old setup active, so that the partner may adapt until things work.
-- Get/Set-SC365ParallelModeCOnfig checks if all required parameters are set for a potential working parallel mode integration.
-- 
+- __New CmdLet:__ Get/Set-SC365ParallelModeConfig checks if all required parameters are set for a potential working parallel mode integration.
 
 #### Reporting
 
-- Provide a new report format based on PSWriteHTML
-- REport can be customized by the Partner with custom logo, url and logowidth. Example:
+- Provide a new report format based on PSWriteHTML. This is a __complete rewrite__ with dynamic data, collapsing, data copy and a lot more usable stuff for getting a detailed overview of your Exchange online tenant
+- Report can be customized by the Partner with custom logo, url and logo width. Example:
   New-SC365ExOReport ~/Desktop -LogoSource 'https://www.powershell.co.at/wp-content/uploads/2020/01/Powershell_UserGroup_Austria.svg' -LogoUrl 'https://www.powershell.co.at' -LogoWidth '25%'
-- Longer Tasks now show a progress bar
+- Data gathering show a progress bar
 - Include the SC365 Module version number in the EXO Report for [SEPPmail.cloud] Rules and Connectors to know which module version created the SEPPmail.cloud components
 - Added traffic "Mailflowstatus" to the report, which gives an overview of mailtraffic of the tenant.
 
 #### Installation and Upgrade
 
-- The PowerShell version check to avoid running the Module on 5.1 Desktop did not work on 5.1 Desktop ;- Added a function for semantic version checking and used this in the Init-Script.
-- Added an update-sc365setup Cmdlet, to make the update procedure faster. The script also contains a warning that it may not apply to any setup and is only for very simple setups. Customers/partners need to pre and post configure their Exchange Online environment for proper operations.
+- The PowerShell version check to avoid running the Module on 5.1 Desktop did not work on 5.1 Desktop ;-. Added a function for semantic version checking and used this in the Init-Script.
 - New-SC365Setup now allows multiple domains in the -SEPPmailCloudDomain parameter
 - Updated IP addresses based on new SEPPmail.cloud infrastructure
-- New-SC365Connectors now has a -Name Parameter to provide custom names for IB/OB connectors. Used for the update-script.
-
-#### Functionality
-
-- Add [secured by HIN] [signed invalid] and [not secured by HIN] to rule 110 so faking secured E-mails is not possible in parallel mode
-- Rule 110 checked the subject tags on subject and body, this is now changed to subject only.
-- The E-Mail addresses support@seppmail.ch/de/com and servicedesk@seppmail.com are added to the allowed sender list to prevent emails to our support being blocked.
-- Add warning in INLINE mode that all e-Mail domains are affected. Some partners customers have not been aware of this.
 
 ## 1.3.8 - Maintenance release
 
