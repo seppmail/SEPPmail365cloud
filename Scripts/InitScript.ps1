@@ -186,7 +186,11 @@ if ($sc365noTests -ne $true) {
     Write-Verbose "Check required Module availability"
     foreach ($module in $requiredModules.Keys) {
         $version = $requiredModules[$module]
-        $localInstVersion = (Get-Module $module -ListAvailable|Sort-Object Version -Descending)[0].Version
+        $availableModules = Get-Module $module -ListAvailable | Sort-Object Version -Descending
+        if ($availableModules.count -gt 0) {
+            $localInstVersion = $availableModules[0].Version
+        }
+
         if ($localInstVersion) {
             $semanticLocalInstVersion = [System.Management.Automation.SemanticVersion]::Parse($localInstVersion.ToString())
             $semanticRequiredVersion = [System.Management.Automation.SemanticVersion]::Parse($Version)
@@ -200,6 +204,8 @@ if ($sc365noTests -ne $true) {
                 Write-Error "Could not install required Module $module with version $version. Please install manually from the PowerShell Gallery"
             }
             Import-Module $module -Force
+        } else {
+            Write-Verbose "Installed version of module $module has the required version $localVersion"
         }
     }
 }
