@@ -396,7 +396,6 @@ function New-SC365ExOReport {
             #FIXME: Get-IPv6StatusForAcceptedDomain -Domain rconsult.at | select *
             #FIXME: For parallel Get-DKimSigningConfig
             #FIXME: For parallel: Get-DNSSecStatusForVerifiedDomain
-            #FIXME: Get-SmtpDaneInboundStatus
             <#$ExoData['nnnNnn']=[ordered]@{
                 VarNam = 'nnnNnn'
                 WebLnk = 'https://learn.microsoft.com/en-us/powershell/module/exchange/nnn'
@@ -692,7 +691,7 @@ function New-SC365ExOReport {
                 New-HTMLContent @contentHeaderStyle @ContentBodyStyle -HeaderText 'MailFlow' -Direction 'column' -Collapsed -Content {
                     if ($mflStr) {
                         New-HTMLHeading -Heading h2 -HeadingText $ExoData.mflStr.HdgTxt -Color $ColorSEPPmailGreen -Underline
-                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.iorCon.HlpInf)}
+                        New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output $($ExoData.mflStr.HlpInf)}
                         New-HTMLTextBox @helpTextStyle -TextBlock {Write-Output "Link to the original CmdLet for further exploration <a href =`"$($ExoData.mflStr.WebLnk)`" target=`"_blank`">CmdLet Help</a>"}                
                         New-HTMLTable -DataTable $mflStr @tableStyle
                     } else {
