@@ -902,10 +902,10 @@ function Update-SC365Setup {
                 
 $switchFinalConfig = @'
 # To enable the new configuration, use something like the command below.
-Get-TransportRule | Where-Object {$_.Name -like "*[SEPPmail.cloud]*"} | Enable-TransportRule
+Get-TransportRule | Where-Object {$_.Name -like '*[SEPPmail.cloud]*'} | Enable-TransportRule
 
 # To remove the old configuration, use something like the code below as an example.
-Get-TransportRule | Where-Object {$_.Name -like "*BKP*"} | Remove-TransportRule -Confirm:$false
+Get-TransportRule | Where-Object {$_.Name -like '*BKP*'} | Remove-TransportRule -Confirm:$false
 Get-InboundConnector |? {$_.Identity -like '*BKP*'}|Remove-InboundConnector -Confirm:$false
 Get-OutboundConnector |? {$_.Identity -like '*BKP*'}|Remove-OutboundConnector -Confirm:$false
 '@
@@ -920,7 +920,7 @@ Get-OutboundConnector |? {$_.Identity -like '*BKP*'}|Remove-OutboundConnector -C
                 Write-Host "|                  Find some example commands below:                  |" -ForegroundColor Magenta -BackgroundColor Black
                 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Magenta -BackgroundColor Black
 
-                $switchFinalConfig.Replace('*BKP*','*$backupName*')
+                $switchFinalConfig.Replace('*BKP*',"*$backupName*")
                 
                 #>
             }
