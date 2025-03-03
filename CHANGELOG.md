@@ -1,5 +1,12 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 2.0.1 - Bugfix release
+
+### Maintenance
+
+- InstallScript had a typo - correct sentense is: Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+- Update-Sc365Setup: Replacement of suggestion-code for cleanup didnt work. $backupValue was not replaced with actual value.
+
 ## 2.0.0 - Feature Release
 
 ### Maintenance
