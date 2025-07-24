@@ -225,9 +225,9 @@ function New-SC365Rules
 				# Calculated SMPriority for the transport rules - removes requirement of coding this into JSON Files
 				[int]$countedSMPrio = -1
 				foreach($file in $transportRuleFiles) {
-					$countedSMPrio++
 					$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
 					if ($setting.Values) {
+						$countedSMPrio++
 						# $setting.Priority = $placementPrio + $setting.SMPriority
 						$setting.Priority = $placementPrio + $countedSMPrio
 						# $setting.Remove('SMPriority')
