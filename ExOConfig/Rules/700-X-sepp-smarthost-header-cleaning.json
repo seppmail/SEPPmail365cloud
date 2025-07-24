@@ -9,7 +9,7 @@
         {
             "Name"                  : "[SEPPmail.cloud] - 700 Clean outbound header X-sepp-smarthost",
             "Comments"              : "Removes outgoing SEPPmail.cloud x-headers from E-Mail.",
-            "SMPriority"            : 8,
+            "SMPriority"            : 9,
             "FromScope"             : "InOrganization",
             "SentToScope"           : "NotInOrganization",
             "RemoveHeader"          : "X-sepp-smarthost",
