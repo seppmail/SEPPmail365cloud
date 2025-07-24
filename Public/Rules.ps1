@@ -222,11 +222,15 @@ function New-SC365Rules
 				$transportRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExOConfig\Rules\"
 
 				$moduleVersion = $myInvocation.MyCommand.Version
+				# Calculated SMPriority for the transport rules - removes requirement of coding this into JSON Files
+				[int]$countedSMPrio = -1
 				foreach($file in $transportRuleFiles) {
+					$countedSMPrio++
 					$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
 					if ($setting.Values) {
-						$setting.Priority = $placementPrio + $setting.SMPriority
-						$setting.Remove('SMPriority')
+						# $setting.Priority = $placementPrio + $setting.SMPriority
+						$setting.Priority = $placementPrio + $countedSMPrio
+						# $setting.Remove('SMPriority')
 						if ($Disabled -eq $true) {$setting.Enabled = $false}
 
 						$Now = Get-Date

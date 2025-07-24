@@ -5,7 +5,6 @@
         {
             "Name"                  : "[SEPPmail.cloud] - 060 Add header X-SM-ruleversion",
             "Comments"              : "Adds a header to let SEPPmail.cloud know which rules version you are running.",
-            "SMPriority"            : 0,
             "SetHeaderName"         : "X-SM-ruleversion",
             "SetHeaderValue"        : "",
             "Priority"              : 0,
@@ -17,7 +16,6 @@
         {
             "Name"                  : "[SEPPmail.cloud] - 060 Add header X-SM-ruleversion",
             "Comments"              : "Adds a header to let SEPPmail.cloud know which rules version you are running.",
-            "SMPriority"            : 0,
             "SetHeaderName"         : "X-SM-ruleversion",
             "SetHeaderValue"        : "",
             "Priority"              : 0,

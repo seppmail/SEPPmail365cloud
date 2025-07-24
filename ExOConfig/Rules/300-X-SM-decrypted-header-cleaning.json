@@ -9,7 +9,6 @@
         {
             "Name"                  : "[SEPPmail.cloud] - 300 Clean outbound SEPPmail header decrypted",
             "Comments"              : "Removes decrypted SEPPmail.cloud x-headers from E-Mail.",
-            "SMPriority"            : 5,
             "FromScope"             : "InOrganization",
             "SentToScope"           : "NotInOrganization",
             "RemoveHeader"          : "X-SM-decrypted",
