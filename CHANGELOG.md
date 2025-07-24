@@ -1,5 +1,9 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 2.0.2 - Bugfix release
+
+- Added another transport rule 120 fo fix the subject-tag  spoofing issue
+
 ## 2.0.1 - Bugfix release
 
 ### Maintenance
