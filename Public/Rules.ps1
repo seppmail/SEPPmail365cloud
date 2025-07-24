@@ -61,7 +61,7 @@ function Get-SC365Rules {
 
 <#
 .SYNOPSIS
-	Create transport rules for routingmode "parallel"
+	Create transport rules for routing mode "parallel"
 .DESCRIPTION
 	Creates all necessary transport rules in Exchange Online to send e-mails through seppmail.cloud for cryptographic processing.
 .EXAMPLE
