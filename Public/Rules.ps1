@@ -177,7 +177,7 @@ function New-SC365Rules
 		{
 			Write-Verbose "Read all `"non-[SEPPmail`" transport rules"
 			$existingTransportRules = Get-TransportRule | Where-Object Name -NotMatch '\[SEPPmail*'
-			[int] $placementPrio = @(0, $existingTransportRules.Count)[!($PlacementPriority -eq "Top")] <# Poor man's ternary operator #>
+			[int] $placementPrio = @(0, $existingTransportRules.Count)[!($PlacementPriority -eq "Top")] #Poor man's ternary operator
 			Write-Verbose "Placement priority is $placementPrio"
 
 			Write-Verbose "Read existing [SEPPmail.cloud] transport rules"
@@ -219,7 +219,7 @@ function New-SC365Rules
 
 			if($createRules){
 			   
-				$transportRuleFiles = Get-Childitem -Path "$psscriptroot\..\ExOConfig\Rules\"
+				$transportRuleFiles = Get-ChildItem -Path "$psScriptRoot\..\ExOConfig\Rules\"
 
 				$moduleVersion = $myInvocation.MyCommand.Version
 				# Calculated SMPriority for the transport rules - removes requirement of coding this into JSON Files
@@ -228,9 +228,9 @@ function New-SC365Rules
 					$setting = Get-SC365TransportRuleSettings -File $file -Routing $routing
 					if ($setting.Values) {
 						$countedSMPrio++
-						# $setting.Priority = $placementPrio + $setting.SMPriority
+						Write-Verbose "Calculating TR-priority ba adding placement prio $placementPrio and ordered prio from SEPPmail $($setting.SMPriority)"
 						$setting.Priority = $placementPrio + $countedSMPrio
-						# $setting.Remove('SMPriority')
+						Write-Verbose "Transport Rule priority will be: $($setting.Priority)"
 						if ($Disabled -eq $true) {$setting.Enabled = $false}
 
 						$Now = Get-Date
