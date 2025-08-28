@@ -6,13 +6,15 @@
 
 - Added another transport rule 120 fo fix the subject-tag spoofing issue
 - Change logic for transport rule priority calculation
+- Module ExchangeOnlineManagement 3.8.0 required
+- Module PSWrite-HTML 1.38.0 required
 
 ## 2.0.1 - Bugfix release
 
 ### Maintenance
 
-- InstallScript had a typo - correct sentense is: Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-- Update-Sc365Setup: Replacement of suggestion-code for cleanup didnt work. $backupValue was not replaced with actual value.
+- InstallScript had a typo - correct sentence is: Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+- Update-Sc365Setup: Replacement of suggestion-code for cleanup did not work. $backupValue was not replaced with actual value.
 
 ## 2.0.0 - Feature Release
 

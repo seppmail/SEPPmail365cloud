@@ -4,7 +4,7 @@
 
 $InformationPreference = $true
 $ModulePath = $PSScriptRoot
-$InterActiveSession = [System.Environment]::UserInteractive
+$interActiveSession = [System.Environment]::UserInteractive
 
 Write-Verbose 'Request terminating errors by default'
 $PSDefaultParameterValues['*:ErrorAction'] = [System.Management.Automation.ActionPreference]::Stop
@@ -45,7 +45,7 @@ if ($sc365noTest -ne $true) {
 }
 Write-Verbose 'Test new version availability'
 try {
-    $onLineVersion = Find-Module -Name 'SEPPmail365cloud'|Select-Object -expandproperty Version
+    $onLineVersion = Find-Module -Name 'SEPPmail365cloud'|Select-Object -expandProperty Version
     $offLineVersion = Test-ModuleManifest (Join-Path $ModulePath -ChildPath SEPPmail365cloud.psd1) |Select-Object -ExpandProperty Version 
     if ($onLineVersion -gt $offLineVersion) {
         Write-Warning "You have version $offlineVersion, but there is the new version $onLineVersion of the SEPPmail365cloud module available on the PowerShell Gallery. Update the module as soon as possible. More info here https://www.powershellgallery.com/packages/SEPPMail365cloud"

@@ -6,9 +6,9 @@ $Global:ModuleVersion = $ManiFestFile.ModuleVersion.ToString()
 [string]$requiredPSVersion = '7.5.0'
 
 $requiredModules = @{
-     "ExchangeOnlineManagement" = "3.7.1"
+     "ExchangeOnlineManagement" = "3.8.0"
                  "DNSClient-PS" = "1.1.1"
-                  "PSWriteHTML" = "1.28.0"
+                  "PSWriteHTML" = "1.38.0"
     }
 
 Write-Host "+---------------------------------------------------------------------+" -ForegroundColor Green -BackgroundColor DarkGray
@@ -186,6 +186,7 @@ if ($sc365noTests -ne $true) {
     Write-Verbose "Check required Module availability"
     foreach ($module in $requiredModules.Keys) {
         $version = $requiredModules[$module]
+        Write-Verbose "Checking version $version for module $module"
         $availableModules = Get-Module $module -ListAvailable | Sort-Object Version -Descending
         if ($availableModules.count -gt 0) {
             $localInstVersion = $availableModules[0].Version
@@ -193,7 +194,9 @@ if ($sc365noTests -ne $true) {
 
         if ($localInstVersion) {
             $semanticLocalInstVersion = [System.Management.Automation.SemanticVersion]::Parse($localInstVersion.ToString())
+            Write-Verbose "Installed version of module $module is $localInstVersion"
             $semanticRequiredVersion = [System.Management.Automation.SemanticVersion]::Parse($Version)
+            Write-Verbose "Required version of module $module is $version"
         }
         if ((!($localInstVersion)) -or ($semanticLocalInstVersion -lt $semanticRequiredVersion )) {
             try {
@@ -203,6 +206,7 @@ if ($sc365noTests -ne $true) {
             } catch {
                 Write-Error "Could not install required Module $module with version $version. Please install manually from the PowerShell Gallery"
             }
+            Write-Verbose "Import module $module"
             Import-Module $module -Force
         } else {
             Write-Verbose "Installed version of module $module has the required version $localVersion"
