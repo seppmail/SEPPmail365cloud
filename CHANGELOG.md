@@ -1,13 +1,22 @@
 # Changes in the PowerShell Module SEPPmail365cloud
 
+## 2.1.0 - Feature Release (Announcement)
+
+The main feature of this release is the change in number of required transport rules in parallel mode from 10 to 6. Outbound header cleaning will be moved to the SEPPmail.cloud itself. This change will make installation and upgrades faster and reduces the risk to run into any maximum limits in transport rule size by Microsoft.
+
+### Maintenance
+
+2033 - Reduce Cleanup transport rules in parallel mode to 6 - cleanup happens in the SEPmail.cloud
+nnnn - Identify CodeTwo Transport rules with no "StopRuleProcessing" and mark them in the report as RED.
+
 ## 2.0.2 - Bugfix release
 
 ### Maintenance
 
 - Added another transport rule 120 fo fix the subject-tag spoofing issue
 - Change logic for transport rule priority calculation
-- Module ExchangeOnlineManagement 3.8.0 required
-- Module PSWrite-HTML 1.38.0 required
+- Module ExchangeOnlineManagement 3.9.0 required
+- Module PSWrite-HTML 1.39.0 required
 
 ## 2.0.1 - Bugfix release
 
