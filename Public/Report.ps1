@@ -394,7 +394,6 @@ function New-SC365ExOReport {
                 HlpInf = 'This CmdLet provides a summary report of the status of mail flow within the organization. This cmdlet provides high-level information about the number of messages processed by Exchange Online over a specific period, categorized by severity'
             }
             #FIXME: Get-IPv6StatusForAcceptedDomain -Domain rconsult.at | select *
-            #FIXME: For parallel Get-DKimSigningConfig
             #FIXME: For parallel: Get-DNSSecStatusForVerifiedDomain
             <#$ExoData['nnnNnn']=[ordered]@{
                 VarNam = 'nnnNnn'
