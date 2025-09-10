@@ -820,7 +820,7 @@ function Update-SC365Setup {
                                    -Id 2  # Unique ID for the sub-progress bar
                 
                     # Rename the rule
-                    Set-TransportRule -Identity $rule.Name -Name ($rule.Name -replace 'SEPPmail.Cloud', $BackupName) #@PSBoundParameters
+                    Set-TransportRule -Identity $rule.Name -Name ($rule.Name -replace 'SEPPmail.Cloud', $BackupName)
                 }
 
                 # Clear the sub-progress bar once renaming is done
@@ -831,7 +831,7 @@ function Update-SC365Setup {
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Creating New Connectors ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "3 - Creating new connectors with temp name" 
                 if ($PSCmdlet.ShouldProcess('New connectors', 'create')) {
-                    $newConnectors = New-SC365connectors -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -region $DeplInfo.region -routing $DeplInfo.routing -NamePrefix $tempPrefix #@psBoundParameters
+                    $newConnectors = New-SC365connectors -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -region $DeplInfo.region -routing $DeplInfo.routing -NamePrefix $tempPrefix 
                 }
             
                 # Step 4: Update Transport Rules to Use New Connectors
@@ -857,7 +857,7 @@ function Update-SC365Setup {
                                    -Id 3  # Unique ID for the sub-progress bar
                 
                     # Update the transport rule to use the new connector
-                    Set-TransportRule -Identity $($rule.Identity) -RouteMessageOutboundConnector $tempObcName #@psBoundParameters
+                    Set-TransportRule -Identity $($rule.Identity) -RouteMessageOutboundConnector $tempObcName 
                 }
 
                 # Clear the sub-progress bar once the update is complete
@@ -868,9 +868,9 @@ function Update-SC365Setup {
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Renaming Old Connectors ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "5 - Rename existing SEPPmail.cloud Connectors to $backupName"
                 $oldIbc = Get-InboundConnector -Identity '[SEPPmail.cloud] Inbound-*' 
-                Set-InboundConnector -Identity $($OldIbc.Identity) -Name ($($OldIbc.Identity) -replace 'SEPPmail.Cloud', $backupName) #@PSBoundParameters
+                Set-InboundConnector -Identity $($OldIbc.Identity) -Name ($($OldIbc.Identity) -replace 'SEPPmail.Cloud', $backupName) 
                 $oldObc = Get-OutBoundConnector -Identity "[SEPPmail.cloud] OutBound-*"
-                Set-OutBoundConnector -Identity $($oldObc.Identity) -Name ($oldObc.Identity -replace 'SEPPmail.Cloud', $backupName) #@PSBoundParameters
+                Set-OutBoundConnector -Identity $($oldObc.Identity) -Name ($oldObc.Identity -replace 'SEPPmail.Cloud', $backupName) 
             
                 # Step 6: Attach Old Transport Rules to Renamed Backup Connectors
                 $step++
@@ -879,7 +879,7 @@ function Update-SC365Setup {
                 $bkpConnWildcard = "[" + $backupName + "]*"
                 $bkpObc = Get-OutboundConnector -Identity $bkpConnWildcard
                 foreach ($rule in $rulesToChange) {
-                    Set-TransportRule -Identity $($rule.Identity) -RouteMessageOutboundConnector $bkpObc #@PSBoundParameters
+                    Set-TransportRule -Identity $($rule.Identity) -RouteMessageOutboundConnector $bkpObc 
                 }
             
                 # Step 7: Rename New Connectors to Their Final Names
@@ -887,15 +887,15 @@ function Update-SC365Setup {
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Renaming New Connectors ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "7 - Rename existing $tempPrefix connectors to final name"
                 $finalObCName = ($newConnectors | Where-Object Identity -like '*OutBound*').Identity -replace "^$([regex]::Escape($tempPrefix))", ""
-                Set-OutboundConnector -Identity ($newConnectors | Where-Object Identity -like '*OutBound*').Identity -Name $finalObcName #@PSBoundParameters
+                Set-OutboundConnector -Identity ($newConnectors | Where-Object Identity -like '*OutBound*').Identity -Name $finalObcName 
                 $finalIbcName = ($newConnectors | Where-Object Identity -like '*Inbound*').Identity -replace "^$([regex]::Escape($tempPrefix))", ""
-                Set-InBoundConnector -Identity ($newConnectors | Where-Object Identity -like '*InBound*').Identity -Name $finalIbcName #@PSBoundParameters
+                Set-InBoundConnector -Identity ($newConnectors | Where-Object Identity -like '*InBound*').Identity -Name $finalIbcName 
             
                 # Step 8: Create New Transport Rules in Disabled State for Review
                 $step++
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Creating New Transport Rules ($step/$totalSteps)" -PercentComplete (($step / $totalSteps) * 100)
                 Write-Verbose "8 - Creating new Transport Rules" 
-                New-SC365Rules -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -routing $DeplInfo.routing -PlacementPriority Top -Disabled #@PSBoundParameters
+                New-SC365Rules -SEPPmailCloudDomain $DeplInfo.SEPPmailCloudDomain -routing $DeplInfo.routing -PlacementPriority Top -Disabled 
             
                 # Complete Progress Bar
                 Write-Progress -Activity "Updating SEPPmail.cloud Setup" -Status "Completed" -Completed
