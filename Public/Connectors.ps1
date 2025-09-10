@@ -114,20 +114,20 @@ function New-SC365Connectors
     [CmdletBinding(
          SupportsShouldProcess = $true,
          ConfirmImpact = 'Medium',
-         DefaultParameterSetname = 'BothDirections',
+         DefaultParameterSetName = 'BothDirections',
          HelpURI = 'https://github.com/seppmail/SEPPmail365cloud/blob/main/README.md#setup-the-integration'
      )]
     param
     (
         [Parameter(
             Mandatory = $true,
-            ParameterSetname = 'Bothdirections',
-            Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.'
+            ParameterSetName = 'Bothdirections',
+            HelpMessage = 'Default E-Mail domain of your Exchange Online tenant.'
             )]
         [Parameter(
             Mandatory = $true,
-            ParameterSetname = 'InBoundOnly',
-            Helpmessage = 'Default E-Mail domain of your Exchange Online tenant.'
+            ParameterSetName = 'InBoundOnly',
+            HelpMessage = 'Default E-Mail domain of your Exchange Online tenant.'
             )]
         [Alias('domain','maildomain','primaryMailDomain')]
         [String] $SEPPmailCloudDomain,
