@@ -11,6 +11,10 @@ nnnn - Identify CodeTwo Transport rules with no "StopRuleProcessing" and mark th
 
 ## 2.0.2 - Bugfix release
 
+### Bugs
+
+- Update-SC365 did not work bcs of a typo-cleanup fix.
+
 ### Maintenance
 
 - Added another transport rule 120 fo fix the subject-tag spoofing issue
